@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Settings } from "lucide-react";
+import { Pencil } from "lucide-react";
 
 interface EditProfileDialogProps {
   currentName: string;
@@ -26,7 +26,7 @@ const EditProfileDialog = ({ currentName, currentBio, onSave }: EditProfileDialo
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2">
-          <Settings className="h-4 w-4" />
+          <Pencil className="h-4 w-4" />
           ערוך פרופיל
         </Button>
       </DialogTrigger>
