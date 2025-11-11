@@ -86,6 +86,13 @@ const Profile = () => {
     return <Navigate to="/auth" replace />;
   }
 
+  const getInitials = (name: string) => {
+    if (!name) return "U";
+    const words = name.trim().split(/\s+/);
+    if (words.length === 1) return words[0].charAt(0).toUpperCase();
+    return words.slice(0, 2).map(word => word.charAt(0).toUpperCase()).join("");
+  };
+
   const userPosts = [
     {
       author: "אתה",
@@ -115,7 +122,7 @@ const Profile = () => {
               <div className="flex items-start gap-4">
                 <Avatar className="h-20 w-20">
                   <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
-                    U
+                    {getInitials(profile?.full_name || profile?.username || "")}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
