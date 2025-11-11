@@ -29,8 +29,8 @@ const Post = ({ author, timeAgo, content, image, likes, comments }: PostProps) =
   };
 
   return (
-    <Card className="overflow-hidden">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+    <div className="bg-card/40 backdrop-blur-sm rounded-xl p-4 mb-3 border-0 shadow-sm hover:shadow-md transition-shadow">
+      <div className="flex flex-row items-center justify-between pb-3">
         <div className="flex items-center gap-3">
           <Avatar>
             <AvatarFallback className="bg-primary text-primary-foreground">
@@ -45,9 +45,9 @@ const Post = ({ author, timeAgo, content, image, likes, comments }: PostProps) =
         <Button variant="ghost" size="icon">
           <MoreHorizontal className="h-5 w-5" />
         </Button>
-      </CardHeader>
+      </div>
       
-      <CardContent className="pb-3">
+      <div className="pb-3">
         <p className="text-sm mb-3">{content}</p>
         {image && (
           <img 
@@ -56,9 +56,9 @@ const Post = ({ author, timeAgo, content, image, likes, comments }: PostProps) =
             className="w-full rounded-lg object-cover max-h-96"
           />
         )}
-      </CardContent>
+      </div>
       
-      <CardFooter className="flex items-center justify-between border-t pt-3">
+      <div className="flex items-center justify-between border-t border-border/20 pt-3">
         <div className="flex items-center gap-1">
           <Button 
             variant="ghost" 
@@ -86,16 +86,16 @@ const Post = ({ author, timeAgo, content, image, likes, comments }: PostProps) =
         <Button variant="ghost" size="sm">
           <Share2 className="h-4 w-4" />
         </Button>
-      </CardFooter>
+      </div>
       
       {showComments && (
-        <div className="px-6 pb-4 space-y-3 border-t pt-3">
+        <div className="pb-2 space-y-3 border-t border-border/20 pt-3 mt-3">
           <div className="text-sm text-muted-foreground">
             אין תגובות עדיין. היה הראשון להגיב!
           </div>
         </div>
       )}
-    </Card>
+    </div>
   );
 };
 

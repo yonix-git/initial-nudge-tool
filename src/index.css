@@ -102,10 +102,43 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
     position: relative;
-    background: 
-      radial-gradient(circle at 20% 80%, hsl(var(--primary) / 0.08) 0%, transparent 50%),
-      radial-gradient(circle at 80% 20%, hsl(var(--accent) / 0.06) 0%, transparent 50%),
-      radial-gradient(circle at 40% 40%, hsl(var(--primary) / 0.04) 0%, transparent 40%),
-      linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--muted) / 0.3) 100%);
+    overflow-x: hidden;
+  }
+  
+  body::before {
+    content: '';
+    position: fixed;
+    top: -20%;
+    right: -15%;
+    width: 50%;
+    height: 70%;
+    background: radial-gradient(ellipse at center, hsl(var(--primary) / 0.18) 0%, hsl(var(--primary) / 0.10) 30%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+    animation: pulse 8s ease-in-out infinite;
+  }
+  
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -25%;
+    left: -10%;
+    width: 55%;
+    height: 75%;
+    background: radial-gradient(ellipse at center, hsl(var(--accent) / 0.15) 0%, hsl(var(--primary) / 0.08) 35%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+    animation: pulse 10s ease-in-out infinite reverse;
+  }
+  
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.85;
+      transform: scale(1.08);
+    }
   }
 }

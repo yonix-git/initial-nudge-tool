@@ -77,8 +77,8 @@ const Index = () => {
     <div className="min-h-screen bg-background" dir="rtl">
       <Header />
       
-      <main className="container max-w-2xl py-6 px-4">
-        <div className="space-y-2">
+      <main className="container max-w-2xl py-6 px-4 relative z-10">
+        <div>
           {mockPosts.map((post, index) => (
             <Post key={index} {...post} />
           ))}
