@@ -26,9 +26,9 @@ const Header = () => {
             <Link to="/services" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
               שירותים
             </Link>
-            <a href="#" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+            <Link to="/events" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
               אירועים
-            </a>
+            </Link>
           </nav>
         </div>
 
