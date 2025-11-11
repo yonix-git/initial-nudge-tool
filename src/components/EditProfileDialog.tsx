@@ -9,16 +9,18 @@ import { Pencil } from "lucide-react";
 interface EditProfileDialogProps {
   currentName: string;
   currentBio: string;
-  onSave: (name: string, bio: string) => void;
+  currentVehicle: string;
+  onSave: (name: string, bio: string, vehicle: string) => void;
 }
 
-const EditProfileDialog = ({ currentName, currentBio, onSave }: EditProfileDialogProps) => {
+const EditProfileDialog = ({ currentName, currentBio, currentVehicle, onSave }: EditProfileDialogProps) => {
   const [name, setName] = useState(currentName);
   const [bio, setBio] = useState(currentBio);
+  const [vehicle, setVehicle] = useState(currentVehicle);
   const [open, setOpen] = useState(false);
 
   const handleSave = () => {
-    onSave(name, bio);
+    onSave(name, bio, vehicle);
     setOpen(false);
   };
 
@@ -55,11 +57,12 @@ const EditProfileDialog = ({ currentName, currentBio, onSave }: EditProfileDialo
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="vehicle">רכב</Label>
+            <Label htmlFor="vehicle">הרכב שלי</Label>
             <Input
               id="vehicle"
+              value={vehicle}
+              onChange={(e) => setVehicle(e.target.value)}
               placeholder="למשל: מאזדה 3 2019"
-              defaultValue="מאזדה 3 2019"
             />
           </div>
         </div>

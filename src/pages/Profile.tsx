@@ -43,19 +43,20 @@ const Profile = () => {
     }
   }, [user, authLoading]);
 
-  const handleSaveProfile = async (name: string, bio: string) => {
+  const handleSaveProfile = async (name: string, bio: string, vehicle: string) => {
     if (!user) return;
 
     const { error } = await supabase
       .from("profiles")
       .update({ 
         full_name: name,
-        bio: bio 
+        bio: bio,
+        vehicle_type: vehicle
       })
       .eq("id", user.id);
 
     if (!error) {
-      setProfile({ ...profile, full_name: name, bio: bio });
+      setProfile({ ...profile, full_name: name, bio: bio, vehicle_type: vehicle });
     }
   };
 
@@ -127,6 +128,7 @@ const Profile = () => {
                       <EditProfileDialog 
                         currentName={profile?.full_name || profile?.username || ""}
                         currentBio={profile?.bio || ""}
+                        currentVehicle={profile?.vehicle_type || ""}
                         onSave={handleSaveProfile}
                       />
                       <Link to="/settings">
@@ -137,6 +139,9 @@ const Profile = () => {
                     </div>
                   </div>
                   <p className="text-muted-foreground mt-1 whitespace-pre-wrap">{profile?.bio || "אין תיאור"}</p>
+                  {profile?.vehicle_type && (
+                    <p className="text-sm text-muted-foreground mt-2">🚗 {profile.vehicle_type}</p>
+                  )}
                   <div className="flex gap-6 mt-3 text-sm">
                     <div>
                       <span className="font-semibold">24</span>
