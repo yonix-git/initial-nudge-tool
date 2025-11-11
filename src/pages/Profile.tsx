@@ -199,12 +199,12 @@ const Profile = () => {
                       <span className="text-muted-foreground mr-1">פוסטים</span>
                     </div>
                     <div>
-                      <span className="font-semibold">156</span>
+                      <span className="font-semibold">{profile?.followers_count || 0}</span>
                       <span className="text-muted-foreground mr-1">עוקבים</span>
                     </div>
                     <div>
-                      <span className="font-semibold">89</span>
-                      <span className="text-muted-foreground mr-1">עוקב</span>
+                      <span className="font-semibold">{profile?.following_count || 0}</span>
+                      <span className="text-muted-foreground mr-1">נעקבים</span>
                     </div>
                   </div>
                 </div>

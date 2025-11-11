@@ -55,6 +55,8 @@ export type Database = {
           account_type: Database["public"]["Enums"]["account_type"]
           bio: string | null
           created_at: string
+          followers_count: number
+          following_count: number
           full_name: string | null
           id: string
           profile_picture_url: string | null
@@ -66,6 +68,8 @@ export type Database = {
           account_type?: Database["public"]["Enums"]["account_type"]
           bio?: string | null
           created_at?: string
+          followers_count?: number
+          following_count?: number
           full_name?: string | null
           id: string
           profile_picture_url?: string | null
@@ -77,6 +81,8 @@ export type Database = {
           account_type?: Database["public"]["Enums"]["account_type"]
           bio?: string | null
           created_at?: string
+          followers_count?: number
+          following_count?: number
           full_name?: string | null
           id?: string
           profile_picture_url?: string | null
