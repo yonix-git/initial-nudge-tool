@@ -43,10 +43,21 @@ const Profile = () => {
     }
   }, [user, authLoading]);
 
-  const handleSaveProfile = async (name: string, bio: string, vehicle: string, profilePicture: File | null) => {
+  const handleSaveProfile = async (name: string, bio: string, vehicle: string, profilePicture: File | null, removeProfilePicture?: boolean) => {
     if (!user) return;
 
     let profilePictureUrl = profile?.profile_picture_url;
+
+    // Remove profile picture if requested
+    if (removeProfilePicture && profile?.profile_picture_url) {
+      // Extract filename from URL and delete from storage
+      const urlParts = profile.profile_picture_url.split('/');
+      const fileName = `${user.id}/${urlParts[urlParts.length - 1]}`;
+      await supabase.storage
+        .from('avatars')
+        .remove([fileName]);
+      profilePictureUrl = null;
+    }
 
     // Upload profile picture if provided
     if (profilePicture) {
@@ -55,9 +66,11 @@ const Profile = () => {
       
       // Delete old file if exists
       if (profile?.profile_picture_url) {
+        const urlParts = profile.profile_picture_url.split('/');
+        const oldFileName = `${user.id}/${urlParts[urlParts.length - 1]}`;
         await supabase.storage
           .from('avatars')
-          .remove([`${user.id}/avatar.${profile.profile_picture_url.split('.').pop()}`]);
+          .remove([oldFileName]);
       }
 
       const { error: uploadError } = await supabase.storage

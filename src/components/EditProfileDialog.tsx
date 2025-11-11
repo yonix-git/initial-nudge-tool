@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Pencil, Upload } from "lucide-react";
+import { Pencil, Upload, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import ImageCropDialog from "./ImageCropDialog";
 
@@ -13,7 +13,7 @@ interface EditProfileDialogProps {
   currentBio: string;
   currentVehicle: string;
   currentProfilePicture: string | null;
-  onSave: (name: string, bio: string, vehicle: string, profilePicture: File | null) => void;
+  onSave: (name: string, bio: string, vehicle: string, profilePicture: File | null, removeProfilePicture?: boolean) => void;
 }
 
 const EditProfileDialog = ({ currentName, currentBio, currentVehicle, currentProfilePicture, onSave }: EditProfileDialogProps) => {
@@ -44,8 +44,14 @@ const EditProfileDialog = ({ currentName, currentBio, currentVehicle, currentPro
     setTempImageUrl(null);
   };
 
+  const handleRemoveImage = () => {
+    setProfilePicture(null);
+    setPreviewUrl(null);
+  };
+
   const handleSave = () => {
-    onSave(name, bio, vehicle, profilePicture);
+    const removeProfilePicture = currentProfilePicture && !previewUrl && !profilePicture;
+    onSave(name, bio, vehicle, profilePicture, removeProfilePicture);
     setOpen(false);
   };
   
@@ -73,12 +79,25 @@ const EditProfileDialog = ({ currentName, currentBio, currentVehicle, currentPro
           <div className="space-y-2">
             <Label>תמונת פרופיל</Label>
             <div className="flex items-center gap-4">
-              <Avatar className="h-20 w-20">
-                {previewUrl && <AvatarImage src={previewUrl} />}
-                <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
-                  {getInitials(name)}
-                </AvatarFallback>
-              </Avatar>
+              <div className="relative">
+                <Avatar className="h-20 w-20">
+                  {previewUrl && <AvatarImage src={previewUrl} />}
+                  <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
+                    {getInitials(name)}
+                  </AvatarFallback>
+                </Avatar>
+                {previewUrl && (
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+                    onClick={handleRemoveImage}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
               <div className="flex-1">
                 <Input
                   type="file"
