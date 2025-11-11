@@ -6,26 +6,20 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Bell, Lock, Eye, Globe, Trash2, LogOut } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useState } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Settings = () => {
-  const [language, setLanguage] = useState("he");
-
-  const languageNames: Record<string, string> = {
-    he: "עברית",
-    en: "English",
-    ar: "العربية",
-  };
+  const { language, setLanguage, t, dir } = useLanguage();
 
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
+    <div className="min-h-screen bg-background" dir={dir}>
       <Header />
       
       <main className="container max-w-4xl py-6 px-4">
         <div className="space-y-6">
           <div>
-            <h1 className="text-3xl font-bold mb-2">הגדרות</h1>
-            <p className="text-muted-foreground">נהל את החשבון וההעדפות שלך</p>
+            <h1 className="text-3xl font-bold mb-2">{t("settings.title")}</h1>
+            <p className="text-muted-foreground">{t("settings.subtitle")}</p>
           </div>
 
           {/* Notifications Settings */}
@@ -33,38 +27,38 @@ const Settings = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Bell className="h-5 w-5" />
-                התראות
+                {t("settings.notifications")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="post-notifications">התראות על פוסטים חדשים</Label>
-                  <p className="text-sm text-muted-foreground">קבל התראות כשמישהו מפרסם בקבוצות שלך</p>
+                  <Label htmlFor="post-notifications">{t("settings.postNotifications")}</Label>
+                  <p className="text-sm text-muted-foreground">{t("settings.postNotificationsDesc")}</p>
                 </div>
                 <Switch id="post-notifications" defaultChecked />
               </div>
               <Separator />
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="comment-notifications">התראות על תגובות</Label>
-                  <p className="text-sm text-muted-foreground">קבל התראות כשמישהו מגיב לפוסטים שלך</p>
+                  <Label htmlFor="comment-notifications">{t("settings.commentNotifications")}</Label>
+                  <p className="text-sm text-muted-foreground">{t("settings.commentNotificationsDesc")}</p>
                 </div>
                 <Switch id="comment-notifications" defaultChecked />
               </div>
               <Separator />
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="event-notifications">התראות על אירועים</Label>
-                  <p className="text-sm text-muted-foreground">קבל התראות על אירועים מעניינים באזורך</p>
+                  <Label htmlFor="event-notifications">{t("settings.eventNotifications")}</Label>
+                  <p className="text-sm text-muted-foreground">{t("settings.eventNotificationsDesc")}</p>
                 </div>
                 <Switch id="event-notifications" defaultChecked />
               </div>
               <Separator />
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="email-notifications">התראות במייל</Label>
-                  <p className="text-sm text-muted-foreground">קבל עדכונים חשובים במייל</p>
+                  <Label htmlFor="email-notifications">{t("settings.emailNotifications")}</Label>
+                  <p className="text-sm text-muted-foreground">{t("settings.emailNotificationsDesc")}</p>
                 </div>
                 <Switch id="email-notifications" />
               </div>
@@ -76,30 +70,30 @@ const Settings = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Lock className="h-5 w-5" />
-                פרטיות
+                {t("settings.privacy")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="profile-visibility">פרופיל ציבורי</Label>
-                  <p className="text-sm text-muted-foreground">אפשר לכולם לראות את הפרופיל שלך</p>
+                  <Label htmlFor="profile-visibility">{t("settings.profileVisibility")}</Label>
+                  <p className="text-sm text-muted-foreground">{t("settings.profileVisibilityDesc")}</p>
                 </div>
                 <Switch id="profile-visibility" defaultChecked />
               </div>
               <Separator />
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="show-posts">הצג פוסטים בפרופיל</Label>
-                  <p className="text-sm text-muted-foreground">אפשר לאחרים לראות את הפוסטים שלך</p>
+                  <Label htmlFor="show-posts">{t("settings.showPosts")}</Label>
+                  <p className="text-sm text-muted-foreground">{t("settings.showPostsDesc")}</p>
                 </div>
                 <Switch id="show-posts" defaultChecked />
               </div>
               <Separator />
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="show-groups">הצג קבוצות בפרופיל</Label>
-                  <p className="text-sm text-muted-foreground">אפשר לאחרים לראות באילו קבוצות אתה חבר</p>
+                  <Label htmlFor="show-groups">{t("settings.showGroups")}</Label>
+                  <p className="text-sm text-muted-foreground">{t("settings.showGroupsDesc")}</p>
                 </div>
                 <Switch id="show-groups" defaultChecked />
               </div>
@@ -111,14 +105,14 @@ const Settings = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Globe className="h-5 w-5" />
-                שפה ואזור
+                {t("settings.language")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5 flex-1">
-                  <Label>שפה</Label>
-                  <p className="text-sm text-muted-foreground">בחר את שפת הממשק</p>
+                  <Label>{t("settings.languageLabel")}</Label>
+                  <p className="text-sm text-muted-foreground">{t("settings.languageDesc")}</p>
                 </div>
                 <Select value={language} onValueChange={setLanguage}>
                   <SelectTrigger className="w-[180px]">
@@ -134,10 +128,10 @@ const Settings = () => {
               <Separator />
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label>אזור</Label>
-                  <p className="text-sm text-muted-foreground">ישראל</p>
+                  <Label>{t("settings.region")}</Label>
+                  <p className="text-sm text-muted-foreground">{t("settings.regionValue")}</p>
                 </div>
-                <Button variant="outline" size="sm">שנה</Button>
+                <Button variant="outline" size="sm">{t("settings.change")}</Button>
               </div>
             </CardContent>
           </Card>
@@ -147,37 +141,37 @@ const Settings = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Eye className="h-5 w-5" />
-                חשבון
+                {t("settings.account")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label>שנה סיסמה</Label>
-                  <p className="text-sm text-muted-foreground">עדכן את הסיסמה שלך</p>
+                  <Label>{t("settings.changePassword")}</Label>
+                  <p className="text-sm text-muted-foreground">{t("settings.changePasswordDesc")}</p>
                 </div>
-                <Button variant="outline" size="sm">שנה</Button>
+                <Button variant="outline" size="sm">{t("settings.change")}</Button>
               </div>
               <Separator />
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label className="text-destructive">מחק חשבון</Label>
-                  <p className="text-sm text-muted-foreground">פעולה זו לא ניתנת לביטול</p>
+                  <Label className="text-destructive">{t("settings.deleteAccount")}</Label>
+                  <p className="text-sm text-muted-foreground">{t("settings.deleteAccountDesc")}</p>
                 </div>
                 <Button variant="destructive" size="sm">
-                  <Trash2 className="h-4 w-4 ml-2" />
-                  מחק
+                  <Trash2 className={`h-4 w-4 ${dir === 'rtl' ? 'ml-2' : 'mr-2'}`} />
+                  {t("settings.delete")}
                 </Button>
               </div>
               <Separator />
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label>התנתק</Label>
-                  <p className="text-sm text-muted-foreground">התנתק מהחשבון שלך</p>
+                  <Label>{t("settings.logout")}</Label>
+                  <p className="text-sm text-muted-foreground">{t("settings.logoutDesc")}</p>
                 </div>
                 <Button variant="outline" size="sm">
-                  <LogOut className="h-4 w-4 ml-2" />
-                  התנתק
+                  <LogOut className={`h-4 w-4 ${dir === 'rtl' ? 'ml-2' : 'mr-2'}`} />
+                  {t("settings.logout")}
                 </Button>
               </div>
             </CardContent>

@@ -3,11 +3,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Header = () => {
+  const { t, dir } = useLanguage();
+  
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
-      <div className="container flex h-16 items-center justify-between px-4">
+      <div className="container flex h-16 items-center justify-between px-4" dir={dir}>
         <div className="flex items-center gap-6">
           <Link to="/" className="flex items-center gap-2">
             <div className="rounded-lg bg-primary p-2">
@@ -18,16 +21,16 @@ const Header = () => {
           
           <nav className="hidden md:flex items-center gap-6">
             <Link to="/" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
-              פיד
+              {t("header.feed")}
             </Link>
             <Link to="/groups" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
-              קבוצות
+              {t("header.groups")}
             </Link>
             <Link to="/services" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
-              שירותים
+              {t("header.services")}
             </Link>
             <Link to="/events" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
-              אירועים
+              {t("header.events")}
             </Link>
           </nav>
         </div>
@@ -35,10 +38,10 @@ const Header = () => {
         <div className="flex items-center gap-3">
           <div className="hidden sm:flex items-center gap-2 max-w-sm">
             <div className="relative flex-1">
-              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className={`absolute ${dir === 'rtl' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground`} />
               <Input 
-                placeholder="חיפוש..." 
-                className="pr-10 bg-muted/50"
+                placeholder={t("header.search")}
+                className={dir === 'rtl' ? 'pr-10 bg-muted/50' : 'pl-10 bg-muted/50'}
               />
             </div>
           </div>
