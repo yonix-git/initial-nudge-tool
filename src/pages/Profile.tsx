@@ -1,7 +1,7 @@
 import Header from "@/components/Header";
 import CreatePost from "@/components/CreatePost";
 import Post from "@/components/Post";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Settings as SettingsIcon } from "lucide-react";
@@ -43,20 +43,47 @@ const Profile = () => {
     }
   }, [user, authLoading]);
 
-  const handleSaveProfile = async (name: string, bio: string, vehicle: string) => {
+  const handleSaveProfile = async (name: string, bio: string, vehicle: string, profilePicture: File | null) => {
     if (!user) return;
+
+    let profilePictureUrl = profile?.profile_picture_url;
+
+    // Upload profile picture if provided
+    if (profilePicture) {
+      const fileExt = profilePicture.name.split('.').pop();
+      const fileName = `${user.id}/avatar.${fileExt}`;
+      
+      // Delete old file if exists
+      if (profile?.profile_picture_url) {
+        await supabase.storage
+          .from('avatars')
+          .remove([`${user.id}/avatar.${profile.profile_picture_url.split('.').pop()}`]);
+      }
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, profilePicture, { upsert: true });
+
+      if (!uploadError) {
+        const { data } = supabase.storage
+          .from('avatars')
+          .getPublicUrl(fileName);
+        profilePictureUrl = data.publicUrl;
+      }
+    }
 
     const { error } = await supabase
       .from("profiles")
       .update({ 
         full_name: name,
         bio: bio,
-        vehicle_type: vehicle
+        vehicle_type: vehicle,
+        profile_picture_url: profilePictureUrl
       })
       .eq("id", user.id);
 
     if (!error) {
-      setProfile({ ...profile, full_name: name, bio: bio, vehicle_type: vehicle });
+      setProfile({ ...profile, full_name: name, bio: bio, vehicle_type: vehicle, profile_picture_url: profilePictureUrl });
     }
   };
 
@@ -121,6 +148,9 @@ const Profile = () => {
             <CardContent className="pt-6">
               <div className="flex items-start gap-4">
                 <Avatar className="h-20 w-20">
+                  {profile?.profile_picture_url && (
+                    <AvatarImage src={profile.profile_picture_url} alt="Profile" />
+                  )}
                   <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
                     {getInitials(profile?.full_name || profile?.username || "")}
                   </AvatarFallback>
@@ -136,6 +166,7 @@ const Profile = () => {
                         currentName={profile?.full_name || profile?.username || ""}
                         currentBio={profile?.bio || ""}
                         currentVehicle={profile?.vehicle_type || ""}
+                        currentProfilePicture={profile?.profile_picture_url || null}
                         onSave={handleSaveProfile}
                       />
                       <Link to="/settings">
