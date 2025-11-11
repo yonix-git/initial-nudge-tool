@@ -136,7 +136,7 @@ const Profile = () => {
                       </Link>
                     </div>
                   </div>
-                  <p className="text-muted-foreground mt-1">{profile?.bio || "אין תיאור"}</p>
+                  <p className="text-muted-foreground mt-1 whitespace-pre-wrap">{profile?.bio || "אין תיאור"}</p>
                   <div className="flex gap-6 mt-3 text-sm">
                     <div>
                       <span className="font-semibold">24</span>
