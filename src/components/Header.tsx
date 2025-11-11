@@ -1,17 +1,35 @@
-import { Car, Search, Bell, User, MessageCircle, LogOut } from "lucide-react";
+import { Car, Search, Bell, MessageCircle, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Header = () => {
   const { t, dir } = useLanguage();
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [profile, setProfile] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (user) {
+        const { data } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+        if (data) setProfile(data);
+      }
+    };
+    fetchProfile();
+  }, [user]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -19,6 +37,13 @@ const Header = () => {
       title: "התנתקת בהצלחה",
     });
     navigate("/auth");
+  };
+
+  const getInitials = (name: string) => {
+    if (!name) return "U";
+    const words = name.trim().split(/\s+/);
+    if (words.length === 1) return words[0].charAt(0).toUpperCase();
+    return words.slice(0, 2).map(word => word.charAt(0).toUpperCase()).join("");
   };
   
   return (
@@ -80,9 +105,14 @@ const Header = () => {
           {user ? (
             <>
               <Link to="/profile">
-                <Button variant="ghost" size="icon">
-                  <User className="h-5 w-5" />
-                </Button>
+                <Avatar className="h-9 w-9 cursor-pointer hover:opacity-80 transition-opacity">
+                  {profile?.profile_picture_url && (
+                    <AvatarImage src={profile.profile_picture_url} />
+                  )}
+                  <AvatarFallback className="bg-primary text-primary-foreground">
+                    {getInitials(profile?.full_name || profile?.username || "")}
+                  </AvatarFallback>
+                </Avatar>
               </Link>
               <Button variant="ghost" size="icon" onClick={handleSignOut}>
                 <LogOut className="h-5 w-5" />
