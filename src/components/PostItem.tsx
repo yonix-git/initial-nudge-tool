@@ -56,6 +56,8 @@ const PostItem = ({
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(likesCount);
   const [showComments, setShowComments] = useState(false);
+  const [comments, setComments] = useState<any[]>([]);
+  const [newComment, setNewComment] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(content);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -75,13 +77,112 @@ const PostItem = ({
     fetchProfile();
   }, [userId]);
 
-  const handleLike = () => {
-    if (isLiked) {
-      setLikeCount(likeCount - 1);
-      setIsLiked(false);
-    } else {
-      setLikeCount(likeCount + 1);
-      setIsLiked(true);
+  useEffect(() => {
+    const checkIfLiked = async () => {
+      if (!user) return;
+      const { data } = await supabase
+        .from("likes")
+        .select("id")
+        .eq("post_id", id)
+        .eq("user_id", user.id)
+        .maybeSingle();
+      setIsLiked(!!data);
+    };
+    checkIfLiked();
+  }, [id, user]);
+
+  useEffect(() => {
+    const fetchComments = async () => {
+      const { data } = await supabase
+        .from("comments")
+        .select(`
+          *,
+          profiles:user_id (
+            full_name,
+            username,
+            profile_picture_url
+          )
+        `)
+        .eq("post_id", id)
+        .order("created_at", { ascending: true });
+      if (data) setComments(data);
+    };
+    if (showComments) {
+      fetchComments();
+    }
+  }, [id, showComments]);
+
+  const handleLike = async () => {
+    if (!user) {
+      toast.error("יש להתחבר כדי לתת לייק");
+      return;
+    }
+
+    try {
+      if (isLiked) {
+        const { error } = await supabase
+          .from("likes")
+          .delete()
+          .eq("post_id", id)
+          .eq("user_id", user.id);
+        
+        if (error) throw error;
+        setIsLiked(false);
+        setLikeCount(prev => Math.max(0, prev - 1));
+      } else {
+        const { error } = await supabase
+          .from("likes")
+          .insert({ post_id: id, user_id: user.id });
+        
+        if (error) throw error;
+        setIsLiked(true);
+        setLikeCount(prev => prev + 1);
+      }
+    } catch (error) {
+      console.error("Error toggling like:", error);
+      toast.error("שגיאה בעדכון הלייק");
+    }
+  };
+
+  const handleAddComment = async () => {
+    if (!user) {
+      toast.error("יש להתחבר כדי להגיב");
+      return;
+    }
+
+    if (!newComment.trim()) return;
+
+    try {
+      const { error } = await supabase
+        .from("comments")
+        .insert({
+          post_id: id,
+          user_id: user.id,
+          content: newComment.trim()
+        });
+
+      if (error) throw error;
+
+      setNewComment("");
+      // Refresh comments
+      const { data } = await supabase
+        .from("comments")
+        .select(`
+          *,
+          profiles:user_id (
+            full_name,
+            username,
+            profile_picture_url
+          )
+        `)
+        .eq("post_id", id)
+        .order("created_at", { ascending: true });
+      if (data) setComments(data);
+      
+      toast.success("התגובה נוספה בהצלחה!");
+    } catch (error) {
+      console.error("Error adding comment:", error);
+      toast.error("שגיאה בהוספת התגובה");
     }
   };
 
@@ -256,9 +357,58 @@ const PostItem = ({
       
       {showComments && (
         <div className="pb-2 space-y-3 border-t border-border/20 pt-3 mt-3">
-          <div className="text-sm text-muted-foreground">
-            אין תגובות עדיין. היה הראשון להגיב!
-          </div>
+          {user && (
+            <div className="flex gap-2">
+              <Textarea
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder="הוסף תגובה..."
+                className="min-h-[60px]"
+              />
+              <Button 
+                size="sm"
+                onClick={handleAddComment}
+                disabled={!newComment.trim()}
+              >
+                שלח
+              </Button>
+            </div>
+          )}
+          
+          {comments.length === 0 ? (
+            <div className="text-sm text-muted-foreground">
+              {user ? "היה הראשון להגיב!" : "אין תגובות עדיין"}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {comments.map((comment: any) => (
+                <div key={comment.id} className="flex gap-2">
+                  <Avatar className="h-8 w-8">
+                    {comment.profiles?.profile_picture_url && (
+                      <AvatarImage src={comment.profiles.profile_picture_url} />
+                    )}
+                    <AvatarFallback className="bg-primary/10 text-xs">
+                      {getInitials(comment.profiles?.full_name || comment.profiles?.username || "")}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 bg-muted/50 rounded-lg p-2">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-semibold text-xs">
+                        {comment.profiles?.full_name || comment.profiles?.username || "משתמש"}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {formatDistanceToNow(new Date(comment.created_at), { 
+                          addSuffix: true, 
+                          locale: he 
+                        })}
+                      </span>
+                    </div>
+                    <p className="text-sm whitespace-pre-wrap">{comment.content}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
