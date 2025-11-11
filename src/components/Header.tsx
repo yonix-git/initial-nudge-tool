@@ -1,26 +1,27 @@
 import { Car, Search, Bell, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Link } from "react-router-dom";
 
 const Header = () => {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
       <div className="container flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2">
             <div className="rounded-lg bg-primary p-2">
               <Car className="h-5 w-5 text-primary-foreground" />
             </div>
             <span className="text-xl font-bold">MotorHub</span>
-          </div>
+          </Link>
           
           <nav className="hidden md:flex items-center gap-6">
-            <a href="#" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
+            <Link to="/" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
               פיד
-            </a>
-            <a href="#" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+            </Link>
+            <Link to="/groups" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
               קבוצות
-            </a>
+            </Link>
             <a href="#" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
               שירותים
             </a>
@@ -45,9 +46,11 @@ const Header = () => {
             <Bell className="h-5 w-5" />
           </Button>
           
-          <Button variant="ghost" size="icon">
-            <User className="h-5 w-5" />
-          </Button>
+          <Link to="/profile">
+            <Button variant="ghost" size="icon">
+              <User className="h-5 w-5" />
+            </Button>
+          </Link>
         </div>
       </div>
     </header>
