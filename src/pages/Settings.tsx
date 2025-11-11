@@ -4,12 +4,76 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Bell, Lock, Eye, Globe, Trash2, LogOut } from "lucide-react";
+import { Bell, Lock, Eye, Globe, Trash2, LogOut, Building2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Settings = () => {
   const { language, setLanguage, t, dir } = useLanguage();
+  const { user, signOut } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [accountType, setAccountType] = useState<"private" | "business" | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!user) return;
+      
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("account_type")
+        .eq("id", user.id)
+        .single();
+
+      if (!error && data) {
+        setAccountType(data.account_type);
+      }
+    };
+
+    fetchProfile();
+  }, [user]);
+
+  const handleUpgradeToBusinessAccount = async () => {
+    if (!user || accountType !== "private") return;
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ account_type: "business" })
+        .eq("id", user.id);
+
+      if (error) throw error;
+
+      setAccountType("business");
+      toast({
+        title: "החשבון שודרג בהצלחה!",
+        description: "החשבון שלך כעת הוא חשבון עסקי",
+      });
+    } catch (error: any) {
+      toast({
+        title: "שגיאה בשדרוג החשבון",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    await signOut();
+    toast({
+      title: "התנתקת בהצלחה",
+    });
+    navigate("/auth");
+  };
 
   return (
     <div className="min-h-screen bg-background" dir={dir}>
@@ -145,6 +209,35 @@ const Settings = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {accountType === "private" && (
+                <>
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label className="flex items-center gap-2">
+                        <Building2 className="h-4 w-4" />
+                        שדרוג לחשבון עסקי
+                      </Label>
+                      <p className="text-sm text-muted-foreground">קבל גישה לכלים עסקיים ופרופיל מקצועי</p>
+                    </div>
+                    <Button variant="default" size="sm" onClick={handleUpgradeToBusinessAccount} disabled={loading}>
+                      {loading ? "משדרג..." : "שדרג עכשיו"}
+                    </Button>
+                  </div>
+                  <Separator />
+                </>
+              )}
+              {accountType === "business" && (
+                <>
+                  <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Building2 className="h-5 w-5 text-primary" />
+                      <Label className="text-primary font-semibold">חשבון עסקי פעיל</Label>
+                    </div>
+                    <p className="text-sm text-muted-foreground">החשבון שלך כעת הוא חשבון עסקי עם גישה מלאה לכלים מקצועיים</p>
+                  </div>
+                  <Separator />
+                </>
+              )}
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label>{t("settings.changePassword")}</Label>
@@ -169,7 +262,7 @@ const Settings = () => {
                   <Label>{t("settings.logout")}</Label>
                   <p className="text-sm text-muted-foreground">{t("settings.logoutDesc")}</p>
                 </div>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={handleLogout}>
                   <LogOut className={`h-4 w-4 ${dir === 'rtl' ? 'ml-2' : 'mr-2'}`} />
                   {t("settings.logout")}
                 </Button>
