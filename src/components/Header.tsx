@@ -23,9 +23,9 @@ const Header = () => {
             <Link to="/groups" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
               קבוצות
             </Link>
-            <a href="#" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+            <Link to="/services" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
               שירותים
-            </a>
+            </Link>
             <a href="#" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
               אירועים
             </a>
