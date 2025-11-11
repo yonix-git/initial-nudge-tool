@@ -1,5 +1,4 @@
 import Header from "@/components/Header";
-import CreatePost from "@/components/CreatePost";
 import Post from "@/components/Post";
 
 const Index = () => {
@@ -34,14 +33,10 @@ const Index = () => {
       <Header />
       
       <main className="container max-w-2xl py-6 px-4">
-        <div className="space-y-6">
-          <CreatePost />
-          
-          <div className="space-y-4">
-            {mockPosts.map((post, index) => (
-              <Post key={index} {...post} />
-            ))}
-          </div>
+        <div className="space-y-4">
+          {mockPosts.map((post, index) => (
+            <Post key={index} {...post} />
+          ))}
         </div>
       </main>
     </div>
