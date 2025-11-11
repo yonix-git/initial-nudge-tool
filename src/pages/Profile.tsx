@@ -6,19 +6,84 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Settings as SettingsIcon } from "lucide-react";
 import EditProfileDialog from "@/components/EditProfileDialog";
-import { Link } from "react-router-dom";
-import { useState } from "react";
+import { Link, Navigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Profile = () => {
-  const [userName, setUserName] = useState("משתמש דוגמא");
-  const [userBio, setUserBio] = useState("חובב רכבים יפניים • מאזדה 3 2019");
+  const { user, loading: authLoading } = useAuth();
+  const [profile, setProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const { t, dir } = useLanguage();
 
-  const handleSaveProfile = (name: string, bio: string) => {
-    setUserName(name);
-    setUserBio(bio);
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      if (data) {
+        setProfile(data);
+      }
+      setLoading(false);
+    };
+
+    if (!authLoading) {
+      fetchProfile();
+    }
+  }, [user, authLoading]);
+
+  const handleSaveProfile = async (name: string, bio: string) => {
+    if (!user) return;
+
+    const { error } = await supabase
+      .from("profiles")
+      .update({ 
+        full_name: name,
+        bio: bio 
+      })
+      .eq("id", user.id);
+
+    if (!error) {
+      setProfile({ ...profile, full_name: name, bio: bio });
+    }
   };
+
+  if (authLoading || loading) {
+    return (
+      <div className="min-h-screen bg-background" dir={dir}>
+        <Header />
+        <main className="container max-w-2xl py-6 px-4">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-start gap-4">
+                <Skeleton className="h-20 w-20 rounded-full" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-8 w-48" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-32" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </main>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
 
   const userPosts = [
     {
@@ -54,11 +119,11 @@ const Profile = () => {
                 </Avatar>
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-2">
-                    <h1 className="text-2xl font-bold">{userName}</h1>
+                    <h1 className="text-2xl font-bold">{profile?.full_name || profile?.username || "משתמש"}</h1>
                     <div className="flex gap-2">
                       <EditProfileDialog 
-                        currentName={userName}
-                        currentBio={userBio}
+                        currentName={profile?.full_name || profile?.username || ""}
+                        currentBio={profile?.bio || ""}
                         onSave={handleSaveProfile}
                       />
                       <Link to="/settings">
@@ -68,7 +133,7 @@ const Profile = () => {
                       </Link>
                     </div>
                   </div>
-                  <p className="text-muted-foreground mt-1">{userBio}</p>
+                  <p className="text-muted-foreground mt-1">{profile?.bio || "אין תיאור"}</p>
                   <div className="flex gap-6 mt-3 text-sm">
                     <div>
                       <span className="font-semibold">24</span>
