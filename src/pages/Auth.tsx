@@ -69,11 +69,47 @@ const Auth = () => {
     }
   };
 
+  const validatePassword = (password: string): { valid: boolean; message?: string } => {
+    const commonPasswords = ["password", "123456", "12345678", "qwerty", "abc123", "password123"];
+    
+    if (password.length < 8) {
+      return { valid: false, message: "הסיסמה חייבת להכיל לפחות 8 תווים" };
+    }
+    
+    if (!/[A-Z]/.test(password)) {
+      return { valid: false, message: "הסיסמה חייבת להכיל לפחות אות גדולה אחת באנגלית" };
+    }
+    
+    if (!/[a-z]/.test(password)) {
+      return { valid: false, message: "הסיסמה חייבת להכיל לפחות אות קטנה אחת באנגלית" };
+    }
+    
+    if (!/[0-9]/.test(password)) {
+      return { valid: false, message: "הסיסמה חייבת להכיל לפחות מספר אחד" };
+    }
+    
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+      return { valid: false, message: "הסיסמה חייבת להכיל לפחות תו מיוחד אחד (!@#$%^&* וכו')" };
+    }
+    
+    if (commonPasswords.includes(password.toLowerCase())) {
+      return { valid: false, message: "הסיסמה שבחרת נפוצה מדי, אנא בחר סיסמה אחרת" };
+    }
+    
+    return { valid: true };
+  };
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      // Validate password before attempting signup
+      const passwordValidation = validatePassword(password);
+      if (!passwordValidation.valid) {
+        throw new Error(passwordValidation.message);
+      }
+
       const { error } = await supabase.auth.signUp({
         email,
         password,
