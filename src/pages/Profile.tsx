@@ -119,7 +119,10 @@ const Profile = () => {
                 </Avatar>
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-2">
-                    <h1 className="text-2xl font-bold">{profile?.full_name || profile?.username || "משתמש"}</h1>
+                    <div>
+                      <h1 className="text-2xl font-bold">{profile?.full_name || profile?.username || "משתמש"}</h1>
+                      {profile?.username && <p className="text-sm text-muted-foreground">@{profile.username}</p>}
+                    </div>
                     <div className="flex gap-2">
                       <EditProfileDialog 
                         currentName={profile?.full_name || profile?.username || ""}
