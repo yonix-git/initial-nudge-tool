@@ -1,6 +1,6 @@
 import Header from "@/components/Header";
 import CreatePost from "@/components/CreatePost";
-import Post from "@/components/Post";
+import PostItem from "@/components/PostItem";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,8 +16,23 @@ import { Skeleton } from "@/components/ui/skeleton";
 const Profile = () => {
   const { user, loading: authLoading } = useAuth();
   const [profile, setProfile] = useState<any>(null);
+  const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { t, dir } = useLanguage();
+
+  const fetchPosts = async () => {
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from("posts")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+
+    if (data) {
+      setPosts(data);
+    }
+  };
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -35,6 +50,8 @@ const Profile = () => {
       if (data) {
         setProfile(data);
       }
+      
+      await fetchPosts();
       setLoading(false);
     };
 
@@ -133,23 +150,6 @@ const Profile = () => {
     return words.slice(0, 2).map(word => word.charAt(0).toUpperCase()).join("");
   };
 
-  const userPosts = [
-    {
-      author: "אתה",
-      timeAgo: "לפני שעה",
-      content: "סיימתי היום שדרוג של מערכת הבלמים ברכב! מרגיש הרבה יותר בטוח בכביש 🚗",
-      likes: 12,
-      comments: 3,
-    },
-    {
-      author: "אתה",
-      timeAgo: "לפני 3 ימים",
-      content: "מחפש המלצות לשמן מנוע איכותי למאזדה 3. מה אתם ממליצים?",
-      likes: 8,
-      comments: 15,
-    },
-  ];
-
   return (
     <div className="min-h-screen bg-background" dir={dir}>
       <Header />
@@ -195,7 +195,7 @@ const Profile = () => {
                   )}
                   <div className="flex gap-6 mt-3 text-sm">
                     <div>
-                      <span className="font-semibold">24</span>
+                      <span className="font-semibold">{posts.length}</span>
                       <span className="text-muted-foreground mr-1">פוסטים</span>
                     </div>
                     <div>
@@ -213,14 +213,33 @@ const Profile = () => {
           </Card>
 
           {/* Create Post */}
-          <CreatePost />
+          <CreatePost onPostCreated={fetchPosts} />
           
           {/* User Posts */}
           <div className="space-y-4">
             <h2 className="text-xl font-semibold">הפוסטים שלי</h2>
-            {userPosts.map((post, index) => (
-              <Post key={index} {...post} />
-            ))}
+            {posts.length === 0 ? (
+              <Card>
+                <CardContent className="pt-6 text-center text-muted-foreground">
+                  עדיין לא פרסמת פוסטים. צור את הפוסט הראשון שלך!
+                </CardContent>
+              </Card>
+            ) : (
+              posts.map((post) => (
+                <PostItem 
+                  key={post.id}
+                  id={post.id}
+                  userId={post.user_id}
+                  content={post.content}
+                  imageUrl={post.image_url}
+                  likesCount={post.likes_count}
+                  commentsCount={post.comments_count}
+                  createdAt={post.created_at}
+                  onDelete={fetchPosts}
+                  onUpdate={fetchPosts}
+                />
+              ))
+            )}
           </div>
         </div>
       </main>
