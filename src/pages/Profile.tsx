@@ -4,9 +4,20 @@ import Post from "@/components/Post";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Settings } from "lucide-react";
+import { Settings as SettingsIcon } from "lucide-react";
+import EditProfileDialog from "@/components/EditProfileDialog";
+import { Link } from "react-router-dom";
+import { useState } from "react";
 
 const Profile = () => {
+  const [userName, setUserName] = useState("משתמש דוגמא");
+  const [userBio, setUserBio] = useState("חובב רכבים יפניים • מאזדה 3 2019");
+
+  const handleSaveProfile = (name: string, bio: string) => {
+    setUserName(name);
+    setUserBio(bio);
+  };
+
   const userPosts = [
     {
       author: "אתה",
@@ -40,14 +51,22 @@ const Profile = () => {
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-bold">משתמש דוגמא</h1>
-                    <Button variant="outline" size="sm" className="gap-2">
-                      <Settings className="h-4 w-4" />
-                      ערוך פרופיל
-                    </Button>
+                  <div className="flex items-center justify-between mb-2">
+                    <h1 className="text-2xl font-bold">{userName}</h1>
+                    <div className="flex gap-2">
+                      <EditProfileDialog 
+                        currentName={userName}
+                        currentBio={userBio}
+                        onSave={handleSaveProfile}
+                      />
+                      <Link to="/settings">
+                        <Button variant="outline" size="sm">
+                          <SettingsIcon className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
-                  <p className="text-muted-foreground mt-1">חובב רכבים יפניים • מאזדה 3 2019</p>
+                  <p className="text-muted-foreground mt-1">{userBio}</p>
                   <div className="flex gap-6 mt-3 text-sm">
                     <div>
                       <span className="font-semibold">24</span>
