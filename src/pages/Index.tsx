@@ -26,6 +26,51 @@ const Index = () => {
       likes: 87,
       comments: 23,
     },
+    {
+      author: "מיכל רוזנברג",
+      timeAgo: "לפני 12 שעות",
+      content: "חדש במשפחה! קניתי סוף סוף את ה-BMW M3 שחלמתי עליו 😍 מי רוצה לצאת לסיבוב?",
+      image: "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&q=80",
+      likes: 156,
+      comments: 34,
+    },
+    {
+      author: "אלון דהן",
+      timeAgo: "לפני יום",
+      content: "שאלה לקהילה: מישהו יודע איזה שמן מנוע הכי מומלץ למאזדה MX-5? שומע המלצות שונות ומבולבל קצת",
+      likes: 23,
+      comments: 18,
+    },
+    {
+      author: "רונית שפירא",
+      timeAgo: "לפני יום",
+      content: "סיימתי היום קורס נהיגה מתקדמת במסלול! כיף מטורף, ממליצה לכולם לנסות 🏎️",
+      image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80",
+      likes: 94,
+      comments: 15,
+    },
+    {
+      author: "גיא מזרחי",
+      timeAgo: "לפני יומיים",
+      content: "מכירים חנות טובה לחלקי חילוף לאופנועי יאמהה באזור המרכז? מחפש חלקים מקוריים",
+      likes: 31,
+      comments: 22,
+    },
+    {
+      author: "נועה ברק",
+      timeAgo: "לפני יומיים",
+      content: "הצטרפתי היום לקבוצת הנסיעה לצפון! מי עוד בא? נראה מדהים 🏍️⛰️",
+      likes: 67,
+      comments: 11,
+    },
+    {
+      author: "עמית כץ",
+      timeAgo: "לפני 3 ימים",
+      content: "חגגתי היום 5 שנים עם הטויוטה סופרה שלי. הרכב הכי אמין שהיה לי אי פעם! 💪",
+      image: "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=800&q=80",
+      likes: 178,
+      comments: 29,
+    },
   ];
 
   return (
@@ -33,7 +78,7 @@ const Index = () => {
       <Header />
       
       <main className="container max-w-2xl py-6 px-4">
-        <div className="space-y-4">
+        <div className="space-y-2">
           {mockPosts.map((post, index) => (
             <Post key={index} {...post} />
           ))}
