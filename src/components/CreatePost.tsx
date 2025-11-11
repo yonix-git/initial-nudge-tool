@@ -82,12 +82,12 @@ const CreatePost = ({ onPostCreated }: { onPostCreated?: () => void }) => {
             />
             <div className="flex items-center justify-between">
               <div className="flex gap-2">
-                <Button variant="ghost" size="sm" className="gap-2" disabled>
-                  <Image className="h-4 w-4" />
+                <Button variant="ghost" size="sm" className="gap-2 cursor-not-allowed" disabled={false}>
+                  <Image className="h-4 w-4 text-foreground" />
                   <span className="text-sm font-semibold text-foreground">תמונה</span>
                 </Button>
-                <Button variant="ghost" size="sm" className="gap-2" disabled>
-                  <Video className="h-4 w-4" />
+                <Button variant="ghost" size="sm" className="gap-2 cursor-not-allowed" disabled={false}>
+                  <Video className="h-4 w-4 text-foreground" />
                   <span className="text-sm font-semibold text-foreground">וידאו</span>
                 </Button>
               </div>
