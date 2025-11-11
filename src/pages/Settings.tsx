@@ -5,8 +5,18 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Bell, Lock, Eye, Globe, Trash2, LogOut } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useState } from "react";
 
 const Settings = () => {
+  const [language, setLanguage] = useState("he");
+
+  const languageNames: Record<string, string> = {
+    he: "עברית",
+    en: "English",
+    ar: "العربية",
+  };
+
   return (
     <div className="min-h-screen bg-background" dir="rtl">
       <Header />
@@ -106,11 +116,20 @@ const Settings = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
+                <div className="space-y-0.5 flex-1">
                   <Label>שפה</Label>
-                  <p className="text-sm text-muted-foreground">עברית (ברירת מחדל)</p>
+                  <p className="text-sm text-muted-foreground">בחר את שפת הממשק</p>
                 </div>
-                <Button variant="outline" size="sm">שנה</Button>
+                <Select value={language} onValueChange={setLanguage}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="he">עברית</SelectItem>
+                    <SelectItem value="en">English</SelectItem>
+                    <SelectItem value="ar">العربية</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <Separator />
               <div className="flex items-center justify-between">
