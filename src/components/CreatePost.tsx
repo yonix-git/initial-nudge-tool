@@ -84,11 +84,11 @@ const CreatePost = ({ onPostCreated }: { onPostCreated?: () => void }) => {
               <div className="flex gap-2">
                 <Button variant="ghost" size="sm" className="gap-2 text-foreground" disabled>
                   <Image className="h-4 w-4" />
-                  <span className="text-xs hidden sm:inline font-medium">תמונה</span>
+                  <span className="text-xs font-medium">תמונה</span>
                 </Button>
                 <Button variant="ghost" size="sm" className="gap-2 text-foreground" disabled>
                   <Video className="h-4 w-4" />
-                  <span className="text-xs hidden sm:inline font-medium">וידאו</span>
+                  <span className="text-xs font-medium">וידאו</span>
                 </Button>
               </div>
               <Button 
