@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Car } from "lucide-react";
+import { z } from "zod";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -22,6 +23,19 @@ const Auth = () => {
   const [fullName, setFullName] = useState("");
   const [username, setUsername] = useState("");
   const [accountType, setAccountType] = useState<"private" | "business">("private");
+  const [loginAttempts, setLoginAttempts] = useState(0);
+  const [isBlocked, setIsBlocked] = useState(false);
+
+  // Schema validation with zod
+  const signupSchema = z.object({
+    email: z.string().trim().email({ message: "אנא הזן כתובת אימייל תקינה" }).max(255),
+    password: z.string().min(8, { message: "הסיסמה חייבת להכיל לפחות 8 תווים" })
+      .regex(/[A-Z]/, { message: "הסיסמה חייבת להכיל לפחות אות גדולה אחת באנגלית" })
+      .regex(/[a-z]/, { message: "הסיסמה חייבת להכיל לפחות אות קטנה אחת באנגלית" }),
+    fullName: z.string().trim().min(2, { message: "שם מלא חייב להכיל לפחות 2 תווים" }).max(100),
+    username: z.string().trim().min(3, { message: "שם משתמש חייב להכיל לפחות 3 תווים" }).max(50)
+      .regex(/^[a-zA-Z0-9_]+$/, { message: "שם משתמש יכול להכיל רק אותיות באנגלית, מספרים וקו תחתון" }),
+  });
 
   useEffect(() => {
     // Check if user is already logged in
@@ -45,6 +59,17 @@ const Auth = () => {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Rate limiting - block after 5 failed attempts
+    if (isBlocked) {
+      toast({
+        title: "חשבון חסום זמנית",
+        description: "יותר מדי ניסיונות התחברות כושלים. אנא נסה שוב בעוד דקה.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -53,7 +78,23 @@ const Auth = () => {
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        setLoginAttempts(prev => prev + 1);
+        
+        if (loginAttempts >= 4) {
+          setIsBlocked(true);
+          setTimeout(() => {
+            setIsBlocked(false);
+            setLoginAttempts(0);
+          }, 60000); // Unblock after 1 minute
+        }
+        
+        throw error;
+      }
+
+      // Reset on successful login
+      setLoginAttempts(0);
+      setIsBlocked(false);
 
       toast({
         title: "התחברת בהצלחה!",
@@ -69,55 +110,38 @@ const Auth = () => {
     }
   };
 
-  const validatePassword = (password: string): { valid: boolean; message?: string } => {
-    const commonPasswords = ["password", "123456", "12345678", "qwerty", "abc123", "password123"];
-    
-    if (password.length < 8) {
-      return { valid: false, message: "הסיסמה חייבת להכיל לפחות 8 תווים" };
-    }
-    
-    if (!/[A-Z]/.test(password)) {
-      return { valid: false, message: "הסיסמה חייבת להכיל לפחות אות גדולה אחת באנגלית" };
-    }
-    
-    if (!/[a-z]/.test(password)) {
-      return { valid: false, message: "הסיסמה חייבת להכיל לפחות אות קטנה אחת באנגלית" };
-    }
-    
-    if (!/[0-9]/.test(password)) {
-      return { valid: false, message: "הסיסמה חייבת להכיל לפחות מספר אחד" };
-    }
-    
-    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
-      return { valid: false, message: "הסיסמה חייבת להכיל לפחות תו מיוחד אחד (!@#$%^&* וכו')" };
-    }
-    
-    if (commonPasswords.includes(password.toLowerCase())) {
-      return { valid: false, message: "הסיסמה שבחרת נפוצה מדי, אנא בחר סיסמה אחרת" };
-    }
-    
-    return { valid: true };
-  };
-
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // Validate password before attempting signup
-      const passwordValidation = validatePassword(password);
-      if (!passwordValidation.valid) {
-        throw new Error(passwordValidation.message);
+      // Validate all inputs with zod
+      const validationResult = signupSchema.safeParse({
+        email,
+        password,
+        fullName,
+        username,
+      });
+
+      if (!validationResult.success) {
+        const firstError = validationResult.error.errors[0];
+        throw new Error(firstError.message);
+      }
+
+      // Check for common weak passwords
+      const commonPasswords = ["password", "123456", "12345678", "qwerty", "abc123", "password123", "admin123"];
+      if (commonPasswords.includes(password.toLowerCase())) {
+        throw new Error("הסיסמה שבחרת נפוצה מדי, אנא בחר סיסמה אחרת");
       }
 
       const { error } = await supabase.auth.signUp({
-        email,
+        email: email.trim(),
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/`,
           data: {
-            full_name: fullName,
-            username: username,
+            full_name: fullName.trim(),
+            username: username.trim(),
             account_type: accountType,
           },
         },
@@ -127,7 +151,7 @@ const Auth = () => {
 
       toast({
         title: "נרשמת בהצלחה!",
-        description: "ברוך הבא לקהילה שלנו",
+        description: "אנא בדוק את האימייל שלך לאימות החשבון",
       });
     } catch (error: any) {
       toast({
