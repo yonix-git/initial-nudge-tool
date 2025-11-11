@@ -8,10 +8,12 @@ import { Settings as SettingsIcon } from "lucide-react";
 import EditProfileDialog from "@/components/EditProfileDialog";
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Profile = () => {
   const [userName, setUserName] = useState("משתמש דוגמא");
   const [userBio, setUserBio] = useState("חובב רכבים יפניים • מאזדה 3 2019");
+  const { t, dir } = useLanguage();
 
   const handleSaveProfile = (name: string, bio: string) => {
     setUserName(name);
@@ -36,7 +38,7 @@ const Profile = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
+    <div className="min-h-screen bg-background" dir={dir}>
       <Header />
       
       <main className="container max-w-2xl py-6 px-4">

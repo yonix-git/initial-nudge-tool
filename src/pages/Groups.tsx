@@ -2,10 +2,13 @@ import Header from "@/components/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Users } from "lucide-react";
+import { Search, MapPin, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Groups = () => {
+  const { t, dir } = useLanguage();
+  
   const groups = [
     {
       name: "רכבים יפניים",
@@ -46,7 +49,7 @@ const Groups = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
+    <div className="min-h-screen bg-background" dir={dir}>
       <Header />
       
       <main className="container max-w-4xl py-6 px-4">

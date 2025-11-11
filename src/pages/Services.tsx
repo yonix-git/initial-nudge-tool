@@ -5,8 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Search, MapPin, Phone, Star, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Services = () => {
+  const { t, dir } = useLanguage();
+  
   const services = [
     {
       name: "מוסך אבי - מומחים לרכבים יפניים",
@@ -83,7 +86,7 @@ const Services = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
+    <div className="min-h-screen bg-background" dir={dir}>
       <Header />
       
       <main className="container max-w-6xl py-6 px-4">

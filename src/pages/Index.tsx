@@ -1,7 +1,10 @@
 import Header from "@/components/Header";
 import Post from "@/components/Post";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Index = () => {
+  const { dir } = useLanguage();
+  
   const mockPosts = [
     {
       author: "יוסי כהן",
@@ -74,7 +77,7 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
+    <div className="min-h-screen bg-background" dir={dir}>
       <Header />
       
       <main className="container max-w-2xl py-6 px-4 relative z-10">

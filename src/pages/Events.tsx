@@ -5,8 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Search, MapPin, Calendar, Users, Clock, Heart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Events = () => {
+  const { t, dir } = useLanguage();
+  
   const [events, setEvents] = useState([
     {
       id: 1,
@@ -122,7 +125,7 @@ const Events = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
+    <div className="min-h-screen bg-background" dir={dir}>
       <Header />
       
       <main className="container max-w-6xl py-6 px-4">

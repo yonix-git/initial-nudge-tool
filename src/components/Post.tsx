@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useState } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface PostProps {
   author: string;
@@ -17,6 +18,7 @@ const Post = ({ author, timeAgo, content, image, likes, comments }: PostProps) =
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(likes);
   const [showComments, setShowComments] = useState(false);
+  const { dir } = useLanguage();
 
   const handleLike = () => {
     if (isLiked) {
