@@ -1,4 +1,4 @@
-import { Image, Video, MapPin } from "lucide-react";
+import { Image, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -75,7 +75,7 @@ const CreatePost = ({ onPostCreated }: { onPostCreated?: () => void }) => {
           <div className="flex-1">
             <Textarea 
               placeholder="מה חדש ברכב שלך?"
-              className="min-h-[80px] resize-none mb-3"
+              className="min-h-[80px] resize-none mb-3 placeholder:text-foreground/60 placeholder:font-medium"
               value={content}
               onChange={(e) => setContent(e.target.value)}
               disabled={isPosting}
@@ -89,10 +89,6 @@ const CreatePost = ({ onPostCreated }: { onPostCreated?: () => void }) => {
                 <Button variant="ghost" size="sm" className="gap-2" disabled>
                   <Video className="h-4 w-4" />
                   <span className="text-xs hidden sm:inline">וידאו</span>
-                </Button>
-                <Button variant="ghost" size="sm" className="gap-2" disabled>
-                  <MapPin className="h-4 w-4" />
-                  <span className="text-xs hidden sm:inline">מיקום</span>
                 </Button>
               </div>
               <Button 
