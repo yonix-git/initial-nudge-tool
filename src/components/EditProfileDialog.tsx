@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Pencil, Upload } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import ImageCropDialog from "./ImageCropDialog";
 
 interface EditProfileDialogProps {
   currentName: string;
@@ -22,14 +23,25 @@ const EditProfileDialog = ({ currentName, currentBio, currentVehicle, currentPro
   const [profilePicture, setProfilePicture] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentProfilePicture);
   const [open, setOpen] = useState(false);
+  const [cropDialogOpen, setCropDialogOpen] = useState(false);
+  const [tempImageUrl, setTempImageUrl] = useState<string | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setProfilePicture(file);
       const url = URL.createObjectURL(file);
-      setPreviewUrl(url);
+      setTempImageUrl(url);
+      setCropDialogOpen(true);
     }
+  };
+
+  const handleCropComplete = (croppedBlob: Blob) => {
+    const croppedFile = new File([croppedBlob], "profile.jpg", { type: "image/jpeg" });
+    setProfilePicture(croppedFile);
+    const url = URL.createObjectURL(croppedBlob);
+    setPreviewUrl(url);
+    setCropDialogOpen(false);
+    setTempImageUrl(null);
   };
 
   const handleSave = () => {
@@ -45,18 +57,19 @@ const EditProfileDialog = ({ currentName, currentBio, currentVehicle, currentPro
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
-          <Pencil className="h-4 w-4" />
-          ערוך פרופיל
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]" dir="rtl">
-        <DialogHeader>
-          <DialogTitle>ערוך פרופיל</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4 py-4">
+    <>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>
+          <Button variant="outline" size="sm" className="gap-2">
+            <Pencil className="h-4 w-4" />
+            ערוך פרופיל
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[500px]" dir="rtl">
+          <DialogHeader>
+            <DialogTitle>ערוך פרופיל</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Label>תמונת פרופיל</Label>
             <div className="flex items-center gap-4">
@@ -118,6 +131,19 @@ const EditProfileDialog = ({ currentName, currentBio, currentVehicle, currentPro
         </div>
       </DialogContent>
     </Dialog>
+    
+    {tempImageUrl && (
+      <ImageCropDialog
+        image={tempImageUrl}
+        open={cropDialogOpen}
+        onClose={() => {
+          setCropDialogOpen(false);
+          setTempImageUrl(null);
+        }}
+        onCropComplete={handleCropComplete}
+      />
+    )}
+    </>
   );
 };
 
