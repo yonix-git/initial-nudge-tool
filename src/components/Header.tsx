@@ -1,7 +1,8 @@
-import { Car, Search, Bell, User } from "lucide-react";
+import { Car, Search, Bell, User, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
 
 const Header = () => {
   return (
@@ -42,8 +43,22 @@ const Header = () => {
             </div>
           </div>
           
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" className="relative">
+            <MessageCircle className="h-5 w-5" />
+            <Badge 
+              className="absolute -top-1 -left-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-primary"
+            >
+              3
+            </Badge>
+          </Button>
+          
+          <Button variant="ghost" size="icon" className="relative">
             <Bell className="h-5 w-5" />
+            <Badge 
+              className="absolute -top-1 -left-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-primary"
+            >
+              7
+            </Badge>
           </Button>
           
           <Link to="/profile">
