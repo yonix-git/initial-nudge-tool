@@ -76,13 +76,18 @@ const EditProfileDialog = ({ currentName, currentBio, currentVehicle, currentPro
             <DialogTitle>ערוך פרופיל</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label>תמונת פרופיל</Label>
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <Avatar className="h-20 w-20">
+            <div className="flex flex-col items-center">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+                id="profile-picture-input"
+              />
+              <label htmlFor="profile-picture-input" className="cursor-pointer group relative">
+                <Avatar className="h-32 w-32 transition-opacity group-hover:opacity-80">
                   {previewUrl && <AvatarImage src={previewUrl} />}
-                  <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
+                  <AvatarFallback className="bg-primary text-primary-foreground text-4xl">
                     {getInitials(name)}
                   </AvatarFallback>
                 </Avatar>
@@ -91,26 +96,23 @@ const EditProfileDialog = ({ currentName, currentBio, currentVehicle, currentPro
                     type="button"
                     variant="destructive"
                     size="icon"
-                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
-                    onClick={handleRemoveImage}
+                    className="absolute -top-2 -right-2 h-7 w-7 rounded-full"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleRemoveImage();
+                    }}
                   >
                     <X className="h-4 w-4" />
                   </Button>
                 )}
-              </div>
-              <div className="flex-1">
-                <Input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  className="cursor-pointer"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  העלה תמונת פרופיל (מומלץ: ריבוע)
-                </p>
-              </div>
+                <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Upload className="h-8 w-8 text-white" />
+                </div>
+              </label>
+              <p className="text-xs text-muted-foreground mt-2">
+                לחץ על התמונה להעלאת תמונת פרופיל
+              </p>
             </div>
-          </div>
           <div className="space-y-2">
             <Label htmlFor="name">שם</Label>
             <Input
