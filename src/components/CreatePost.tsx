@@ -1,9 +1,9 @@
-import { Image, Video } from "lucide-react";
+import { Image, Video, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -13,6 +13,11 @@ const CreatePost = ({ onPostCreated }: { onPostCreated?: () => void }) => {
   const [content, setContent] = useState("");
   const [isPosting, setIsPosting] = useState(false);
   const [profile, setProfile] = useState<any>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [filePreview, setFilePreview] = useState<string | null>(null);
+  const [fileType, setFileType] = useState<"image" | "video" | null>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -28,21 +33,71 @@ const CreatePost = ({ onPostCreated }: { onPostCreated?: () => void }) => {
     fetchProfile();
   }, [user]);
 
+  const handleFileSelect = (type: "image" | "video", file: File) => {
+    setSelectedFile(file);
+    setFileType(type);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setFilePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveFile = () => {
+    setSelectedFile(null);
+    setFilePreview(null);
+    setFileType(null);
+    if (imageInputRef.current) imageInputRef.current.value = "";
+    if (videoInputRef.current) videoInputRef.current.value = "";
+  };
+
   const handlePost = async () => {
-    if (!user || !content.trim()) return;
+    if (!user || (!content.trim() && !selectedFile)) {
+      toast.error("נא להוסיף תוכן או קובץ");
+      return;
+    }
 
     setIsPosting(true);
     try {
+      let imageUrl = null;
+      let videoUrl = null;
+
+      // Upload file if selected
+      if (selectedFile && fileType) {
+        const fileExt = selectedFile.name.split(".").pop();
+        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+        const bucketName = fileType === "image" ? "avatars" : "videos";
+
+        const { error: uploadError } = await supabase.storage
+          .from(bucketName)
+          .upload(fileName, selectedFile);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from(bucketName)
+          .getPublicUrl(fileName);
+
+        if (fileType === "image") {
+          imageUrl = publicUrl;
+        } else {
+          videoUrl = publicUrl;
+        }
+      }
+
       const { error } = await supabase
         .from("posts")
         .insert({
           user_id: user.id,
-          content: content.trim(),
+          content: content.trim() || null,
+          image_url: imageUrl,
+          video_url: videoUrl,
         });
 
       if (error) throw error;
 
       setContent("");
+      handleRemoveFile();
       toast.success("הפוסט פורסם בהצלחה!");
       onPostCreated?.();
     } catch (error) {
@@ -80,13 +135,67 @@ const CreatePost = ({ onPostCreated }: { onPostCreated?: () => void }) => {
               onChange={(e) => setContent(e.target.value)}
               disabled={isPosting}
             />
+            
+            {filePreview && (
+              <div className="relative mb-3 rounded-lg overflow-hidden bg-muted">
+                {fileType === "image" ? (
+                  <img src={filePreview} alt="Preview" className="w-full max-h-96 object-cover" />
+                ) : (
+                  <video src={filePreview} controls className="w-full max-h-96" />
+                )}
+                <Button
+                  variant="destructive"
+                  size="icon"
+                  className="absolute top-2 right-2"
+                  onClick={handleRemoveFile}
+                  disabled={isPosting}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+
             <div className="flex items-center justify-between">
               <div className="flex gap-2">
-                <Button variant="ghost" size="sm" className="gap-2 cursor-not-allowed" disabled={false}>
+                <input
+                  ref={imageInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleFileSelect("image", file);
+                  }}
+                  disabled={isPosting}
+                />
+                <input
+                  ref={videoInputRef}
+                  type="file"
+                  accept="video/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleFileSelect("video", file);
+                  }}
+                  disabled={isPosting}
+                />
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="gap-2" 
+                  onClick={() => imageInputRef.current?.click()}
+                  disabled={isPosting || !!selectedFile}
+                >
                   <Image className="h-4 w-4 text-foreground" />
                   <span className="text-sm font-semibold text-foreground">תמונה</span>
                 </Button>
-                <Button variant="ghost" size="sm" className="gap-2 cursor-not-allowed" disabled={false}>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="gap-2" 
+                  onClick={() => videoInputRef.current?.click()}
+                  disabled={isPosting || !!selectedFile}
+                >
                   <Video className="h-4 w-4 text-foreground" />
                   <span className="text-sm font-semibold text-foreground">וידאו</span>
                 </Button>
@@ -94,7 +203,7 @@ const CreatePost = ({ onPostCreated }: { onPostCreated?: () => void }) => {
               <Button 
                 size="sm" 
                 onClick={handlePost}
-                disabled={!content.trim() || isPosting}
+                disabled={(!content.trim() && !selectedFile) || isPosting}
               >
                 {isPosting ? "מפרסם..." : "פרסם"}
               </Button>

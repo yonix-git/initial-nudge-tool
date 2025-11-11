@@ -31,6 +31,7 @@ interface PostItemProps {
   userId: string;
   content: string;
   imageUrl?: string;
+  videoUrl?: string;
   likesCount: number;
   commentsCount: number;
   createdAt: string;
@@ -42,7 +43,8 @@ const PostItem = ({
   id, 
   userId, 
   content, 
-  imageUrl, 
+  imageUrl,
+  videoUrl, 
   likesCount, 
   commentsCount, 
   createdAt,
@@ -203,12 +205,19 @@ const PostItem = ({
           </div>
         ) : (
           <>
-            <p className="text-sm mb-3 whitespace-pre-wrap">{content}</p>
+            {content && <p className="text-sm mb-3 whitespace-pre-wrap">{content}</p>}
             {imageUrl && (
               <img 
                 src={imageUrl} 
                 alt="Post content" 
                 className="w-full rounded-lg object-cover max-h-96"
+              />
+            )}
+            {videoUrl && (
+              <video 
+                src={videoUrl} 
+                controls 
+                className="w-full rounded-lg max-h-96"
               />
             )}
           </>
