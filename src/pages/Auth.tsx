@@ -25,6 +25,8 @@ const Auth = () => {
   const [accountType, setAccountType] = useState<"private" | "business">("private");
   const [loginAttempts, setLoginAttempts] = useState(0);
   const [isBlocked, setIsBlocked] = useState(false);
+  const [showVerification, setShowVerification] = useState(false);
+  const [verificationCode, setVerificationCode] = useState("");
 
   // Schema validation with zod
   const signupSchema = z.object({
@@ -110,7 +112,7 @@ const Auth = () => {
     }
   };
 
-  const handleSignUp = async (e: React.FormEvent) => {
+  const handleSendVerificationCode = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
@@ -134,7 +136,60 @@ const Auth = () => {
         throw new Error("הסיסמה שבחרת נפוצה מדי, אנא בחר סיסמה אחרת");
       }
 
-      const { error } = await supabase.auth.signUp({
+      // Send verification code
+      const { error } = await supabase.functions.invoke('send-verification-code', {
+        body: { email: email.trim() }
+      });
+
+      if (error) throw error;
+
+      setShowVerification(true);
+      toast({
+        title: "קוד אימות נשלח!",
+        description: "בדוק את תיבת הדואר שלך והזן את הקוד שקיבלת",
+      });
+    } catch (error: any) {
+      toast({
+        title: "שגיאה בשליחת קוד אימות",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyAndSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      if (!verificationCode || verificationCode.length !== 5) {
+        throw new Error("נא להזין קוד בן 5 ספרות");
+      }
+
+      // Verify the code
+      const { data: verificationData, error: verifyError } = await supabase
+        .from('verification_codes')
+        .select('*')
+        .eq('email', email.trim())
+        .eq('code', verificationCode)
+        .eq('verified', false)
+        .gt('expires_at', new Date().toISOString())
+        .single();
+
+      if (verifyError || !verificationData) {
+        throw new Error("קוד האימות שגוי או שפג תוקפו");
+      }
+
+      // Mark as verified
+      await supabase
+        .from('verification_codes')
+        .update({ verified: true })
+        .eq('id', verificationData.id);
+
+      // Now sign up the user
+      const { error: signUpError } = await supabase.auth.signUp({
         email: email.trim(),
         password,
         options: {
@@ -147,15 +202,15 @@ const Auth = () => {
         },
       });
 
-      if (error) throw error;
+      if (signUpError) throw signUpError;
 
       toast({
         title: "נרשמת בהצלחה!",
-        description: "אנא בדוק את האימייל שלך לאימות החשבון",
+        description: "מיד תועבר לדף הראשי",
       });
     } catch (error: any) {
       toast({
-        title: "שגיאה בהרשמה",
+        title: "שגיאה באימות",
         description: error.message,
         variant: "destructive",
       });
@@ -213,70 +268,109 @@ const Auth = () => {
             </TabsContent>
 
             <TabsContent value="signup">
-              <form onSubmit={handleSignUp} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="fullname">שם מלא</Label>
-                  <Input
-                    id="fullname"
-                    type="text"
-                    placeholder="יוסי כהן"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="username">שם משתמש</Label>
-                  <Input
-                    id="username"
-                    type="text"
-                    placeholder="yossi_cohen"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    required
-                    dir="ltr"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="account-type">סוג חשבון</Label>
-                  <Select value={accountType} onValueChange={(value: "private" | "business") => setAccountType(value)}>
-                    <SelectTrigger id="account-type">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="private">חשבון פרטי</SelectItem>
-                      <SelectItem value="business">חשבון עסקי</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-email">אימייל</Label>
-                  <Input
-                    id="signup-email"
-                    type="email"
-                    placeholder="example@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    dir="ltr"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-password">סיסמה</Label>
-                  <Input
-                    id="signup-password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    minLength={6}
-                    dir="ltr"
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "נרשם..." : "הירשם"}
-                </Button>
-              </form>
+              {!showVerification ? (
+                <form onSubmit={handleSendVerificationCode} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="fullname">שם מלא</Label>
+                    <Input
+                      id="fullname"
+                      type="text"
+                      placeholder="יוסי כהן"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="username">שם משתמש</Label>
+                    <Input
+                      id="username"
+                      type="text"
+                      placeholder="yossi_cohen"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      required
+                      dir="ltr"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="account-type">סוג חשבון</Label>
+                    <Select value={accountType} onValueChange={(value: "private" | "business") => setAccountType(value)}>
+                      <SelectTrigger id="account-type">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="private">חשבון פרטי</SelectItem>
+                        <SelectItem value="business">חשבון עסקי</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-email">אימייל</Label>
+                    <Input
+                      id="signup-email"
+                      type="email"
+                      placeholder="example@email.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      dir="ltr"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-password">סיסמה</Label>
+                    <Input
+                      id="signup-password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      minLength={6}
+                      dir="ltr"
+                    />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? "שולח קוד אימות..." : "שלח קוד אימות"}
+                  </Button>
+                </form>
+              ) : (
+                <form onSubmit={handleVerifyAndSignUp} className="space-y-4">
+                  <div className="text-center mb-4">
+                    <p className="text-sm text-muted-foreground">
+                      שלחנו קוד אימות בן 5 ספרות לכתובת
+                    </p>
+                    <p className="font-semibold" dir="ltr">{email}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="verification-code">קוד אימות</Label>
+                    <Input
+                      id="verification-code"
+                      type="text"
+                      placeholder="12345"
+                      value={verificationCode}
+                      onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 5))}
+                      required
+                      maxLength={5}
+                      dir="ltr"
+                      className="text-center text-2xl tracking-widest"
+                    />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? "מאמת..." : "אמת והירשם"}
+                  </Button>
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    className="w-full" 
+                    onClick={() => {
+                      setShowVerification(false);
+                      setVerificationCode("");
+                    }}
+                  >
+                    חזור לטופס הרשמה
+                  </Button>
+                </form>
+              )}
             </TabsContent>
           </Tabs>
         </CardContent>
