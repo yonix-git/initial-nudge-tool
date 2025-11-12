@@ -210,7 +210,12 @@ const Auth = () => {
         },
       });
 
-      if (signUpError) throw signUpError;
+      if (signUpError) {
+        if (signUpError.message?.includes("User already registered") || signUpError.message?.includes("user_already_exists")) {
+          throw new Error("המייל הזה כבר רשום במערכת. אנא התחבר במקום להירשם מחדש.");
+        }
+        throw signUpError;
+      }
 
       toast({
         title: "נרשמת בהצלחה!",
