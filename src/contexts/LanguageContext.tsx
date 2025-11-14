@@ -88,6 +88,16 @@ const translations = {
     "services.bookAppointment": "הזמן תור",
     "services.moreDetails": "פרטים נוספים",
     
+    // Business
+    "verifiedBusiness": "עסק מאומת",
+    "business.phone": "טלפון עסק",
+    "business.address": "כתובת העסק",
+    "business.hours": "שעות פעילות",
+    "business.categories": "קטגוריות התמחות",
+    "business.description": "תיאור עסקי",
+    "business.call": "התקשר",
+    "business.navigate": "נווט",
+    
     // Events
     "events.title": "אירועים מוטוריים",
     "events.subtitle": "גלה אירועים מעניינים, מרוצים, מפגשים וסדנאות בתחום הרכב והאופנועים",

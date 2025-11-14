@@ -193,11 +193,17 @@ export type Database = {
         Row: {
           account_type: Database["public"]["Enums"]["account_type"]
           bio: string | null
+          business_address: string | null
+          business_categories: string[] | null
+          business_description: string | null
+          business_hours: Json | null
+          business_phone: string | null
           created_at: string
           followers_count: number
           following_count: number
           full_name: string | null
           id: string
+          is_verified: boolean | null
           profile_picture_url: string | null
           updated_at: string
           username: string | null
@@ -206,11 +212,17 @@ export type Database = {
         Insert: {
           account_type?: Database["public"]["Enums"]["account_type"]
           bio?: string | null
+          business_address?: string | null
+          business_categories?: string[] | null
+          business_description?: string | null
+          business_hours?: Json | null
+          business_phone?: string | null
           created_at?: string
           followers_count?: number
           following_count?: number
           full_name?: string | null
           id: string
+          is_verified?: boolean | null
           profile_picture_url?: string | null
           updated_at?: string
           username?: string | null
@@ -219,11 +231,17 @@ export type Database = {
         Update: {
           account_type?: Database["public"]["Enums"]["account_type"]
           bio?: string | null
+          business_address?: string | null
+          business_categories?: string[] | null
+          business_description?: string | null
+          business_hours?: Json | null
+          business_phone?: string | null
           created_at?: string
           followers_count?: number
           following_count?: number
           full_name?: string | null
           id?: string
+          is_verified?: boolean | null
           profile_picture_url?: string | null
           updated_at?: string
           username?: string | null
