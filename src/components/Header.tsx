@@ -1,4 +1,4 @@
-import { Car, Search, Bell, MessageCircle, LogOut } from "lucide-react";
+import { Car, Search, Bell, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link, useNavigate } from "react-router-dom";
@@ -33,13 +33,6 @@ const Header = () => {
     fetchProfile();
   }, [user]);
 
-  const handleSignOut = async () => {
-    await signOut();
-    toast({
-      title: "התנתקת בהצלחה",
-    });
-    navigate("/auth");
-  };
 
   const getInitials = (name: string) => {
     if (!name) return "U";
@@ -121,9 +114,6 @@ const Header = () => {
                   </AvatarFallback>
                 </Avatar>
               </Link>
-              <Button variant="ghost" size="icon" onClick={handleSignOut}>
-                <LogOut className="h-5 w-5" />
-              </Button>
             </>
           ) : (
             <Link to="/auth">
