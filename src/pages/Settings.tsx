@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Bell, Lock, Eye, Globe, Trash2, LogOut, Building2 } from "lucide-react";
+import { Bell, Lock, Eye, Globe, Trash2, LogOut, Building2, Moon } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 
 const Settings = () => {
   const { language, setLanguage, t, dir } = useLanguage();
+  const { theme, setTheme } = useTheme();
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -160,6 +162,34 @@ const Settings = () => {
                   <p className="text-sm text-muted-foreground">{t("settings.showGroupsDesc")}</p>
                 </div>
                 <Switch id="show-groups" defaultChecked />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Appearance Settings */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Moon className="h-5 w-5" />
+                מראה
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5 flex-1">
+                  <Label>מצב תצוגה</Label>
+                  <p className="text-sm text-muted-foreground">בחר בין מצב בהיר לחשוך</p>
+                </div>
+                <Select value={theme} onValueChange={(value: "light" | "dark" | "system") => setTheme(value)}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="light">בהיר</SelectItem>
+                    <SelectItem value="dark">חשוך</SelectItem>
+                    <SelectItem value="system">אוטומטי</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </CardContent>
           </Card>
