@@ -4,112 +4,104 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, MapPin, Calendar, Users, Clock, Heart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
+
+interface Event {
+  id: string;
+  name: string;
+  date: string;
+  time: string;
+  location: string;
+  description: string;
+  type: string;
+  participants: number;
+  max_participants: number;
+  interested: number;
+}
 
 const Events = () => {
   const { t, dir } = useLanguage();
-  
-  const [events, setEvents] = useState([
-    {
-      id: 1,
-      name: "מרוץ רחוב לגיטימי - מסלול שוהם",
-      date: "15 בדצמבר 2024",
-      time: "18:00",
-      location: "מסלול מרוצים שוהם",
-      participants: 45,
-      maxParticipants: 60,
-      interested: 234,
-      type: "מרוץ",
-      image: "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800&q=80",
-      isInterested: false,
-    },
-    {
-      id: 2,
-      name: "מפגש אופנועים יפניים",
-      date: "20 בדצמבר 2024",
-      time: "16:00",
-      location: "חניון עזריאלי, תל אביב",
-      participants: 78,
-      maxParticipants: 100,
-      interested: 156,
-      type: "מפגש",
-      isInterested: false,
-    },
-    {
-      id: 3,
-      name: "תערוכת רכבים קלאסיים",
-      date: "25 בדצמבר 2024",
-      time: "10:00",
-      location: "פארק הירקון, תל אביב",
-      participants: 120,
-      maxParticipants: 150,
-      interested: 489,
-      type: "תערוכה",
-      image: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&q=80",
-      isInterested: false,
-    },
-    {
-      id: 4,
-      name: "סדנת טיונינג מתקדם",
-      date: "28 בדצמבר 2024",
-      time: "14:00",
-      location: "מוסך פרו-טיון, פתח תקווה",
-      participants: 12,
-      maxParticipants: 20,
-      interested: 67,
-      type: "סדנה",
-      isInterested: false,
-    },
-    {
-      id: 5,
-      name: "מסע אופנועים לצפון",
-      date: "5 בינואר 2025",
-      time: "08:00",
-      location: "נקודת מפגש: תחנת דלק סונול כביש 6 צומת עירון",
-      participants: 34,
-      maxParticipants: 50,
-      interested: 198,
-      type: "מסע",
-      isInterested: false,
-    },
-    {
-      id: 6,
-      name: "יום מבחן נהיגה מתקדמת",
-      date: "10 בינואר 2025",
-      time: "09:00",
-      location: "מסלול מגידו",
-      participants: 28,
-      maxParticipants: 40,
-      interested: 145,
-      type: "אימון",
-      isInterested: false,
-    },
-  ]);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [interestedEvents, setInterestedEvents] = useState<Set<string>>(new Set());
 
-  const handleInterest = (eventId: number) => {
-    setEvents(events.map(event => {
-      if (event.id === eventId) {
-        return {
-          ...event,
-          isInterested: !event.isInterested,
-          interested: event.isInterested ? event.interested - 1 : event.interested + 1
-        };
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('events')
+          .select('*')
+          .order('date', { ascending: true });
+
+        if (error) throw error;
+        setEvents(data || []);
+      } catch (error) {
+        console.error('Error fetching events:', error);
+      } finally {
+        setLoading(false);
       }
-      return event;
-    }));
+    };
+
+    fetchEvents();
+  }, []);
+
+  const handleInterest = async (eventId: string) => {
+    const isInterested = interestedEvents.has(eventId);
+    const event = events.find(e => e.id === eventId);
+    if (!event) return;
+
+    const newInterestedCount = isInterested ? event.interested - 1 : event.interested + 1;
+
+    try {
+      const { error } = await supabase
+        .from('events')
+        .update({ interested: newInterestedCount })
+        .eq('id', eventId);
+
+      if (error) throw error;
+
+      // Update local state
+      setEvents(events.map(e => 
+        e.id === eventId ? { ...e, interested: newInterestedCount } : e
+      ));
+
+      // Toggle interested state
+      const newInterested = new Set(interestedEvents);
+      if (isInterested) {
+        newInterested.delete(eventId);
+      } else {
+        newInterested.add(eventId);
+      }
+      setInterestedEvents(newInterested);
+    } catch (error) {
+      console.error('Error updating interest:', error);
+    }
   };
 
-  const handleJoinEvent = (eventId: number) => {
-    setEvents(events.map(event => {
-      if (event.id === eventId && event.participants < event.maxParticipants) {
-        return {
-          ...event,
-          participants: event.participants + 1
-        };
-      }
-      return event;
-    }));
+  const handleJoinEvent = async (eventId: string) => {
+    const event = events.find(e => e.id === eventId);
+    if (!event || event.participants >= event.max_participants) return;
+
+    const newParticipants = event.participants + 1;
+
+    try {
+      const { error } = await supabase
+        .from('events')
+        .update({ participants: newParticipants })
+        .eq('id', eventId);
+
+      if (error) throw error;
+
+      // Update local state
+      setEvents(events.map(e => 
+        e.id === eventId ? { ...e, participants: newParticipants } : e
+      ));
+    } catch (error) {
+      console.error('Error joining event:', error);
+    }
   };
 
   const getEventTypeColor = (type: string) => {
@@ -155,28 +147,33 @@ const Events = () => {
 
           {/* Events Grid */}
           <div className="grid gap-6 md:grid-cols-2">
-            {events.map((event) => (
-              <Card key={event.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                {event.image && (
-                  <div className="relative h-48 overflow-hidden">
-                    <img 
-                      src={event.image} 
-                      alt={event.name}
-                      className="w-full h-full object-cover"
-                    />
-                    <Badge className={`absolute top-3 right-3 ${getEventTypeColor(event.type)}`}>
-                      {event.type}
-                    </Badge>
-                  </div>
-                )}
-                <CardHeader className={event.image ? "" : "pt-6"}>
-                  {!event.image && (
+            {loading ? (
+              [...Array(6)].map((_, index) => (
+                <Card key={index}>
+                  <CardHeader>
+                    <Skeleton className="h-6 w-3/4 mb-2" />
+                    <Skeleton className="h-4 w-1/2 mb-4" />
+                    <Skeleton className="h-4 w-full" />
+                  </CardHeader>
+                  <CardContent>
+                    <Skeleton className="h-4 w-2/3 mb-4" />
+                    <Skeleton className="h-10 w-full" />
+                  </CardContent>
+                </Card>
+              ))
+            ) : events.length === 0 ? (
+              <div className="col-span-2 text-center py-8 text-muted-foreground">
+                לא נמצאו אירועים
+              </div>
+            ) : (
+              events.map((event) => (
+                <Card key={event.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                  <CardHeader className="pt-6">
                     <Badge className={`w-fit mb-2 ${getEventTypeColor(event.type)}`}>
                       {event.type}
                     </Badge>
-                  )}
-                  <CardTitle className="text-xl">{event.name}</CardTitle>
-                </CardHeader>
+                    <CardTitle className="text-xl">{event.name}</CardTitle>
+                  </CardHeader>
                 <CardContent>
                   <div className="space-y-3 mb-4">
                     <div className="flex items-center gap-2 text-sm">
@@ -191,11 +188,11 @@ const Events = () => {
                       <MapPin className="h-4 w-4 text-muted-foreground" />
                       <span>{event.location}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-sm">
+                     <div className="flex items-center gap-2 text-sm">
                       <Users className="h-4 w-4 text-muted-foreground" />
                       <span>
                         {event.participants} משתתפים
-                        {event.maxParticipants && ` / ${event.maxParticipants} מקסימום`}
+                        {event.max_participants && ` / ${event.max_participants} מקסימום`}
                       </span>
                     </div>
                   </div>
@@ -209,25 +206,26 @@ const Events = () => {
                     <Button 
                       className="flex-1"
                       onClick={() => handleJoinEvent(event.id)}
-                      disabled={event.participants >= event.maxParticipants}
+                      disabled={event.participants >= event.max_participants}
                     >
-                      {event.participants >= event.maxParticipants ? "מלא" : "הצטרף לאירוע"}
+                      {event.participants >= event.max_participants ? "מלא" : "הצטרף לאירוע"}
                     </Button>
                     <Button 
-                      variant={event.isInterested ? "default" : "outline"}
+                      variant={interestedEvents.has(event.id) ? "default" : "outline"}
                       size="icon"
                       onClick={() => handleInterest(event.id)}
                     >
                       <Heart 
                         className={`h-4 w-4 ${
-                          event.isInterested ? "fill-current" : ""
+                          interestedEvents.has(event.id) ? "fill-current" : ""
                         }`} 
                       />
                     </Button>
                   </div>
                 </CardContent>
-              </Card>
-            ))}
+                </Card>
+              ))
+            )}
           </div>
         </div>
       </main>
