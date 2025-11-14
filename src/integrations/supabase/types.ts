@@ -49,6 +49,81 @@ export type Database = {
           },
         ]
       }
+      events: {
+        Row: {
+          created_at: string
+          date: string
+          description: string
+          id: string
+          interested: number
+          location: string
+          max_participants: number
+          name: string
+          participants: number
+          time: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          description: string
+          id?: string
+          interested?: number
+          location: string
+          max_participants?: number
+          name: string
+          participants?: number
+          time: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          description?: string
+          id?: string
+          interested?: number
+          location?: string
+          max_participants?: number
+          name?: string
+          participants?: number
+          time?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      groups: {
+        Row: {
+          category: string
+          created_at: string
+          description: string
+          id: string
+          members: number
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description: string
+          id?: string
+          members?: number
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          members?: number
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       likes: {
         Row: {
           created_at: string
@@ -153,6 +228,45 @@ export type Database = {
           updated_at?: string
           username?: string | null
           vehicle_type?: string | null
+        }
+        Relationships: []
+      }
+      services: {
+        Row: {
+          address: string
+          created_at: string
+          distance: string
+          id: string
+          name: string
+          phone: string
+          rating: number
+          specialties: string[]
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          distance: string
+          id?: string
+          name: string
+          phone: string
+          rating?: number
+          specialties?: string[]
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          distance?: string
+          id?: string
+          name?: string
+          phone?: string
+          rating?: number
+          specialties?: string[]
+          type?: string
+          updated_at?: string
         }
         Relationships: []
       }

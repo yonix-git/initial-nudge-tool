@@ -2,51 +2,45 @@ import Header from "@/components/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, MapPin, Users } from "lucide-react";
+import { Search, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+
+interface Group {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  members: number;
+}
 
 const Groups = () => {
   const { t, dir } = useLanguage();
-  
-  const groups = [
-    {
-      name: "רכבים יפניים",
-      members: 1240,
-      description: "קבוצה לחובבי רכבים יפניים, שאלות, עצות ושיתופים",
-      category: "קהילה",
-    },
-    {
-      name: "טויוטה ישראל",
-      members: 856,
-      description: "הקהילה הישראלית של בעלי טויוטה",
-      category: "מותג",
-    },
-    {
-      name: "אופנועי ספורט",
-      members: 634,
-      description: "קבוצה לחובבי אופנועי ספורט ומרוצים",
-      category: "קהילה",
-    },
-    {
-      name: "טיונינג ושדרוגים",
-      members: 2103,
-      description: "שיתוף רעיונות ופרוייקטים לשדרוג רכבים",
-      category: "טכני",
-    },
-    {
-      name: "הונדה סיוויק",
-      members: 421,
-      description: "קהילת בעלי הונדה סיוויק בישראל",
-      category: "מותג",
-    },
-    {
-      name: "מרוצי רחוב לגיטימיים",
-      members: 1567,
-      description: "אירועי מרוצים חוקיים ותחרויות במסלולים מאושרים",
-      category: "אירועים",
-    },
-  ];
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchGroups = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('groups')
+          .select('*')
+          .order('members', { ascending: false });
+
+        if (error) throw error;
+        setGroups(data || []);
+      } catch (error) {
+        console.error('Error fetching groups:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGroups();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background" dir={dir}>
@@ -70,8 +64,27 @@ const Groups = () => {
 
           {/* Groups Grid */}
           <div className="grid gap-4 md:grid-cols-2">
-            {groups.map((group, index) => (
-              <Card key={index} className="hover:shadow-md transition-shadow">
+            {loading ? (
+              // Loading skeletons
+              [...Array(6)].map((_, index) => (
+                <Card key={index}>
+                  <CardHeader>
+                    <Skeleton className="h-6 w-3/4 mb-2" />
+                    <Skeleton className="h-4 w-1/2" />
+                  </CardHeader>
+                  <CardContent>
+                    <Skeleton className="h-4 w-full mb-4" />
+                    <Skeleton className="h-10 w-full" />
+                  </CardContent>
+                </Card>
+              ))
+            ) : groups.length === 0 ? (
+              <div className="col-span-2 text-center py-8 text-muted-foreground">
+                לא נמצאו קבוצות
+              </div>
+            ) : (
+              groups.map((group) => (
+              <Card key={group.id} className="hover:shadow-md transition-shadow">
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -89,7 +102,8 @@ const Groups = () => {
                   <Button className="w-full">הצטרף לקבוצה</Button>
                 </CardContent>
               </Card>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </main>
