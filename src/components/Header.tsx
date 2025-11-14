@@ -49,14 +49,14 @@ const Header = () => {
   };
   
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
+    <header className="sticky top-0 z-50 w-full border-b bg-card/95 backdrop-blur-xl supports-[backdrop-filter]:bg-card/90 shadow-lg">
       <div className="container flex h-16 items-center justify-between px-4" dir={dir}>
         <div className="flex items-center gap-6">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="rounded-lg bg-primary p-2">
+          <Link to="/" className="flex items-center gap-2 group">
+            <div className="rounded-xl bg-primary p-2 shadow-md group-hover:shadow-lg transition-all duration-300 group-hover:scale-105">
               <Car className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold">MotorHub</span>
+            <span className="text-xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">MotorHub</span>
           </Link>
           
           <nav className="hidden md:flex items-center gap-6">
