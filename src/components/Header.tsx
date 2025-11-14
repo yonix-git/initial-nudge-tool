@@ -49,27 +49,28 @@ const Header = () => {
   };
   
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-card/95 backdrop-blur-xl supports-[backdrop-filter]:bg-card/90 shadow-lg">
+    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-card/70 backdrop-blur-2xl supports-[backdrop-filter]:bg-card/60 shadow-xl">
       <div className="container flex h-16 items-center justify-between px-4" dir={dir}>
         <div className="flex items-center gap-6">
-          <Link to="/" className="flex items-center gap-2 group">
-            <div className="rounded-xl bg-primary p-2 shadow-md group-hover:shadow-lg transition-all duration-300 group-hover:scale-105">
-              <Car className="h-5 w-5 text-primary-foreground" />
+          <Link to="/" className="flex items-center gap-3 group">
+            <div className="relative rounded-2xl bg-gradient-to-br from-primary via-primary/95 to-primary/90 p-2.5 shadow-lg group-hover:shadow-2xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-3">
+              <Car className="h-6 w-6 text-primary-foreground relative z-10" />
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">MotorHub</span>
+            <span className="text-xl font-bold bg-gradient-to-r from-foreground via-foreground/90 to-foreground/80 bg-clip-text text-transparent">MotorHub</span>
           </Link>
           
           <nav className="hidden md:flex items-center gap-6">
-            <Link to="/" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
+            <Link to="/" className="relative text-sm font-semibold text-foreground hover:text-primary transition-colors duration-300 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 hover:after:w-full after:bg-gradient-to-r after:from-primary after:to-primary/50 after:transition-all after:duration-300">
               {t("header.feed")}
             </Link>
-            <Link to="/groups" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+            <Link to="/groups" className="relative text-sm font-semibold text-muted-foreground hover:text-primary transition-colors duration-300 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 hover:after:w-full after:bg-gradient-to-r after:from-primary after:to-primary/50 after:transition-all after:duration-300">
               {t("header.groups")}
             </Link>
-            <Link to="/services" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+            <Link to="/services" className="relative text-sm font-semibold text-muted-foreground hover:text-primary transition-colors duration-300 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 hover:after:w-full after:bg-gradient-to-r after:from-primary after:to-primary/50 after:transition-all after:duration-300">
               {t("header.services")}
             </Link>
-            <Link to="/events" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+            <Link to="/events" className="relative text-sm font-semibold text-muted-foreground hover:text-primary transition-colors duration-300 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 hover:after:w-full after:bg-gradient-to-r after:from-primary after:to-primary/50 after:transition-all after:duration-300">
               {t("header.events")}
             </Link>
           </nav>

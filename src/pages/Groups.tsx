@@ -83,8 +83,12 @@ const Groups = () => {
                 לא נמצאו קבוצות
               </div>
             ) : (
-              groups.map((group) => (
-              <Card key={group.id} className="hover:shadow-md transition-shadow">
+              groups.map((group, index) => (
+              <Card 
+                key={group.id} 
+                className="hover:shadow-md transition-shadow animate-fade-in-up"
+                style={{ animationDelay: `${index * 0.1}s`, animationFillMode: 'backwards' }}
+              >
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
