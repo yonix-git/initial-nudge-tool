@@ -89,7 +89,7 @@ const Header = () => {
             <Badge 
               className="absolute -top-1 -left-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-primary"
             >
-              3
+              0
             </Badge>
           </Button>
           
@@ -98,7 +98,7 @@ const Header = () => {
             <Badge 
               className="absolute -top-1 -left-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-primary"
             >
-              7
+              0
             </Badge>
           </Button>
           
