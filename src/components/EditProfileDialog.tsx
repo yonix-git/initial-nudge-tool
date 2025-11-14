@@ -13,10 +13,23 @@ interface EditProfileDialogProps {
   currentBio: string;
   currentVehicle: string;
   currentProfilePicture: string | null;
-  onSave: (name: string, bio: string, vehicle: string, profilePicture: File | null, removeProfilePicture?: boolean) => void;
+  currentProfile: any;
+  onSave: (
+    name: string, 
+    bio: string, 
+    vehicle: string, 
+    profilePicture: File | null, 
+    removeProfilePicture?: boolean,
+    businessData?: {
+      phone?: string;
+      address?: string;
+      description?: string;
+      categories?: string[];
+    }
+  ) => void;
 }
 
-const EditProfileDialog = ({ currentName, currentBio, currentVehicle, currentProfilePicture, onSave }: EditProfileDialogProps) => {
+const EditProfileDialog = ({ currentName, currentBio, currentVehicle, currentProfilePicture, currentProfile, onSave }: EditProfileDialogProps) => {
   const [name, setName] = useState(currentName);
   const [bio, setBio] = useState(currentBio);
   const [vehicle, setVehicle] = useState(currentVehicle);
@@ -25,6 +38,16 @@ const EditProfileDialog = ({ currentName, currentBio, currentVehicle, currentPro
   const [open, setOpen] = useState(false);
   const [cropDialogOpen, setCropDialogOpen] = useState(false);
   const [tempImageUrl, setTempImageUrl] = useState<string | null>(null);
+  
+  // Business fields
+  const [businessPhone, setBusinessPhone] = useState(currentProfile?.business_phone || "");
+  const [businessAddress, setBusinessAddress] = useState(currentProfile?.business_address || "");
+  const [businessDescription, setBusinessDescription] = useState(currentProfile?.business_description || "");
+  const [businessCategories, setBusinessCategories] = useState<string>(
+    currentProfile?.business_categories?.join(", ") || ""
+  );
+  
+  const isBusinessAccount = currentProfile?.account_type === 'business';
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -51,7 +74,18 @@ const EditProfileDialog = ({ currentName, currentBio, currentVehicle, currentPro
 
   const handleSave = () => {
     const removeProfilePicture = currentProfilePicture && !previewUrl && !profilePicture;
-    onSave(name, bio, vehicle, profilePicture, removeProfilePicture);
+    
+    let businessData: any = undefined;
+    if (isBusinessAccount) {
+      businessData = {
+        phone: businessPhone || undefined,
+        address: businessAddress || undefined,
+        description: businessDescription || undefined,
+        categories: businessCategories ? businessCategories.split(",").map(c => c.trim()).filter(Boolean) : undefined
+      };
+    }
+    
+    onSave(name, bio, vehicle, profilePicture, removeProfilePicture, businessData);
     setOpen(false);
   };
   
@@ -141,6 +175,50 @@ const EditProfileDialog = ({ currentName, currentBio, currentVehicle, currentPro
               placeholder="למשל: מאזדה 3 2019"
             />
           </div>
+          
+          {/* Business Fields */}
+          {isBusinessAccount && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="businessDescription">תיאור עסקי</Label>
+                <Textarea
+                  id="businessDescription"
+                  value={businessDescription}
+                  onChange={(e) => setBusinessDescription(e.target.value)}
+                  placeholder="תאר את העסק שלך..."
+                  className="min-h-[80px]"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="businessPhone">טלפון עסק</Label>
+                <Input
+                  id="businessPhone"
+                  value={businessPhone}
+                  onChange={(e) => setBusinessPhone(e.target.value)}
+                  placeholder="050-1234567"
+                  type="tel"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="businessAddress">כתובת העסק</Label>
+                <Input
+                  id="businessAddress"
+                  value={businessAddress}
+                  onChange={(e) => setBusinessAddress(e.target.value)}
+                  placeholder="רחוב עיר, מספר"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="businessCategories">התמחויות</Label>
+                <Input
+                  id="businessCategories"
+                  value={businessCategories}
+                  onChange={(e) => setBusinessCategories(e.target.value)}
+                  placeholder="מכניקה, חשמל, פחחות (הפרד בפסיקים)"
+                />
+              </div>
+            </>
+          )}
         </div>
         <div className="flex gap-2 justify-end">
           <Button variant="outline" onClick={() => setOpen(false)}>

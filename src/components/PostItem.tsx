@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { he } from "date-fns/locale";
+import { VerifiedBadge } from "@/components/VerifiedBadge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -248,7 +249,10 @@ const PostItem = ({
             </AvatarFallback>
           </Avatar>
           <div>
-            <p className="font-semibold text-sm">{profile?.full_name || profile?.username || "משתמש"}</p>
+            <div className="flex items-center gap-1.5">
+              <p className="font-semibold text-sm">{profile?.full_name || profile?.username || "משתמש"}</p>
+              {profile?.is_verified && <VerifiedBadge size={14} />}
+            </div>
             <p className="text-xs text-muted-foreground">{timeAgo}</p>
           </div>
         </div>
