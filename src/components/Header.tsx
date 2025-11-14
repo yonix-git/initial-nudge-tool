@@ -16,6 +16,8 @@ const Header = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<any>(null);
+  const [unreadMessages, setUnreadMessages] = useState(0);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -86,20 +88,24 @@ const Header = () => {
           
           <Button variant="ghost" size="icon" className="relative">
             <MessageCircle className="h-5 w-5" />
-            <Badge 
-              className="absolute -top-1 -left-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-primary"
-            >
-              0
-            </Badge>
+            {unreadMessages > 0 && (
+              <Badge 
+                className="absolute -top-1 -left-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-primary"
+              >
+                {unreadMessages > 99 ? '99+' : unreadMessages}
+              </Badge>
+            )}
           </Button>
           
           <Button variant="ghost" size="icon" className="relative">
             <Bell className="h-5 w-5" />
-            <Badge 
-              className="absolute -top-1 -left-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-primary"
-            >
-              0
-            </Badge>
+            {unreadNotifications > 0 && (
+              <Badge 
+                className="absolute -top-1 -left-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-primary"
+              >
+                {unreadNotifications > 99 ? '99+' : unreadNotifications}
+              </Badge>
+            )}
           </Button>
           
           {user ? (
