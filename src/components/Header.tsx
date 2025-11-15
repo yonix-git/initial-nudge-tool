@@ -1,9 +1,10 @@
-import { Car, Search, Bell, MessageCircle } from "lucide-react";
+import { Car, Search, Bell, MessageCircle, Menu, Users, Wrench, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -18,6 +19,7 @@ const Header = () => {
   const [profile, setProfile] = useState<any>(null);
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -44,13 +46,58 @@ const Header = () => {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-card/70 backdrop-blur-2xl supports-[backdrop-filter]:bg-card/60 shadow-xl">
       <div className="container flex h-16 items-center justify-between px-4" dir={dir}>
-        <div className="flex items-center gap-6">
-          <Link to="/" className="flex items-center gap-3 group">
-            <div className="relative rounded-2xl bg-gradient-to-br from-primary via-primary/95 to-primary/90 p-2.5 shadow-lg group-hover:shadow-2xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-3">
-              <Car className="h-6 w-6 text-primary-foreground relative z-10" />
+        <div className="flex items-center gap-3 sm:gap-6">
+          {/* Mobile Menu */}
+          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+            <SheetTrigger asChild className="md:hidden">
+              <Button variant="ghost" size="icon">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side={dir === "rtl" ? "right" : "left"} className="w-[280px]">
+              <div className="flex flex-col gap-4 mt-8">
+                <Link 
+                  to="/" 
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Car className="h-5 w-5" />
+                  <span className="font-medium">{t("header.feed")}</span>
+                </Link>
+                <Link 
+                  to="/groups" 
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Users className="h-5 w-5" />
+                  <span className="font-medium">{t("header.groups")}</span>
+                </Link>
+                <Link 
+                  to="/services" 
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Wrench className="h-5 w-5" />
+                  <span className="font-medium">{t("header.services")}</span>
+                </Link>
+                <Link 
+                  to="/events" 
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Calendar className="h-5 w-5" />
+                  <span className="font-medium">{t("header.events")}</span>
+                </Link>
+              </div>
+            </SheetContent>
+          </Sheet>
+
+          <Link to="/" className="flex items-center gap-2 sm:gap-3 group">
+            <div className="relative rounded-2xl bg-gradient-to-br from-primary via-primary/95 to-primary/90 p-2 sm:p-2.5 shadow-lg group-hover:shadow-2xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-3">
+              <Car className="h-5 w-5 sm:h-6 sm:w-6 text-primary-foreground relative z-10" />
               <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-foreground via-foreground/90 to-foreground/80 bg-clip-text text-transparent">MotorHub</span>
+            <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-foreground via-foreground/90 to-foreground/80 bg-clip-text text-transparent">MotorHub</span>
           </Link>
           
           <nav className="hidden md:flex items-center gap-6">
@@ -69,7 +116,7 @@ const Header = () => {
           </nav>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <div className="hidden sm:flex items-center gap-2 max-w-sm">
             <div className="relative flex-1">
               <Search className={`absolute ${dir === 'rtl' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground`} />
