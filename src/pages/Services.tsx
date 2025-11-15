@@ -54,7 +54,7 @@ const Services = () => {
     const labels: Record<string, string> = {
       'garage': 'מוסך',
       'tire_shop': 'פנצריה',
-      'gas_station': 'תחנת דלק'
+      'gas_station': 'בעל מקצוע'
     };
     return labels[type] || type;
   };
@@ -112,7 +112,7 @@ const Services = () => {
               <TabsTrigger value="all">הכל</TabsTrigger>
               <TabsTrigger value="garage">מוסכים</TabsTrigger>
               <TabsTrigger value="tire_shop">פנצריות</TabsTrigger>
-              <TabsTrigger value="gas_station">תחנות דלק</TabsTrigger>
+              <TabsTrigger value="gas_station">בעלי מקצוע</TabsTrigger>
             </TabsList>
 
             <TabsContent value={filterType} className="mt-6">
