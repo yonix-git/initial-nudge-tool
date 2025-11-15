@@ -49,9 +49,68 @@ export type Database = {
           },
         ]
       }
+      event_interested: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_interested_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_participants: {
+        Row: {
+          event_id: string
+          id: string
+          joined_at: string
+          user_id: string
+        }
+        Insert: {
+          event_id: string
+          id?: string
+          joined_at?: string
+          user_id: string
+        }
+        Update: {
+          event_id?: string
+          id?: string
+          joined_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_participants_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           created_at: string
+          creator_id: string | null
           date: string
           description: string
           id: string
@@ -66,6 +125,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          creator_id?: string | null
           date: string
           description: string
           id?: string
@@ -80,6 +140,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          creator_id?: string | null
           date?: string
           description?: string
           id?: string
@@ -94,10 +155,40 @@ export type Database = {
         }
         Relationships: []
       }
+      group_members: {
+        Row: {
+          group_id: string
+          id: string
+          joined_at: string
+          user_id: string
+        }
+        Insert: {
+          group_id: string
+          id?: string
+          joined_at?: string
+          user_id: string
+        }
+        Update: {
+          group_id?: string
+          id?: string
+          joined_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       groups: {
         Row: {
           category: string
           created_at: string
+          creator_id: string | null
           description: string
           id: string
           members: number
@@ -107,6 +198,7 @@ export type Database = {
         Insert: {
           category: string
           created_at?: string
+          creator_id?: string | null
           description: string
           id?: string
           members?: number
@@ -116,6 +208,7 @@ export type Database = {
         Update: {
           category?: string
           created_at?: string
+          creator_id?: string | null
           description?: string
           id?: string
           members?: number
@@ -345,6 +438,7 @@ export type Database = {
         Row: {
           address: string
           created_at: string
+          creator_id: string | null
           distance: string
           id: string
           name: string
@@ -357,6 +451,7 @@ export type Database = {
         Insert: {
           address: string
           created_at?: string
+          creator_id?: string | null
           distance: string
           id?: string
           name: string
@@ -369,6 +464,7 @@ export type Database = {
         Update: {
           address?: string
           created_at?: string
+          creator_id?: string | null
           distance?: string
           id?: string
           name?: string
