@@ -139,12 +139,19 @@ const Auth = () => {
 
       const trimmedEmail = email.trim();
 
+      console.log("Sending verification code to:", trimmedEmail);
+
       // Send verification code
-      const { error } = await supabase.functions.invoke('send-verification-code', {
+      const { data, error } = await supabase.functions.invoke('send-verification-code', {
         body: { email: trimmedEmail }
       });
 
-      if (error) throw error;
+      console.log("Verification response:", { data, error });
+
+      if (error) {
+        console.error("Verification error:", error);
+        throw new Error(error.message || "שגיאה בשליחת קוד אימות");
+      }
 
       setShowVerification(true);
       toast({
@@ -152,9 +159,10 @@ const Auth = () => {
         description: "בדוק את תיבת הדואר שלך והזן את הקוד שקיבלת",
       });
     } catch (error: any) {
+      console.error("Error in handleSendVerificationCode:", error);
       toast({
         title: "שגיאה בשליחת קוד אימות",
-        description: error.message,
+        description: error.message || "אנא נסה שוב מאוחר יותר",
         variant: "destructive",
       });
     } finally {
