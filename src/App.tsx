@@ -12,6 +12,7 @@ import Services from "./pages/Services";
 import Events from "./pages/Events";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
+import Install from "./pages/Install";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/events" element={<Events />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/install" element={<Install />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
