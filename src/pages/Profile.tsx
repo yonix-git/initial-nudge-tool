@@ -274,36 +274,42 @@ const Profile = () => {
                           ))}
                         </div>
                       )}
-                      <div className="flex gap-3 mt-2">
+                      <div className="flex gap-4 mt-2">
                         {profile?.business_phone && (
-                          <Button 
-                            size="sm" 
-                            variant="outline" 
-                            className="gap-2"
-                            asChild
-                          >
-                            <a href={`tel:${profile.business_phone}`}>
-                              <Phone className="h-4 w-4" />
-                              {t("business.call")}
-                            </a>
-                          </Button>
+                          <div className="flex flex-col items-start gap-1">
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="gap-2"
+                              asChild
+                            >
+                              <a href={`tel:${profile.business_phone}`}>
+                                <Phone className="h-4 w-4" />
+                                {t("business.call")}
+                              </a>
+                            </Button>
+                            <p className="text-xs text-muted-foreground">{profile.business_phone}</p>
+                          </div>
                         )}
                         {profile?.business_address && (
-                          <Button 
-                            size="sm" 
-                            variant="outline" 
-                            className="gap-2"
-                            asChild
-                          >
-                            <a 
-                              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(profile.business_address)}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
+                          <div className="flex flex-col items-start gap-1">
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="gap-2"
+                              asChild
                             >
-                              <MapPin className="h-4 w-4" />
-                              {t("business.navigate")}
-                            </a>
-                          </Button>
+                              <a 
+                                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(profile.business_address)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <MapPin className="h-4 w-4" />
+                                {t("business.navigate")}
+                              </a>
+                            </Button>
+                            <p className="text-xs text-muted-foreground">{profile.business_address}</p>
+                          </div>
                         )}
                       </div>
                     </div>
