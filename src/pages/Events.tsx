@@ -50,23 +50,34 @@ const Events = () => {
 
   const handleInterest = async (eventId: string) => {
     const isInterested = interestedEvents.has(eventId);
-    const event = events.find(e => e.id === eventId);
-    if (!event) return;
-
-    const newInterestedCount = isInterested ? event.interested - 1 : event.interested + 1;
-
+    
     try {
-      const { error } = await supabase
-        .from('events')
-        .update({ interested: newInterestedCount })
-        .eq('id', eventId);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.error('User not authenticated');
+        return;
+      }
 
-      if (error) throw error;
+      if (isInterested) {
+        // Remove interest
+        const { error } = await supabase
+          .from('event_interested')
+          .delete()
+          .eq('event_id', eventId)
+          .eq('user_id', user.id);
 
-      // Update local state
-      setEvents(events.map(e => 
-        e.id === eventId ? { ...e, interested: newInterestedCount } : e
-      ));
+        if (error) throw error;
+      } else {
+        // Add interest
+        const { error } = await supabase
+          .from('event_interested')
+          .insert({
+            event_id: eventId,
+            user_id: user.id,
+          });
+
+        if (error) throw error;
+      }
 
       // Toggle interested state
       const newInterested = new Set(interestedEvents);
@@ -85,20 +96,37 @@ const Events = () => {
     const event = events.find(e => e.id === eventId);
     if (!event || event.participants >= event.max_participants) return;
 
-    const newParticipants = event.participants + 1;
-
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.error('User not authenticated');
+        return;
+      }
+
       const { error } = await supabase
+        .from('event_participants')
+        .insert({
+          event_id: eventId,
+          user_id: user.id,
+        });
+
+      if (error) {
+        if (error.code === '23505') {
+          console.log('User already joined this event');
+        } else {
+          throw error;
+        }
+      }
+
+      // Refresh events to get updated count
+      const { data: updatedEvents } = await supabase
         .from('events')
-        .update({ participants: newParticipants })
-        .eq('id', eventId);
-
-      if (error) throw error;
-
-      // Update local state
-      setEvents(events.map(e => 
-        e.id === eventId ? { ...e, participants: newParticipants } : e
-      ));
+        .select('*')
+        .order('date', { ascending: true });
+      
+      if (updatedEvents) {
+        setEvents(updatedEvents);
+      }
     } catch (error) {
       console.error('Error joining event:', error);
     }

@@ -103,7 +103,33 @@ const Groups = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground mb-4">{group.description}</p>
-                  <Button className="w-full">הצטרף לקבוצה</Button>
+                  <Button 
+                    className="w-full"
+                    onClick={async () => {
+                      const { data: { user } } = await supabase.auth.getUser();
+                      if (!user) {
+                        console.error('User not authenticated');
+                        return;
+                      }
+                      
+                      const { error } = await supabase
+                        .from('group_members')
+                        .insert({
+                          group_id: group.id,
+                          user_id: user.id,
+                        });
+
+                      if (error) {
+                        if (error.code === '23505') {
+                          console.log('Already a member');
+                        } else {
+                          console.error('Error joining group:', error);
+                        }
+                      }
+                    }}
+                  >
+                    הצטרף לקבוצה
+                  </Button>
                 </CardContent>
               </Card>
               ))

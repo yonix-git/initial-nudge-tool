@@ -7,11 +7,30 @@ import { Textarea } from "@/components/ui/textarea";
 import { Plus, Upload, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { z } from "zod";
 
 interface AddProductDialogProps {
   businessId: string;
   onProductAdded: () => void;
 }
+
+const productSchema = z.object({
+  name: z.string()
+    .trim()
+    .min(1, "שם המוצר חייב להכיל לפחות תו אחד")
+    .max(100, "שם המוצר לא יכול להכיל יותר מ-100 תווים"),
+  description: z.string()
+    .trim()
+    .max(1000, "התיאור לא יכול להכיל יותר מ-1000 תווים")
+    .optional(),
+  price: z.string()
+    .trim()
+    .regex(/^\d+(\.\d{1,2})?$/, "המחיר חייב להיות מספר חיובי עם עד 2 ספרות אחרי הנקודה")
+    .refine((val) => parseFloat(val) > 0, "המחיר חייב להיות גדול מאפס"),
+});
+
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
 
 const AddProductDialog = ({ businessId, onProductAdded }: AddProductDialogProps) => {
   const [open, setOpen] = useState(false);
@@ -26,6 +45,26 @@ const AddProductDialog = ({ businessId, onProductAdded }: AddProductDialogProps)
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Validate file type
+      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+        toast({
+          title: "שגיאה",
+          description: "סוג קובץ לא נתמך. אנא העלה קובץ JPG, PNG או WebP",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Validate file size
+      if (file.size > MAX_IMAGE_SIZE) {
+        toast({
+          title: "שגיאה",
+          description: "הקובץ גדול מדי. גודל מקסימלי: 5MB",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       setImage(file);
       setImagePreview(URL.createObjectURL(file));
     }
@@ -37,10 +76,18 @@ const AddProductDialog = ({ businessId, onProductAdded }: AddProductDialogProps)
   };
 
   const handleSubmit = async () => {
-    if (!name || !price) {
+    // Validate input with zod
+    const validation = productSchema.safeParse({
+      name,
+      description,
+      price,
+    });
+
+    if (!validation.success) {
+      const errors = validation.error.errors;
       toast({
-        title: "שגיאה",
-        description: "נא למלא שם ומחיר",
+        title: "שגיאה באימות",
+        description: errors[0].message,
         variant: "destructive",
       });
       return;
@@ -68,9 +115,9 @@ const AddProductDialog = ({ businessId, onProductAdded }: AddProductDialogProps)
 
       const { error } = await supabase.from("products").insert({
         business_id: businessId,
-        name,
-        description,
-        price: parseFloat(price),
+        name: validation.data.name,
+        description: validation.data.description || null,
+        price: parseFloat(validation.data.price),
         image_url: imageUrl,
       });
 
