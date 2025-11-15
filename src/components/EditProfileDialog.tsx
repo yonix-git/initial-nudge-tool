@@ -168,15 +168,30 @@ const EditProfileDialog = ({ currentName, currentBio, currentVehicle, currentPro
               className="min-h-[100px]"
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="vehicle">הרכב שלי</Label>
-            <Input
-              id="vehicle"
-              value={vehicle}
-              onChange={(e) => setVehicle(e.target.value)}
-              placeholder="למשל: מאזדה 3 2019"
-            />
-          </div>
+          
+          {!isBusinessAccount && (
+            <div className="space-y-2">
+              <Label htmlFor="vehicle">הרכב שלי</Label>
+              <Input
+                id="vehicle"
+                value={vehicle}
+                onChange={(e) => setVehicle(e.target.value)}
+                placeholder="למשל: מאזדה 3 2019"
+              />
+            </div>
+          )}
+          
+          {isBusinessAccount && (
+            <div className="space-y-2">
+              <Label htmlFor="businessName">שם העסק</Label>
+              <Input
+                id="businessName"
+                value={vehicle}
+                onChange={(e) => setVehicle(e.target.value)}
+                placeholder="שם העסק שלך"
+              />
+            </div>
+          )}
           
           {/* Business Fields */}
           {isBusinessAccount && (
