@@ -141,13 +141,14 @@ const CreatePost = ({ onPostCreated }: { onPostCreated?: () => void }) => {
               {getInitials(profile?.full_name || profile?.username || "")}
             </AvatarFallback>
           </Avatar>
-          <div className="flex-1">
+          <div className="flex-1 relative z-10">
             <Textarea 
               placeholder="מה חדש ברכב שלך?"
-              className="min-h-[80px] resize-none mb-3 placeholder:text-foreground/60 placeholder:font-medium"
+              className="min-h-[80px] resize-none mb-3 placeholder:text-muted-foreground text-foreground bg-background"
               value={content}
               onChange={(e) => setContent(e.target.value)}
               disabled={isPosting}
+              dir="rtl"
             />
             
             {filePreview && (
