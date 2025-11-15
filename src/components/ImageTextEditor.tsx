@@ -115,6 +115,7 @@ export const ImageTextEditor = ({ imageUrl, isOpen, onClose, onSave }: ImageText
               onChange={(e) => setTextInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAddText()}
               className="flex-1"
+              autoFocus
             />
             <Input
               type="color"
