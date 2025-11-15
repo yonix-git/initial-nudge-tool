@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Pencil, Upload, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import ImageCropDialog from "./ImageCropDialog";
 
 interface EditProfileDialogProps {
@@ -109,7 +110,8 @@ const EditProfileDialog = ({ currentName, currentBio, currentVehicle, currentPro
           <DialogHeader>
             <DialogTitle>ערוך פרופיל</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <ScrollArea className="max-h-[60vh] px-1">
+            <div className="space-y-4 py-4 pr-4">
             <div className="flex flex-col items-center">
               <input
                 type="file"
@@ -219,8 +221,9 @@ const EditProfileDialog = ({ currentName, currentBio, currentVehicle, currentPro
               </div>
             </>
           )}
-        </div>
-        <div className="flex gap-2 justify-end">
+            </div>
+          </ScrollArea>
+          <div className="flex gap-2 justify-end">
           <Button variant="outline" onClick={() => setOpen(false)}>
             ביטול
           </Button>
