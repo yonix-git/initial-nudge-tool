@@ -218,30 +218,30 @@ const Profile = () => {
     <div className="min-h-screen bg-background" dir={dir}>
       <Header />
       
-      <main className="container max-w-2xl py-6 px-4">
-        <div className="space-y-6">
+      <main className="container max-w-2xl py-4 sm:py-6 px-3 sm:px-4">
+        <div className="space-y-4 sm:space-y-6">
           {/* Profile Header */}
           <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-start gap-4">
-                <Avatar className="h-20 w-20">
+            <CardContent className="pt-4 sm:pt-6 pb-4">
+              <div className="flex flex-col sm:flex-row items-start gap-4">
+                <Avatar className="h-16 w-16 sm:h-20 sm:w-20 flex-shrink-0">
                   {profile?.profile_picture_url && (
                     <AvatarImage src={profile.profile_picture_url} alt="Profile" />
                   )}
-                  <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
+                  <AvatarFallback className="bg-primary text-primary-foreground text-xl sm:text-2xl">
                     {getInitials(profile?.full_name || profile?.username || "")}
                   </AvatarFallback>
                 </Avatar>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-2">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h1 className="text-2xl font-bold">{profile?.full_name || profile?.username || "משתמש"}</h1>
-                        {profile?.is_verified && <VerifiedBadge size={20} />}
+                <div className="flex-1 w-full min-w-0">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-2">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h1 className="text-xl sm:text-2xl font-bold truncate">{profile?.full_name || profile?.username || "משתמש"}</h1>
+                        {profile?.is_verified && <VerifiedBadge size={18} />}
                       </div>
-                      {profile?.username && <p className="text-sm text-muted-foreground">@{profile.username}</p>}
+                      {profile?.username && <p className="text-sm text-muted-foreground truncate">@{profile.username}</p>}
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-shrink-0">
                       <EditProfileDialog 
                         currentName={profile?.full_name || profile?.username || ""}
                         currentBio={profile?.bio || ""}
@@ -257,13 +257,13 @@ const Profile = () => {
                       </Link>
                     </div>
                   </div>
-                  <p className="text-muted-foreground mt-1 whitespace-pre-wrap">{profile?.bio || "אין תיאור"}</p>
+                  <p className="text-muted-foreground text-sm sm:text-base mt-1 whitespace-pre-wrap break-words">{profile?.bio || "אין תיאור"}</p>
                   
                   {/* Business Info */}
                   {profile?.account_type === 'business' && (
                     <div className="mt-3 space-y-2">
                       {profile?.business_description && (
-                        <p className="text-sm">{profile.business_description}</p>
+                        <p className="text-sm break-words">{profile.business_description}</p>
                       )}
                       {profile?.business_categories && profile.business_categories.length > 0 && (
                         <div className="flex flex-wrap gap-1">
@@ -274,13 +274,13 @@ const Profile = () => {
                           ))}
                         </div>
                       )}
-                      <div className="flex gap-4 mt-2">
+                      <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mt-2">
                         {profile?.business_phone && (
-                          <div className="flex flex-col items-start gap-1">
+                          <div className="flex flex-col items-start gap-1 w-full sm:w-auto">
                             <Button 
                               size="sm" 
                               variant="outline" 
-                              className="gap-2"
+                              className="gap-2 w-full sm:w-auto"
                               asChild
                             >
                               <a href={`tel:${profile.business_phone}`}>
@@ -288,15 +288,15 @@ const Profile = () => {
                                 {t("business.call")}
                               </a>
                             </Button>
-                            <p className="text-xs text-muted-foreground">{profile.business_phone}</p>
+                            <p className="text-xs text-muted-foreground truncate max-w-full">{profile.business_phone}</p>
                           </div>
                         )}
                         {profile?.business_address && (
-                          <div className="flex flex-col items-start gap-1">
+                          <div className="flex flex-col items-start gap-1 w-full sm:w-auto">
                             <Button 
                               size="sm" 
                               variant="outline" 
-                              className="gap-2"
+                              className="gap-2 w-full sm:w-auto"
                               asChild
                             >
                               <a 
@@ -308,7 +308,7 @@ const Profile = () => {
                                 {t("business.navigate")}
                               </a>
                             </Button>
-                            <p className="text-xs text-muted-foreground">{profile.business_address}</p>
+                            <p className="text-xs text-muted-foreground truncate max-w-full">{profile.business_address}</p>
                           </div>
                         )}
                       </div>
@@ -316,10 +316,10 @@ const Profile = () => {
                   )}
                   
                   {profile?.vehicle_type && profile?.account_type !== 'business' && (
-                    <p className="text-sm text-muted-foreground mt-2">🚗 {profile.vehicle_type}</p>
+                    <p className="text-sm text-muted-foreground mt-2 truncate">🚗 {profile.vehicle_type}</p>
                   )}
                   
-                  <div className="flex gap-6 mt-3 text-sm">
+                  <div className="flex flex-wrap gap-4 sm:gap-6 mt-3 text-sm">
                     <div>
                       <span className="font-semibold">{posts.length}</span>
                       <span className="text-muted-foreground mr-1">פוסטים</span>
@@ -358,31 +358,33 @@ const Profile = () => {
           {/* Business Profile */}
           {profile?.account_type === 'business' ? (
             <Tabs defaultValue="products" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="products" className="gap-2">
-                  <Package className="h-4 w-4" />
-                  מוצרים
+              <TabsList className="grid w-full grid-cols-3 h-auto">
+                <TabsTrigger value="products" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2">
+                  <Package className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="hidden xs:inline">מוצרים</span>
+                  <span className="xs:hidden">מוצרים</span>
                 </TabsTrigger>
-                <TabsTrigger value="reviews" className="gap-2">
-                  <Star className="h-4 w-4" />
-                  ביקורות
+                <TabsTrigger value="reviews" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2">
+                  <Star className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="hidden xs:inline">ביקורות</span>
+                  <span className="xs:hidden">ביקורות</span>
                 </TabsTrigger>
-                <TabsTrigger value="posts">פוסטים</TabsTrigger>
+                <TabsTrigger value="posts" className="text-xs sm:text-sm py-2">פוסטים</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="products" className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-xl font-semibold">המוצרים שלי</h2>
+              <TabsContent value="products" className="space-y-4 mt-4">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                  <h2 className="text-lg sm:text-xl font-semibold">המוצרים שלי</h2>
                   <AddProductDialog businessId={user!.id} onProductAdded={fetchProducts} />
                 </div>
                 {products.length === 0 ? (
                   <Card>
-                    <CardContent className="pt-6 text-center text-muted-foreground">
+                    <CardContent className="pt-6 text-center text-muted-foreground text-sm">
                       עדיין לא הוספת מוצרים. הוסף את המוצר הראשון שלך!
                     </CardContent>
                   </Card>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     {products.map((product) => (
                       <ProductCard key={product.id} product={product} />
                     ))}
@@ -390,18 +392,18 @@ const Profile = () => {
                 )}
               </TabsContent>
 
-              <TabsContent value="reviews" className="space-y-4">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-semibold">הביקורות שלי</h2>
-                  <div className="flex items-center gap-2 text-lg">
-                    <Star className="h-6 w-6 fill-yellow-400 text-yellow-400" />
+              <TabsContent value="reviews" className="space-y-4 mt-4">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+                  <h2 className="text-lg sm:text-xl font-semibold">הביקורות שלי</h2>
+                  <div className="flex items-center gap-2 text-base sm:text-lg">
+                    <Star className="h-5 w-5 sm:h-6 sm:w-6 fill-yellow-400 text-yellow-400" />
                     <span className="font-bold">{profile?.average_rating?.toFixed(1) || "0.0"}</span>
-                    <span className="text-muted-foreground">({profile?.reviews_count || 0} ביקורות)</span>
+                    <span className="text-muted-foreground text-sm sm:text-base">({profile?.reviews_count || 0} ביקורות)</span>
                   </div>
                 </div>
                 {reviews.length === 0 ? (
                   <Card>
-                    <CardContent className="pt-6 text-center text-muted-foreground">
+                    <CardContent className="pt-6 text-center text-muted-foreground text-sm">
                       עדיין אין ביקורות לעסק שלך
                     </CardContent>
                   </Card>
@@ -414,12 +416,12 @@ const Profile = () => {
                 )}
               </TabsContent>
 
-              <TabsContent value="posts" className="space-y-4">
+              <TabsContent value="posts" className="space-y-4 mt-4">
                 <CreatePost onPostCreated={fetchPosts} />
-                <h2 className="text-xl font-semibold">הפוסטים שלי</h2>
+                <h2 className="text-lg sm:text-xl font-semibold">הפוסטים שלי</h2>
                 {posts.length === 0 ? (
                   <Card>
-                    <CardContent className="pt-6 text-center text-muted-foreground">
+                    <CardContent className="pt-6 text-center text-muted-foreground text-sm">
                       עדיין לא פרסמת פוסטים. צור את הפוסט הראשון שלך!
                     </CardContent>
                   </Card>
@@ -445,10 +447,10 @@ const Profile = () => {
             <>
               <CreatePost onPostCreated={fetchPosts} />
               <div className="space-y-4">
-                <h2 className="text-xl font-semibold">הפוסטים שלי</h2>
+                <h2 className="text-lg sm:text-xl font-semibold">הפוסטים שלי</h2>
                 {posts.length === 0 ? (
                   <Card>
-                    <CardContent className="pt-6 text-center text-muted-foreground">
+                    <CardContent className="pt-6 text-center text-muted-foreground text-sm">
                       עדיין לא פרסמת פוסטים. צור את הפוסט הראשון שלך!
                     </CardContent>
                   </Card>
