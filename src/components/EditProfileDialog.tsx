@@ -199,7 +199,10 @@ const EditProfileDialog = ({ currentName, currentBio, currentVehicle, currentPro
                 <Input
                   id="businessPhone"
                   value={businessPhone}
-                  onChange={(e) => setBusinessPhone(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^0-9\-]/g, '');
+                    setBusinessPhone(value);
+                  }}
                   placeholder="050-1234567"
                   type="tel"
                 />
