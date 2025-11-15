@@ -57,6 +57,17 @@ const Profile = () => {
     }
   };
 
+  const handleDeleteProduct = async (productId: string) => {
+    const { error } = await supabase
+      .from("products")
+      .delete()
+      .eq("id", productId);
+
+    if (!error) {
+      await fetchProducts();
+    }
+  };
+
   const fetchReviews = async () => {
     if (!user) return;
 
@@ -386,7 +397,12 @@ const Profile = () => {
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     {products.map((product) => (
-                      <ProductCard key={product.id} product={product} />
+                      <ProductCard 
+                        key={product.id} 
+                        product={product} 
+                        onDelete={handleDeleteProduct}
+                        showDelete={true}
+                      />
                     ))}
                   </div>
                 )}
