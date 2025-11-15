@@ -309,11 +309,8 @@ const Profile = () => {
                     </div>
                   )}
                   
-                  {profile?.vehicle_type && (
-                    <p className="text-sm font-semibold mt-2">
-                      {profile?.account_type === 'business' ? '🏢 ' : '🚗 '}
-                      {profile.vehicle_type}
-                    </p>
+                  {profile?.vehicle_type && profile?.account_type !== 'business' && (
+                    <p className="text-sm text-muted-foreground mt-2">🚗 {profile.vehicle_type}</p>
                   )}
                   
                   <div className="flex gap-6 mt-3 text-sm">
