@@ -137,13 +137,7 @@ const Auth = () => {
         throw new Error("הסיסמה שבחרת נפוצה מדי, אנא בחר סיסמה אחרת");
       }
 
-      // Development mode: Only allow testing email
       const trimmedEmail = email.trim();
-      const allowedTestEmail = "yoni2435@gmail.com";
-      
-      if (trimmedEmail !== allowedTestEmail) {
-        throw new Error(`במצב פיתוח, ניתן להירשם רק עם המייל: ${allowedTestEmail}`);
-      }
 
       // Send verification code
       const { error } = await supabase.functions.invoke('send-verification-code', {
