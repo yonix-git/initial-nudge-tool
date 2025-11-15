@@ -1,4 +1,4 @@
-import { Image, Video, X } from "lucide-react";
+import { Image, Video, X, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -7,6 +7,7 @@ import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { ImageTextEditor } from "./ImageTextEditor";
 
 const CreatePost = ({ onPostCreated }: { onPostCreated?: () => void }) => {
   const { user } = useAuth();
@@ -16,6 +17,8 @@ const CreatePost = ({ onPostCreated }: { onPostCreated?: () => void }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [fileType, setFileType] = useState<"image" | "video" | null>(null);
+  const [isEditingImage, setIsEditingImage] = useState(false);
+  const [editedImageBlob, setEditedImageBlob] = useState<Blob | null>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
 
@@ -47,8 +50,15 @@ const CreatePost = ({ onPostCreated }: { onPostCreated?: () => void }) => {
     setSelectedFile(null);
     setFilePreview(null);
     setFileType(null);
+    setEditedImageBlob(null);
     if (imageInputRef.current) imageInputRef.current.value = "";
     if (videoInputRef.current) videoInputRef.current.value = "";
+  };
+
+  const handleSaveEditedImage = (blob: Blob) => {
+    setEditedImageBlob(blob);
+    setIsEditingImage(false);
+    toast.success("התמונה נערכה בהצלחה!");
   };
 
   const handlePost = async () => {
@@ -63,14 +73,17 @@ const CreatePost = ({ onPostCreated }: { onPostCreated?: () => void }) => {
       let videoUrl = null;
 
       // Upload file if selected
-      if (selectedFile && fileType) {
-        const fileExt = selectedFile.name.split(".").pop();
+      if ((selectedFile || editedImageBlob) && fileType) {
+        const fileToUpload = editedImageBlob || selectedFile;
+        if (!fileToUpload) throw new Error("No file to upload");
+
+        const fileExt = editedImageBlob ? "png" : selectedFile!.name.split(".").pop();
         const fileName = `${user.id}/${Date.now()}.${fileExt}`;
         const bucketName = fileType === "image" ? "avatars" : "videos";
 
         const { error: uploadError } = await supabase.storage
           .from(bucketName)
-          .upload(fileName, selectedFile);
+          .upload(fileName, fileToUpload);
 
         if (uploadError) throw uploadError;
 
@@ -116,6 +129,7 @@ const CreatePost = ({ onPostCreated }: { onPostCreated?: () => void }) => {
   };
 
   return (
+    <>
     <Card>
       <CardContent className="pt-6">
         <div className="flex gap-3">
@@ -139,19 +153,43 @@ const CreatePost = ({ onPostCreated }: { onPostCreated?: () => void }) => {
             {filePreview && (
               <div className="relative mb-3 rounded-lg overflow-hidden bg-muted">
                 {fileType === "image" ? (
-                  <img src={filePreview} alt="Preview" className="w-full max-h-96 object-cover" />
+                  <>
+                    <img src={filePreview} alt="Preview" className="w-full max-h-96 object-cover" />
+                    <div className="absolute top-2 left-2 right-2 flex gap-2">
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        onClick={() => setIsEditingImage(true)}
+                        disabled={isPosting}
+                        className="bg-background/80 hover:bg-background"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        className="mr-auto"
+                        onClick={handleRemoveFile}
+                        disabled={isPosting}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </>
                 ) : (
-                  <video src={filePreview} controls className="w-full max-h-96" />
+                  <>
+                    <video src={filePreview} controls className="w-full max-h-96" />
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      className="absolute top-2 right-2"
+                      onClick={handleRemoveFile}
+                      disabled={isPosting}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </>
                 )}
-                <Button
-                  variant="destructive"
-                  size="icon"
-                  className="absolute top-2 right-2"
-                  onClick={handleRemoveFile}
-                  disabled={isPosting}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
               </div>
             )}
 
@@ -203,7 +241,7 @@ const CreatePost = ({ onPostCreated }: { onPostCreated?: () => void }) => {
               <Button 
                 size="sm" 
                 onClick={handlePost}
-                disabled={(!content.trim() && !selectedFile) || isPosting}
+                disabled={(!content.trim() && !selectedFile && !editedImageBlob) || isPosting}
               >
                 {isPosting ? "מפרסם..." : "פרסם"}
               </Button>
@@ -212,6 +250,16 @@ const CreatePost = ({ onPostCreated }: { onPostCreated?: () => void }) => {
         </div>
       </CardContent>
     </Card>
+
+    {filePreview && fileType === "image" && (
+      <ImageTextEditor
+        imageUrl={filePreview}
+        isOpen={isEditingImage}
+        onClose={() => setIsEditingImage(false)}
+        onSave={handleSaveEditedImage}
+      />
+    )}
+  </>
   );
 };
 
