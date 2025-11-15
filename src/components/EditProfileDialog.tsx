@@ -150,12 +150,12 @@ const EditProfileDialog = ({ currentName, currentBio, currentVehicle, currentPro
               </p>
             </div>
           <div className="space-y-2">
-            <Label htmlFor="name">שם</Label>
+            <Label htmlFor="name">{isBusinessAccount ? "שם העסק" : "שם"}</Label>
             <Input
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="השם שלך"
+              placeholder={isBusinessAccount ? "שם העסק שלך" : "השם שלך"}
             />
           </div>
           <div className="space-y-2">
@@ -177,18 +177,6 @@ const EditProfileDialog = ({ currentName, currentBio, currentVehicle, currentPro
                 value={vehicle}
                 onChange={(e) => setVehicle(e.target.value)}
                 placeholder="למשל: מאזדה 3 2019"
-              />
-            </div>
-          )}
-          
-          {isBusinessAccount && (
-            <div className="space-y-2">
-              <Label htmlFor="businessName">שם העסק</Label>
-              <Input
-                id="businessName"
-                value={vehicle}
-                onChange={(e) => setVehicle(e.target.value)}
-                placeholder="שם העסק שלך"
               />
             </div>
           )}
