@@ -189,9 +189,51 @@ export type Database = {
         }
         Relationships: []
       }
+      products: {
+        Row: {
+          business_id: string
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          name: string
+          price: number
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          price: number
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          price?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           account_type: Database["public"]["Enums"]["account_type"]
+          average_rating: number | null
           bio: string | null
           business_address: string | null
           business_categories: string[] | null
@@ -205,12 +247,14 @@ export type Database = {
           id: string
           is_verified: boolean | null
           profile_picture_url: string | null
+          reviews_count: number | null
           updated_at: string
           username: string | null
           vehicle_type: string | null
         }
         Insert: {
           account_type?: Database["public"]["Enums"]["account_type"]
+          average_rating?: number | null
           bio?: string | null
           business_address?: string | null
           business_categories?: string[] | null
@@ -224,12 +268,14 @@ export type Database = {
           id: string
           is_verified?: boolean | null
           profile_picture_url?: string | null
+          reviews_count?: number | null
           updated_at?: string
           username?: string | null
           vehicle_type?: string | null
         }
         Update: {
           account_type?: Database["public"]["Enums"]["account_type"]
+          average_rating?: number | null
           bio?: string | null
           business_address?: string | null
           business_categories?: string[] | null
@@ -243,11 +289,57 @@ export type Database = {
           id?: string
           is_verified?: boolean | null
           profile_picture_url?: string | null
+          reviews_count?: number | null
           updated_at?: string
           username?: string | null
           vehicle_type?: string | null
         }
         Relationships: []
+      }
+      reviews: {
+        Row: {
+          business_id: string
+          comment: string | null
+          created_at: string
+          id: string
+          rating: number
+          reviewer_id: string
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating: number
+          reviewer_id: string
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating?: number
+          reviewer_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       services: {
         Row: {

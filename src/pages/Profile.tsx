@@ -4,20 +4,28 @@ import PostItem from "@/components/PostItem";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Settings as SettingsIcon, Phone, MapPin } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Settings as SettingsIcon, Phone, MapPin, Star, Package } from "lucide-react";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import EditProfileDialog from "@/components/EditProfileDialog";
+import AddProductDialog from "@/components/AddProductDialog";
+import ProductCard from "@/components/ProductCard";
+import AddReviewDialog from "@/components/AddReviewDialog";
+import ReviewCard from "@/components/ReviewCard";
 import { Link, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tables } from "@/integrations/supabase/types";
 
 const Profile = () => {
   const { user, loading: authLoading } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [posts, setPosts] = useState<any[]>([]);
+  const [products, setProducts] = useState<Tables<"products">[]>([]);
+  const [reviews, setReviews] = useState<Tables<"reviews">[]>([]);
   const [loading, setLoading] = useState(true);
   const { t, dir } = useLanguage();
 
@@ -32,6 +40,34 @@ const Profile = () => {
 
     if (data) {
       setPosts(data);
+    }
+  };
+
+  const fetchProducts = async () => {
+    if (!user) return;
+
+    const { data } = await supabase
+      .from("products")
+      .select("*")
+      .eq("business_id", user.id)
+      .order("created_at", { ascending: false });
+
+    if (data) {
+      setProducts(data);
+    }
+  };
+
+  const fetchReviews = async () => {
+    if (!user) return;
+
+    const { data } = await supabase
+      .from("reviews")
+      .select("*")
+      .eq("business_id", user.id)
+      .order("created_at", { ascending: false });
+
+    if (data) {
+      setReviews(data);
     }
   };
 
@@ -53,6 +89,13 @@ const Profile = () => {
       }
       
       await fetchPosts();
+      
+      // Fetch business-specific data
+      if (data?.account_type === 'business') {
+        await fetchProducts();
+        await fetchReviews();
+      }
+      
       setLoading(false);
     };
 
@@ -275,50 +318,152 @@ const Profile = () => {
                       <span className="font-semibold">{posts.length}</span>
                       <span className="text-muted-foreground mr-1">פוסטים</span>
                     </div>
-                    <div>
-                      <span className="font-semibold">{profile?.followers_count || 0}</span>
-                      <span className="text-muted-foreground mr-1">עוקבים</span>
-                    </div>
-                    <div>
-                      <span className="font-semibold">{profile?.following_count || 0}</span>
-                      <span className="text-muted-foreground mr-1">נעקבים</span>
-                    </div>
+                    {profile?.account_type === 'business' && (
+                      <>
+                        <div className="flex items-center gap-1">
+                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                          <span className="font-semibold">{profile?.average_rating?.toFixed(1) || "0.0"}</span>
+                          <span className="text-muted-foreground">({profile?.reviews_count || 0})</span>
+                        </div>
+                        <div>
+                          <span className="font-semibold">{products.length}</span>
+                          <span className="text-muted-foreground mr-1">מוצרים</span>
+                        </div>
+                      </>
+                    )}
+                    {profile?.account_type !== 'business' && (
+                      <>
+                        <div>
+                          <span className="font-semibold">{profile?.followers_count || 0}</span>
+                          <span className="text-muted-foreground mr-1">עוקבים</span>
+                        </div>
+                        <div>
+                          <span className="font-semibold">{profile?.following_count || 0}</span>
+                          <span className="text-muted-foreground mr-1">נעקבים</span>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Create Post */}
-          <CreatePost onPostCreated={fetchPosts} />
-          
-          {/* User Posts */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">הפוסטים שלי</h2>
-            {posts.length === 0 ? (
-              <Card>
-                <CardContent className="pt-6 text-center text-muted-foreground">
-                  עדיין לא פרסמת פוסטים. צור את הפוסט הראשון שלך!
-                </CardContent>
-              </Card>
-            ) : (
-              posts.map((post) => (
-                <PostItem 
-                  key={post.id}
-                  id={post.id}
-                  userId={post.user_id}
-                  content={post.content}
-                  imageUrl={post.image_url}
-                  videoUrl={post.video_url}
-                  likesCount={post.likes_count}
-                  commentsCount={post.comments_count}
-                  createdAt={post.created_at}
-                  onDelete={fetchPosts}
-                  onUpdate={fetchPosts}
-                />
-              ))
-            )}
-          </div>
+          {/* Business Profile */}
+          {profile?.account_type === 'business' ? (
+            <Tabs defaultValue="products" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="products" className="gap-2">
+                  <Package className="h-4 w-4" />
+                  מוצרים
+                </TabsTrigger>
+                <TabsTrigger value="reviews" className="gap-2">
+                  <Star className="h-4 w-4" />
+                  ביקורות
+                </TabsTrigger>
+                <TabsTrigger value="posts">פוסטים</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="products" className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-xl font-semibold">המוצרים שלי</h2>
+                  <AddProductDialog businessId={user!.id} onProductAdded={fetchProducts} />
+                </div>
+                {products.length === 0 ? (
+                  <Card>
+                    <CardContent className="pt-6 text-center text-muted-foreground">
+                      עדיין לא הוספת מוצרים. הוסף את המוצר הראשון שלך!
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {products.map((product) => (
+                      <ProductCard key={product.id} product={product} />
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="reviews" className="space-y-4">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-semibold">הביקורות שלי</h2>
+                  <div className="flex items-center gap-2 text-lg">
+                    <Star className="h-6 w-6 fill-yellow-400 text-yellow-400" />
+                    <span className="font-bold">{profile?.average_rating?.toFixed(1) || "0.0"}</span>
+                    <span className="text-muted-foreground">({profile?.reviews_count || 0} ביקורות)</span>
+                  </div>
+                </div>
+                {reviews.length === 0 ? (
+                  <Card>
+                    <CardContent className="pt-6 text-center text-muted-foreground">
+                      עדיין אין ביקורות לעסק שלך
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-3">
+                    {reviews.map((review) => (
+                      <ReviewCard key={review.id} review={review} />
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="posts" className="space-y-4">
+                <CreatePost onPostCreated={fetchPosts} />
+                <h2 className="text-xl font-semibold">הפוסטים שלי</h2>
+                {posts.length === 0 ? (
+                  <Card>
+                    <CardContent className="pt-6 text-center text-muted-foreground">
+                      עדיין לא פרסמת פוסטים. צור את הפוסט הראשון שלך!
+                    </CardContent>
+                  </Card>
+                ) : (
+                  posts.map((post) => (
+                    <PostItem 
+                      key={post.id}
+                      id={post.id}
+                      userId={post.user_id}
+                      content={post.content}
+                      imageUrl={post.image_url}
+                      videoUrl={post.video_url}
+                      likesCount={post.likes_count}
+                      commentsCount={post.comments_count}
+                      createdAt={post.created_at}
+                    />
+                  ))
+                )}
+              </TabsContent>
+            </Tabs>
+          ) : (
+            /* Regular User Profile */
+            <>
+              <CreatePost onPostCreated={fetchPosts} />
+              <div className="space-y-4">
+                <h2 className="text-xl font-semibold">הפוסטים שלי</h2>
+                {posts.length === 0 ? (
+                  <Card>
+                    <CardContent className="pt-6 text-center text-muted-foreground">
+                      עדיין לא פרסמת פוסטים. צור את הפוסט הראשון שלך!
+                    </CardContent>
+                  </Card>
+                ) : (
+                  posts.map((post) => (
+                    <PostItem 
+                      key={post.id}
+                      id={post.id}
+                      userId={post.user_id}
+                      content={post.content}
+                      imageUrl={post.image_url}
+                      videoUrl={post.video_url}
+                      likesCount={post.likes_count}
+                      commentsCount={post.comments_count}
+                      createdAt={post.created_at}
+                    />
+                  ))
+                )}
+              </div>
+            </>
+          )}
         </div>
       </main>
     </div>
