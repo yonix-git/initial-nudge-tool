@@ -143,7 +143,7 @@ const CreatePost = ({ onPostCreated }: { onPostCreated?: () => void }) => {
           </Avatar>
           <div className="flex-1 relative z-10">
             <Textarea 
-              placeholder="מה חדש ברכב שלך?"
+              placeholder={profile?.account_type === 'business' ? "שתף עדכון על העסק שלך" : "מה חדש ברכב שלך?"}
               className="min-h-[80px] resize-none mb-3 placeholder:text-muted-foreground text-foreground bg-background"
               value={content}
               onChange={(e) => setContent(e.target.value)}
