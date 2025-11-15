@@ -310,21 +310,21 @@ const PostItem = ({
           </div>
         ) : (
           <>
-            {content && <p className="text-sm mb-3 whitespace-pre-wrap">{content}</p>}
             {imageUrl && (
               <img 
                 src={imageUrl} 
                 alt="Post content" 
-                className="w-full rounded-lg object-cover max-h-96"
+                className="w-full rounded-lg object-cover max-h-96 mb-3"
               />
             )}
             {videoUrl && (
               <video 
                 src={videoUrl} 
                 controls 
-                className="w-full rounded-lg max-h-96"
+                className="w-full rounded-lg max-h-96 mb-3"
               />
             )}
+            {content && <p className="text-sm whitespace-pre-wrap">{content}</p>}
           </>
         )}
       </div>
