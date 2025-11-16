@@ -347,11 +347,13 @@ const PostItem = ({
           <Button 
             variant="ghost" 
             size="sm" 
-            className="gap-2"
+            className={`gap-2 ${commentsCount > 0 ? 'text-primary hover:text-primary' : ''}`}
             onClick={() => setShowComments(!showComments)}
           >
-            <MessageCircle className="h-4 w-4" />
-            <span className="text-xs">{commentsCount}</span>
+            <MessageCircle className={`h-4 w-4 ${showComments ? 'fill-primary' : ''}`} />
+            <span className="text-xs font-medium">
+              {commentsCount > 0 ? `${commentsCount} תגובות` : 'הגב'}
+            </span>
           </Button>
         </div>
         <Button variant="ghost" size="sm">
