@@ -115,8 +115,6 @@ const Auth = () => {
 
   const handleSendVerificationCode = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("=== Form submitted - handleSendVerificationCode called ===");
-    console.log("Form data:", { email, password: "***", fullName, username, accountType });
     setLoading(true);
 
     try {
@@ -293,7 +291,7 @@ const Auth = () => {
               </form>
             </TabsContent>
 
-            <TabsContent value="signup">
+            <TabsContent value="signup" className="mt-4">
               {!showVerification ? (
                 <form onSubmit={handleSendVerificationCode} className="space-y-4">
                   <div className="space-y-2">
@@ -352,7 +350,7 @@ const Auth = () => {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
-                        minLength={6}
+                        minLength={8}
                         dir="ltr"
                         className="pr-10"
                       />
@@ -375,7 +373,6 @@ const Auth = () => {
                     type="submit" 
                     className="w-full" 
                     disabled={loading}
-                    onClick={() => console.log("=== Button clicked ===")}
                   >
                     {loading ? "שולח קוד אימות..." : "שלח קוד אימות"}
                   </Button>
