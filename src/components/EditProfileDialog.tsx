@@ -7,7 +7,24 @@ import { Textarea } from "@/components/ui/textarea";
 import { Pencil, Upload, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Checkbox } from "@/components/ui/checkbox";
 import ImageCropDialog from "./ImageCropDialog";
+
+const BUSINESS_CATEGORIES = [
+  "מכונאות",
+  "פחחות וצבע",
+  "חשמל רכב",
+  "דיאגנוסטיקה",
+  "ציפויים",
+  "רפדות",
+  "חלקי חילוף",
+  "אגזוזים",
+  "שטיפת רכבים",
+  "דיטיילינג",
+  "צילום",
+  "מצברים",
+  "שמשות"
+];
 
 interface EditProfileDialogProps {
   currentName: string;
@@ -44,8 +61,8 @@ const EditProfileDialog = ({ currentName, currentBio, currentVehicle, currentPro
   const [businessPhone, setBusinessPhone] = useState(currentProfile?.business_phone || "");
   const [businessAddress, setBusinessAddress] = useState(currentProfile?.business_address || "");
   const [businessDescription, setBusinessDescription] = useState(currentProfile?.business_description || "");
-  const [businessCategories, setBusinessCategories] = useState<string>(
-    currentProfile?.business_categories?.join(", ") || ""
+  const [businessCategories, setBusinessCategories] = useState<string[]>(
+    currentProfile?.business_categories || []
   );
   
   const isBusinessAccount = currentProfile?.account_type === 'business';
@@ -82,12 +99,20 @@ const EditProfileDialog = ({ currentName, currentBio, currentVehicle, currentPro
         phone: businessPhone || undefined,
         address: businessAddress || undefined,
         description: businessDescription || undefined,
-        categories: businessCategories ? businessCategories.split(",").map(c => c.trim()).filter(Boolean) : undefined
+        categories: businessCategories.length > 0 ? businessCategories : undefined
       };
     }
     
     onSave(name, bio, vehicle, profilePicture, removeProfilePicture, businessData);
     setOpen(false);
+  };
+
+  const toggleCategory = (category: string) => {
+    setBusinessCategories(prev => 
+      prev.includes(category) 
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
+    );
   };
   
   const getInitials = (name: string) => {
@@ -217,13 +242,27 @@ const EditProfileDialog = ({ currentName, currentBio, currentVehicle, currentPro
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="businessCategories">התמחויות</Label>
-                <Input
-                  id="businessCategories"
-                  value={businessCategories}
-                  onChange={(e) => setBusinessCategories(e.target.value)}
-                  placeholder="מכניקה, חשמל, פחחות (הפרד בפסיקים)"
-                />
+                <Label>התמחויות (בחר לפחות אחת)</Label>
+                <div className="grid grid-cols-2 gap-3 p-4 border rounded-md bg-background/50">
+                  {BUSINESS_CATEGORIES.map((category) => (
+                    <div key={category} className="flex items-center space-x-2 space-x-reverse">
+                      <Checkbox
+                        id={category}
+                        checked={businessCategories.includes(category)}
+                        onCheckedChange={() => toggleCategory(category)}
+                      />
+                      <label
+                        htmlFor={category}
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                      >
+                        {category}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+                {businessCategories.length === 0 && (
+                  <p className="text-sm text-destructive">נא לבחור לפחות התמחות אחת</p>
+                )}
               </div>
             </>
           )}
@@ -233,7 +272,7 @@ const EditProfileDialog = ({ currentName, currentBio, currentVehicle, currentPro
           <Button variant="outline" onClick={() => setOpen(false)}>
             ביטול
           </Button>
-          <Button onClick={handleSave}>
+          <Button onClick={handleSave} disabled={isBusinessAccount && businessCategories.length === 0}>
             שמור שינויים
           </Button>
         </div>
