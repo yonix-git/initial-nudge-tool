@@ -123,6 +123,33 @@ const PostItem = ({
     }
   }, [id, showComments]);
 
+  const handleShare = async () => {
+    const postUrl = `${window.location.origin}/?post=${id}`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `פוסט מאת ${profile?.full_name || profile?.username || 'משתמש'}`,
+          text: content.substring(0, 100),
+          url: postUrl,
+        });
+        toast.success("הפוסט שותף בהצלחה!");
+      } catch (error) {
+        if ((error as Error).name !== 'AbortError') {
+          console.error('Error sharing:', error);
+        }
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(postUrl);
+        toast.success("הקישור הועתק ללוח!");
+      } catch (error) {
+        console.error('Error copying to clipboard:', error);
+        toast.error("שגיאה בהעתקת הקישור");
+      }
+    }
+  };
+
   const handleLike = async () => {
     if (!user) {
       toast.error("יש להתחבר כדי לתת לייק");
@@ -371,7 +398,7 @@ const PostItem = ({
             </span>
           </Button>
         </div>
-        <Button variant="ghost" size="sm">
+        <Button variant="ghost" size="sm" onClick={handleShare}>
           <Share2 className="h-4 w-4" />
         </Button>
       </div>
