@@ -381,32 +381,34 @@ const PostItem = ({
           {comments.length > 0 && (
             <div className="space-y-3 mb-3">
               <p className="text-xs font-semibold text-muted-foreground">תגובות ({comments.length})</p>
-              {comments.map((comment: any) => (
-                <div key={comment.id} className="flex gap-2">
-                  <Avatar className="h-8 w-8">
-                    {comment.profiles?.profile_picture_url && (
-                      <AvatarImage src={comment.profiles.profile_picture_url} />
-                    )}
-                    <AvatarFallback className="bg-primary/10 text-xs">
-                      {getInitials(comment.profiles?.full_name || comment.profiles?.username || "")}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 bg-muted/50 rounded-lg p-2">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-semibold text-xs">
-                        {comment.profiles?.full_name || comment.profiles?.username || "משתמש"}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {formatDistanceToNow(new Date(comment.created_at), { 
-                          addSuffix: true, 
-                          locale: he 
-                        })}
-                      </span>
+              <div className={`space-y-3 ${comments.length > 3 ? 'max-h-[400px] overflow-y-auto pr-2' : ''}`}>
+                {comments.map((comment: any) => (
+                  <div key={comment.id} className="flex gap-2">
+                    <Avatar className="h-8 w-8">
+                      {comment.profiles?.profile_picture_url && (
+                        <AvatarImage src={comment.profiles.profile_picture_url} />
+                      )}
+                      <AvatarFallback className="bg-primary/10 text-xs">
+                        {getInitials(comment.profiles?.full_name || comment.profiles?.username || "")}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 bg-muted/50 rounded-lg p-2">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-semibold text-xs">
+                          {comment.profiles?.full_name || comment.profiles?.username || "משתמש"}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {formatDistanceToNow(new Date(comment.created_at), { 
+                            addSuffix: true, 
+                            locale: he 
+                          })}
+                        </span>
+                      </div>
+                      <p className="text-sm whitespace-pre-wrap">{comment.content}</p>
                     </div>
-                    <p className="text-sm whitespace-pre-wrap">{comment.content}</p>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           )}
           
