@@ -538,31 +538,13 @@ const PostItem = ({
       </AlertDialog>
 
       <Dialog open={showFullscreen} onOpenChange={setShowFullscreen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <Avatar>
-                {profile?.profile_picture_url && (
-                  <AvatarImage src={profile.profile_picture_url} />
-                )}
-                <AvatarFallback className="bg-primary text-primary-foreground">
-                  {getInitials(profile?.full_name || profile?.username || "")}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <p className="font-semibold text-sm">{profile?.full_name || profile?.username || "משתמש"}</p>
-                  {profile?.is_verified && <VerifiedBadge size={14} />}
-                </div>
-                <p className="text-xs text-muted-foreground">{timeAgo}</p>
-              </div>
-            </div>
-
+        <DialogContent className="max-w-7xl w-full h-[95vh] p-0 border-0 bg-black/95">
+          <div className="relative w-full h-full flex items-center justify-center">
             {imageUrl && (
               <img 
                 src={imageUrl} 
                 alt="Post content" 
-                className="w-full rounded-lg object-contain max-h-[60vh]"
+                className="max-w-full max-h-full object-contain"
                 onDoubleClick={(e) => {
                   e.stopPropagation();
                   handleLike();
@@ -573,51 +555,13 @@ const PostItem = ({
               <video 
                 src={videoUrl} 
                 controls 
-                className="w-full rounded-lg max-h-[60vh]"
-              />
-            )}
-            {content && (
-              <p 
-                className="text-base whitespace-pre-wrap"
+                className="max-w-full max-h-full"
                 onDoubleClick={(e) => {
                   e.stopPropagation();
                   handleLike();
                 }}
-              >
-                {content}
-              </p>
+              />
             )}
-
-            <div className="flex items-center gap-4 pt-4 border-t">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="gap-2"
-                onClick={handleLike}
-              >
-                <Heart 
-                  className={`h-5 w-5 transition-colors ${
-                    isLiked ? "fill-primary text-primary" : ""
-                  }`} 
-                />
-                <span className="text-sm">{likeCount}</span>
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="gap-2"
-                onClick={() => {
-                  setShowFullscreen(false);
-                  setShowComments(true);
-                }}
-              >
-                <MessageCircle className="h-5 w-5" />
-                <span className="text-sm">{commentsCount}</span>
-              </Button>
-              <Button variant="ghost" size="sm" onClick={handleShare}>
-                <Share2 className="h-5 w-5" />
-              </Button>
-            </div>
           </div>
         </DialogContent>
       </Dialog>
