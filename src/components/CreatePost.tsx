@@ -81,11 +81,21 @@ const CreatePost = ({ onPostCreated }: { onPostCreated?: () => void }) => {
         const fileName = `${user.id}/${Date.now()}.${fileExt}`;
         const bucketName = fileType === "image" ? "avatars" : "videos";
 
-        const { error: uploadError } = await supabase.storage
-          .from(bucketName)
-          .upload(fileName, fileToUpload);
+      console.log(`Uploading ${fileType} to bucket: ${bucketName}, fileName: ${fileName}`);
+      
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from(bucketName)
+        .upload(fileName, fileToUpload, {
+          contentType: fileType === "video" ? "video/mp4" : "image/png",
+          upsert: false
+        });
 
-        if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error("Upload error:", uploadError);
+        throw new Error(`שגיאה בהעלאת ${fileType === "video" ? "הסרטון" : "התמונה"}: ${uploadError.message}`);
+      }
+      
+      console.log("Upload successful:", uploadData);
 
         const { data: { publicUrl } } = supabase.storage
           .from(bucketName)
@@ -113,9 +123,10 @@ const CreatePost = ({ onPostCreated }: { onPostCreated?: () => void }) => {
       handleRemoveFile();
       toast.success("הפוסט פורסם בהצלחה!");
       onPostCreated?.();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating post:", error);
-      toast.error("שגיאה בפרסום הפוסט");
+      const errorMessage = error?.message || "אירעה שגיאה לא צפויה";
+      toast.error(`שגיאה בפרסום הפוסט: ${errorMessage}`);
     } finally {
       setIsPosting(false);
     }
