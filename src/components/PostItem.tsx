@@ -94,7 +94,8 @@ const PostItem = ({
 
   useEffect(() => {
     const fetchComments = async () => {
-      const { data } = await supabase
+      console.log("Fetching comments for post:", id, "showComments:", showComments);
+      const { data, error } = await supabase
         .from("comments")
         .select(`
           *,
@@ -106,7 +107,12 @@ const PostItem = ({
         `)
         .eq("post_id", id)
         .order("created_at", { ascending: true });
-      if (data) setComments(data);
+      
+      console.log("Comments data:", data, "error:", error);
+      if (data) {
+        console.log("Setting comments:", data.length, "comments");
+        setComments(data);
+      }
     };
     if (showComments) {
       fetchComments();
@@ -363,30 +369,13 @@ const PostItem = ({
       
       {showComments && (
         <div className="pb-2 space-y-3 border-t border-border/20 pt-3 mt-3">
-          {user && (
-            <div className="flex gap-2">
-              <Textarea
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder="הוסף תגובה..."
-                className="min-h-[60px]"
-              />
-              <Button 
-                size="sm"
-                onClick={handleAddComment}
-                disabled={!newComment.trim()}
-              >
-                שלח
-              </Button>
-            </div>
-          )}
-          
           {comments.length === 0 ? (
-            <div className="text-sm text-muted-foreground">
+            <div className="text-sm text-muted-foreground text-center py-4">
               {user ? "היה הראשון להגיב!" : "אין תגובות עדיין"}
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-3 mb-3">
+              <p className="text-xs font-semibold text-muted-foreground">תגובות ({comments.length})</p>
               {comments.map((comment: any) => (
                 <div key={comment.id} className="flex gap-2">
                   <Avatar className="h-8 w-8">
@@ -413,6 +402,24 @@ const PostItem = ({
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+          
+          {user && (
+            <div className="flex gap-2 border-t border-border/20 pt-3">
+              <Textarea
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder="הוסף תגובה..."
+                className="min-h-[60px]"
+              />
+              <Button 
+                size="sm"
+                onClick={handleAddComment}
+                disabled={!newComment.trim()}
+              >
+                שלח
+              </Button>
             </div>
           )}
         </div>
