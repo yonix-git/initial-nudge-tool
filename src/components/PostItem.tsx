@@ -381,7 +381,7 @@ const PostItem = ({
           {comments.length > 0 && (
             <div className="space-y-3 mb-3">
               <p className="text-xs font-semibold text-muted-foreground">תגובות ({comments.length})</p>
-              <div className={`space-y-3 ${comments.length > 3 ? 'max-h-[400px] overflow-y-auto pr-2' : ''}`}>
+              <div className={`space-y-3 ${comments.length > 3 ? 'max-h-[250px] overflow-y-auto pr-2' : ''}`}>
                 {comments.map((comment: any) => (
                   <div key={comment.id} className="flex gap-2">
                     <Avatar className="h-8 w-8">
