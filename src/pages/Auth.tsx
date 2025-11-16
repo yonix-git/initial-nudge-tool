@@ -115,6 +115,8 @@ const Auth = () => {
 
   const handleSendVerificationCode = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("=== Form submitted - handleSendVerificationCode called ===");
+    console.log("Form data:", { email, password: "***", fullName, username, accountType });
     setLoading(true);
 
     try {
@@ -369,7 +371,12 @@ const Auth = () => {
                       </Button>
                     </div>
                   </div>
-                  <Button type="submit" className="w-full" disabled={loading}>
+                  <Button 
+                    type="submit" 
+                    className="w-full" 
+                    disabled={loading}
+                    onClick={() => console.log("=== Button clicked ===")}
+                  >
                     {loading ? "שולח קוד אימות..." : "שלח קוד אימות"}
                   </Button>
                 </form>
