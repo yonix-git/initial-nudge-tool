@@ -179,25 +179,17 @@ const Auth = () => {
         throw new Error("נא להזין קוד בן 5 ספרות");
       }
 
-      // Verify the code
-      const { data: verificationData, error: verifyError } = await supabase
-        .from('verification_codes')
-        .select('*')
-        .eq('email', email.trim())
-        .eq('code', verificationCode)
-        .eq('verified', false)
-        .gt('expires_at', new Date().toISOString())
-        .single();
+      // Verify the code using secure edge function
+      const { data, error: verifyError } = await supabase.functions.invoke('verify-code', {
+        body: { 
+          email: email.trim(),
+          code: verificationCode.trim()
+        }
+      });
 
-      if (verifyError || !verificationData) {
-        throw new Error("קוד האימות שגוי או שפג תוקפו");
+      if (verifyError || !data?.success) {
+        throw new Error(data?.error || verifyError?.message || "קוד האימות שגוי או שפג תוקפו");
       }
-
-      // Mark as verified
-      await supabase
-        .from('verification_codes')
-        .update({ verified: true })
-        .eq('id', verificationData.id);
 
       // Now sign up the user
       const { error: signUpError } = await supabase.auth.signUp({
