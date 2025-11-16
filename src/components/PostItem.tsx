@@ -98,8 +98,13 @@ const PostItem = ({
       const { data, error } = await supabase
         .from("comments")
         .select(`
-          *,
-          profiles!comments_user_id_fkey (
+          id,
+          content,
+          created_at,
+          updated_at,
+          user_id,
+          post_id,
+          profiles:fk_comments_user_profile (
             full_name,
             username,
             profile_picture_url
@@ -174,8 +179,13 @@ const PostItem = ({
       const { data } = await supabase
         .from("comments")
         .select(`
-          *,
-          profiles!comments_user_id_fkey (
+          id,
+          content,
+          created_at,
+          updated_at,
+          user_id,
+          post_id,
+          profiles:fk_comments_user_profile (
             full_name,
             username,
             profile_picture_url
