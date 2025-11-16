@@ -94,12 +94,12 @@ const PostItem = ({
 
   useEffect(() => {
     const fetchComments = async () => {
-      console.log("Fetching comments for post:", id, "showComments:", showComments);
+      console.log("Fetching comments for post:", id);
       const { data, error } = await supabase
         .from("comments")
         .select(`
           *,
-          profiles:user_id (
+          profiles!comments_user_id_fkey (
             full_name,
             username,
             profile_picture_url
@@ -108,9 +108,8 @@ const PostItem = ({
         .eq("post_id", id)
         .order("created_at", { ascending: true });
       
-      console.log("Comments data:", data, "error:", error);
+      console.log("Comments fetched:", data?.length || 0, "error:", error);
       if (data) {
-        console.log("Setting comments:", data.length, "comments");
         setComments(data);
       }
     };
@@ -176,7 +175,7 @@ const PostItem = ({
         .from("comments")
         .select(`
           *,
-          profiles:user_id (
+          profiles!comments_user_id_fkey (
             full_name,
             username,
             profile_picture_url
@@ -369,11 +368,7 @@ const PostItem = ({
       
       {showComments && (
         <div className="pb-2 space-y-3 border-t border-border/20 pt-3 mt-3">
-          {comments.length === 0 ? (
-            <div className="text-sm text-muted-foreground text-center py-4">
-              {user ? "היה הראשון להגיב!" : "אין תגובות עדיין"}
-            </div>
-          ) : (
+          {comments.length > 0 && (
             <div className="space-y-3 mb-3">
               <p className="text-xs font-semibold text-muted-foreground">תגובות ({comments.length})</p>
               {comments.map((comment: any) => (
