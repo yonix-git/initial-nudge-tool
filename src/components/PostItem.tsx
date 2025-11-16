@@ -25,6 +25,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 
 interface PostItemProps {
@@ -62,6 +66,7 @@ const PostItem = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(content);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showFullscreen, setShowFullscreen] = useState(false);
   const { dir } = useLanguage();
 
   const isOwnPost = user?.id === userId;
@@ -358,7 +363,14 @@ const PostItem = ({
         )}
       </div>
       
-      <div className="pb-3">
+      <div 
+        className="pb-3 cursor-pointer" 
+        onClick={() => setShowFullscreen(true)}
+        onDoubleClick={(e) => {
+          e.stopPropagation();
+          handleLike();
+        }}
+      >
         {isEditing ? (
           <div className="space-y-2">
             <Textarea
@@ -524,6 +536,91 @@ const PostItem = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={showFullscreen} onOpenChange={setShowFullscreen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <Avatar>
+                {profile?.profile_picture_url && (
+                  <AvatarImage src={profile.profile_picture_url} />
+                )}
+                <AvatarFallback className="bg-primary text-primary-foreground">
+                  {getInitials(profile?.full_name || profile?.username || "")}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <p className="font-semibold text-sm">{profile?.full_name || profile?.username || "משתמש"}</p>
+                  {profile?.is_verified && <VerifiedBadge size={14} />}
+                </div>
+                <p className="text-xs text-muted-foreground">{timeAgo}</p>
+              </div>
+            </div>
+
+            {imageUrl && (
+              <img 
+                src={imageUrl} 
+                alt="Post content" 
+                className="w-full rounded-lg object-contain max-h-[60vh]"
+                onDoubleClick={(e) => {
+                  e.stopPropagation();
+                  handleLike();
+                }}
+              />
+            )}
+            {videoUrl && (
+              <video 
+                src={videoUrl} 
+                controls 
+                className="w-full rounded-lg max-h-[60vh]"
+              />
+            )}
+            {content && (
+              <p 
+                className="text-base whitespace-pre-wrap"
+                onDoubleClick={(e) => {
+                  e.stopPropagation();
+                  handleLike();
+                }}
+              >
+                {content}
+              </p>
+            )}
+
+            <div className="flex items-center gap-4 pt-4 border-t">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="gap-2"
+                onClick={handleLike}
+              >
+                <Heart 
+                  className={`h-5 w-5 transition-colors ${
+                    isLiked ? "fill-primary text-primary" : ""
+                  }`} 
+                />
+                <span className="text-sm">{likeCount}</span>
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="gap-2"
+                onClick={() => {
+                  setShowFullscreen(false);
+                  setShowComments(true);
+                }}
+              >
+                <MessageCircle className="h-5 w-5" />
+                <span className="text-sm">{commentsCount}</span>
+              </Button>
+              <Button variant="ghost" size="sm" onClick={handleShare}>
+                <Share2 className="h-5 w-5" />
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
