@@ -12,13 +12,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 interface Service {
   id: string;
-  name: string;
-  type: string;
-  rating: number;
-  address: string;
-  phone: string;
-  distance: string;
-  specialties: string[];
+  full_name: string;
+  business_type: string;
+  average_rating: number;
+  business_address: string;
+  business_phone: string;
+  business_categories: string[];
+  profile_picture_url?: string;
 }
 
 const Services = () => {
@@ -30,13 +30,17 @@ const Services = () => {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        let query = supabase.from('services').select('*');
+        let query = supabase
+          .from('profiles')
+          .select('*')
+          .eq('account_type', 'business')
+          .not('business_type', 'is', null);
         
         if (filterType !== "all") {
-          query = query.eq('type', filterType);
+          query = query.eq('business_type', filterType);
         }
 
-        const { data, error } = await query.order('rating', { ascending: false });
+        const { data, error } = await query.order('average_rating', { ascending: false });
 
         if (error) throw error;
         setServices(data || []);
@@ -53,8 +57,7 @@ const Services = () => {
   const getTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
       'garage': 'מוסך',
-      'tire_shop': 'פנצריה',
-      'gas_station': 'בעל מקצוע'
+      'independent_professional': 'בעל מקצוע'
     };
     return labels[type] || type;
   };
@@ -108,11 +111,10 @@ const Services = () => {
 
           {/* Service Tabs */}
           <Tabs value={filterType} onValueChange={setFilterType} className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="all">הכל</TabsTrigger>
               <TabsTrigger value="garage">מוסכים</TabsTrigger>
-              <TabsTrigger value="tire_shop">פנצריות</TabsTrigger>
-              <TabsTrigger value="gas_station">בעלי מקצוע</TabsTrigger>
+              <TabsTrigger value="independent_professional">בעלי מקצוע</TabsTrigger>
             </TabsList>
 
             <TabsContent value={filterType} className="mt-6">
@@ -141,42 +143,43 @@ const Services = () => {
                       <CardHeader>
                         <div className="flex items-start justify-between mb-2">
                           <div>
-                            <CardTitle className="text-lg mb-1">{service.name}</CardTitle>
-                            <Badge variant="secondary">{getTypeLabel(service.type)}</Badge>
+                            <CardTitle className="text-lg mb-1">{service.full_name}</CardTitle>
+                            <Badge variant="secondary">{getTypeLabel(service.business_type)}</Badge>
                           </div>
                           <div className="flex items-center gap-2">
-                            {renderStars(service.rating)}
-                            <span className="text-sm font-medium">{service.rating}</span>
+                            {renderStars(service.average_rating || 0)}
+                            <span className="text-sm font-medium">{service.average_rating?.toFixed(1) || '0.0'}</span>
                           </div>
                         </div>
                       </CardHeader>
                       <CardContent className="space-y-3">
                         <div className="space-y-2 text-sm">
-                          <div className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-muted-foreground" />
-                            <span>{service.address}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Phone className="h-4 w-4 text-muted-foreground" />
-                            <span dir="ltr">{service.phone}</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm">
-                            <MapPin className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-muted-foreground">{service.distance}</span>
-                          </div>
+                          {service.business_address && (
+                            <div className="flex items-center gap-2">
+                              <MapPin className="h-4 w-4 text-muted-foreground" />
+                              <span>{service.business_address}</span>
+                            </div>
+                          )}
+                          {service.business_phone && (
+                            <div className="flex items-center gap-2">
+                              <Phone className="h-4 w-4 text-muted-foreground" />
+                              <span dir="ltr">{service.business_phone}</span>
+                            </div>
+                          )}
                         </div>
                         
-                        <div className="flex flex-wrap gap-1">
-                          {service.specialties.map((specialty, idx) => (
-                            <Badge key={idx} variant="outline" className="text-xs">
-                              {specialty}
-                            </Badge>
-                          ))}
-                        </div>
+                        {service.business_categories && service.business_categories.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {service.business_categories.map((category, idx) => (
+                              <Badge key={idx} variant="outline" className="text-xs">
+                                {category}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
                         
                         <div className="flex gap-2">
-                          <Button className="flex-1">הזמן תור</Button>
-                          <Button variant="outline" className="flex-1">פרטים נוספים</Button>
+                          <Button className="flex-1">פרטים נוספים</Button>
                         </div>
                       </CardContent>
                     </Card>

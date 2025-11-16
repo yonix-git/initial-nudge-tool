@@ -126,6 +126,7 @@ const Profile = () => {
       address?: string;
       description?: string;
       categories?: string[];
+      businessType?: string;
     }
   ) => {
     if (!user) return;
@@ -180,6 +181,7 @@ const Profile = () => {
       if (businessData.address !== undefined) updateData.business_address = businessData.address;
       if (businessData.description !== undefined) updateData.business_description = businessData.description;
       if (businessData.categories !== undefined) updateData.business_categories = businessData.categories;
+      if (businessData.businessType !== undefined) updateData.business_type = businessData.businessType;
     }
 
     const { error } = await supabase

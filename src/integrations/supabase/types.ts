@@ -340,6 +340,7 @@ export type Database = {
           business_description: string | null
           business_hours: Json | null
           business_phone: string | null
+          business_type: string | null
           created_at: string
           followers_count: number
           following_count: number
@@ -361,6 +362,7 @@ export type Database = {
           business_description?: string | null
           business_hours?: Json | null
           business_phone?: string | null
+          business_type?: string | null
           created_at?: string
           followers_count?: number
           following_count?: number
@@ -382,6 +384,7 @@ export type Database = {
           business_description?: string | null
           business_hours?: Json | null
           business_phone?: string | null
+          business_type?: string | null
           created_at?: string
           followers_count?: number
           following_count?: number
