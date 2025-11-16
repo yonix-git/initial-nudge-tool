@@ -1,4 +1,4 @@
-import { Car, Search, Bell, MessageCircle, Menu, Users, Wrench, Calendar } from "lucide-react";
+import { Car, Search, Bell, MessageCircle, Menu, Users, Wrench, Calendar, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link, useNavigate } from "react-router-dom";
@@ -88,6 +88,14 @@ const Header = () => {
                   <Calendar className="h-5 w-5" />
                   <span className="font-medium">{t("header.events")}</span>
                 </Link>
+                <Link 
+                  to="/install" 
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Download className="h-5 w-5" />
+                  <span className="font-medium">התקן אפליקציה</span>
+                </Link>
               </div>
             </SheetContent>
           </Sheet>
@@ -126,6 +134,15 @@ const Header = () => {
               />
             </div>
           </div>
+          
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => navigate("/install")}
+            className="hidden sm:flex"
+          >
+            <Download className="h-5 w-5" />
+          </Button>
           
           <Button variant="ghost" size="icon" className="relative">
             <MessageCircle className="h-5 w-5" />
