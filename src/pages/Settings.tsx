@@ -249,8 +249,8 @@ const Settings = () => {
                       </Label>
                       <p className="text-sm text-muted-foreground">קבל גישה לכלים עסקיים ופרופיל מקצועי</p>
                     </div>
-                    <Button variant="default" size="sm" onClick={handleUpgradeToBusinessAccount} disabled={loading}>
-                      {loading ? "משדרג..." : "שדרג עכשיו"}
+                    <Button variant="default" size="sm" disabled>
+                      בקרוב
                     </Button>
                   </div>
                   <Separator />
