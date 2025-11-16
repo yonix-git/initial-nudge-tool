@@ -26,7 +26,8 @@ const BUSINESS_CATEGORIES = [
   "מצברים",
   "שמשות",
   "צמיגים",
-  "אופנועים"
+  "אופנועים",
+  "מכירת רכבים"
 ];
 
 interface EditProfileDialogProps {
