@@ -8,6 +8,7 @@ import { Pencil, Upload, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import ImageCropDialog from "./ImageCropDialog";
 
 const BUSINESS_CATEGORIES = [
@@ -23,7 +24,9 @@ const BUSINESS_CATEGORIES = [
   "דיטיילינג",
   "צילום",
   "מצברים",
-  "שמשות"
+  "שמשות",
+  "צמיגים",
+  "אופנועים"
 ];
 
 interface EditProfileDialogProps {
@@ -43,6 +46,7 @@ interface EditProfileDialogProps {
       address?: string;
       description?: string;
       categories?: string[];
+      businessType?: string;
     }
   ) => void;
 }
@@ -64,6 +68,7 @@ const EditProfileDialog = ({ currentName, currentBio, currentVehicle, currentPro
   const [businessCategories, setBusinessCategories] = useState<string[]>(
     currentProfile?.business_categories || []
   );
+  const [businessType, setBusinessType] = useState(currentProfile?.business_type || "garage");
   
   const isBusinessAccount = currentProfile?.account_type === 'business';
 
@@ -99,7 +104,8 @@ const EditProfileDialog = ({ currentName, currentBio, currentVehicle, currentPro
         phone: businessPhone || undefined,
         address: businessAddress || undefined,
         description: businessDescription || undefined,
-        categories: businessCategories.length > 0 ? businessCategories : undefined
+        categories: businessCategories.length > 0 ? businessCategories : undefined,
+        businessType: businessType
       };
     }
     
@@ -240,6 +246,19 @@ const EditProfileDialog = ({ currentName, currentBio, currentVehicle, currentPro
                   onChange={(e) => setBusinessAddress(e.target.value)}
                   placeholder="רחוב עיר, מספר"
                 />
+              </div>
+              <div className="space-y-3">
+                <Label>סוג העסק</Label>
+                <RadioGroup value={businessType} onValueChange={setBusinessType}>
+                  <div className="flex items-center space-x-2 space-x-reverse">
+                    <RadioGroupItem value="garage" id="garage" />
+                    <Label htmlFor="garage" className="cursor-pointer font-normal">מוסך</Label>
+                  </div>
+                  <div className="flex items-center space-x-2 space-x-reverse">
+                    <RadioGroupItem value="independent_professional" id="independent" />
+                    <Label htmlFor="independent" className="cursor-pointer font-normal">בעל מקצוע ללא מוסך</Label>
+                  </div>
+                </RadioGroup>
               </div>
               <div className="space-y-2">
                 <Label>התמחויות (בחר לפחות אחת)</Label>
