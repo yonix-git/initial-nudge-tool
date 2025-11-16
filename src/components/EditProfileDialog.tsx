@@ -121,6 +121,9 @@ const EditProfileDialog = ({ currentName, currentBio, currentVehicle, currentPro
         : [...prev, category]
     );
   };
+
+  const isGarage = businessType === 'garage';
+  const isAddressRequired = isGarage && !businessAddress.trim();
   
   const getInitials = (name: string) => {
     if (!name) return "U";
@@ -239,15 +242,6 @@ const EditProfileDialog = ({ currentName, currentBio, currentVehicle, currentPro
                   type="tel"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="businessAddress">כתובת העסק</Label>
-                <Input
-                  id="businessAddress"
-                  value={businessAddress}
-                  onChange={(e) => setBusinessAddress(e.target.value)}
-                  placeholder="רחוב עיר, מספר"
-                />
-              </div>
               <div className="space-y-3">
                 <Label>סוג העסק</Label>
                 <RadioGroup value={businessType} onValueChange={setBusinessType}>
@@ -260,6 +254,21 @@ const EditProfileDialog = ({ currentName, currentBio, currentVehicle, currentPro
                     <Label htmlFor="independent" className="cursor-pointer font-normal">בעל מקצוע ללא מוסך</Label>
                   </div>
                 </RadioGroup>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="businessAddress">
+                  כתובת העסק {isGarage && <span className="text-destructive">*</span>}
+                </Label>
+                <Input
+                  id="businessAddress"
+                  value={businessAddress}
+                  onChange={(e) => setBusinessAddress(e.target.value)}
+                  placeholder="רחוב עיר, מספר"
+                  className={isAddressRequired ? "border-destructive" : ""}
+                />
+                {isAddressRequired && (
+                  <p className="text-sm text-destructive">כתובת העסק חובה עבור מוסך</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label>התמחויות (בחר לפחות אחת)</Label>
@@ -292,7 +301,10 @@ const EditProfileDialog = ({ currentName, currentBio, currentVehicle, currentPro
           <Button variant="outline" onClick={() => setOpen(false)}>
             ביטול
           </Button>
-          <Button onClick={handleSave} disabled={isBusinessAccount && businessCategories.length === 0}>
+          <Button 
+            onClick={handleSave} 
+            disabled={isBusinessAccount && (businessCategories.length === 0 || isAddressRequired)}
+          >
             שמור שינויים
           </Button>
         </div>
