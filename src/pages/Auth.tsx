@@ -237,11 +237,11 @@ const Auth = () => {
           <CardTitle className="text-2xl">ברוכים הבאים</CardTitle>
           <CardDescription>הצטרפו לקהילת אוהבי הרכב הגדולה בישראל</CardDescription>
         </CardHeader>
-        <CardContent dir="rtl">
+        <CardContent>
           <Tabs defaultValue="signin">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">התחברות</TabsTrigger>
               <TabsTrigger value="signup">הרשמה</TabsTrigger>
+              <TabsTrigger value="signin">התחברות</TabsTrigger>
             </TabsList>
 
             <TabsContent value="signin">
