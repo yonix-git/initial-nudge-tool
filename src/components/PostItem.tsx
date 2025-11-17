@@ -66,6 +66,8 @@ const PostItem = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(content);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showDeleteCommentDialog, setShowDeleteCommentDialog] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState<string | null>(null);
   const [showFullscreen, setShowFullscreen] = useState(false);
   const { dir } = useLanguage();
 
@@ -234,12 +236,14 @@ const PostItem = ({
     }
   };
 
-  const handleDeleteComment = async (commentId: string) => {
+  const handleDeleteComment = async () => {
+    if (!commentToDelete) return;
+    
     try {
       const { error } = await supabase
         .from("comments")
         .delete()
-        .eq("id", commentId);
+        .eq("id", commentToDelete);
 
       if (error) throw error;
 
@@ -263,6 +267,9 @@ const PostItem = ({
         .order("created_at", { ascending: true });
 
       if (data) setComments(data);
+      
+      setShowDeleteCommentDialog(false);
+      setCommentToDelete(null);
       toast.success("התגובה נמחקה בהצלחה!");
     } catch (error) {
       console.error("Error deleting comment:", error);
@@ -487,7 +494,10 @@ const PostItem = ({
                               variant="ghost"
                               size="icon"
                               className="h-6 w-6"
-                              onClick={() => handleDeleteComment(comment.id)}
+                              onClick={() => {
+                                setCommentToDelete(comment.id);
+                                setShowDeleteCommentDialog(true);
+                              }}
                             >
                               <Trash2 className="h-3 w-3 text-destructive" />
                             </Button>
@@ -533,6 +543,21 @@ const PostItem = ({
           <AlertDialogFooter>
             <AlertDialogCancel>ביטול</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete}>מחק</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showDeleteCommentDialog} onOpenChange={setShowDeleteCommentDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>מחיקת תגובה</AlertDialogTitle>
+            <AlertDialogDescription>
+              האם אתה בטוח שברצונך למחוק את התגובה? פעולה זו לא ניתנת לביטול.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setCommentToDelete(null)}>ביטול</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteComment}>מחק</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
