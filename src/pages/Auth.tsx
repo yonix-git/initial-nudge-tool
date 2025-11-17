@@ -240,8 +240,8 @@ const Auth = () => {
         <CardContent>
           <Tabs defaultValue="signin">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signup">הרשמה</TabsTrigger>
               <TabsTrigger value="signin">התחברות</TabsTrigger>
+              <TabsTrigger value="signup">הרשמה</TabsTrigger>
             </TabsList>
 
             <TabsContent value="signin">
