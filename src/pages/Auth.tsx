@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -239,13 +239,27 @@ const Auth = () => {
           <CardDescription>הצטרפו לקהילת אוהבי הרכב הגדולה בישראל</CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "signin" | "signup")}>
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">התחברות</TabsTrigger>
-              <TabsTrigger value="signup">הרשמה</TabsTrigger>
-            </TabsList>
+          <div className="space-y-4">
+            <div className="grid w-full grid-cols-2 gap-2 p-1 bg-muted rounded-md">
+              <Button
+                type="button"
+                variant={activeTab === "signin" ? "default" : "ghost"}
+                onClick={() => setActiveTab("signin")}
+                className="w-full"
+              >
+                התחברות
+              </Button>
+              <Button
+                type="button"
+                variant={activeTab === "signup" ? "default" : "ghost"}
+                onClick={() => setActiveTab("signup")}
+                className="w-full"
+              >
+                הרשמה
+              </Button>
+            </div>
 
-            <TabsContent value="signin">
+            {activeTab === "signin" && (
               <div dir="rtl">
                 <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
@@ -292,9 +306,9 @@ const Auth = () => {
                 </Button>
               </form>
               </div>
-            </TabsContent>
+            )}
 
-            <TabsContent value="signup" className="mt-4">
+            {activeTab === "signup" && (
               <div dir="rtl">
                 {!showVerification ? (
                   <div className="space-y-4">
@@ -476,8 +490,8 @@ const Auth = () => {
                 </form>
               )}
               </div>
-            </TabsContent>
-          </Tabs>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>
