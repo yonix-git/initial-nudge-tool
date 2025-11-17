@@ -237,7 +237,7 @@ const Auth = () => {
           <CardTitle className="text-2xl">ברוכים הבאים</CardTitle>
           <CardDescription>הצטרפו לקהילת אוהבי הרכב הגדולה בישראל</CardDescription>
         </CardHeader>
-        <CardContent dir={dir}>
+        <CardContent>
           <Tabs defaultValue="signin" dir="ltr">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="signin">התחברות</TabsTrigger>
@@ -245,7 +245,8 @@ const Auth = () => {
             </TabsList>
 
             <TabsContent value="signin">
-              <form onSubmit={handleSignIn} className="space-y-4">
+              <div dir="rtl">
+                <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="signin-email">אימייל</Label>
                   <Input
@@ -289,11 +290,13 @@ const Auth = () => {
                   {loading ? "מתחבר..." : "התחבר"}
                 </Button>
               </form>
+              </div>
             </TabsContent>
 
             <TabsContent value="signup" className="mt-4">
-              {!showVerification ? (
-                <div className="space-y-4">
+              <div dir="rtl">
+                {!showVerification ? (
+                  <div className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="fullname">שם מלא</Label>
                     <Input
@@ -471,6 +474,7 @@ const Auth = () => {
                   </Button>
                 </form>
               )}
+              </div>
             </TabsContent>
           </Tabs>
         </CardContent>
