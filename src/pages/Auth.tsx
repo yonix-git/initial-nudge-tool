@@ -33,6 +33,7 @@ const Auth = () => {
   const signupSchema = z.object({
     email: z.string().trim().email({ message: "אנא הזן כתובת אימייל תקינה" }).max(255),
     password: z.string().min(8, { message: "הסיסמה חייבת להכיל לפחות 8 תווים" })
+      .regex(/^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{}|;:'",.<>?/`~\\]+$/, { message: "הסיסמה יכולה להכיל רק אותיות באנגלית, מספרים וסימנים מיוחדים" })
       .regex(/[A-Z]/, { message: "הסיסמה חייבת להכיל לפחות אות גדולה אחת באנגלית" })
       .regex(/[a-z]/, { message: "הסיסמה חייבת להכיל לפחות אות קטנה אחת באנגלית" }),
     fullName: z.string().trim().min(2, { message: "שם מלא חייב להכיל לפחות 2 תווים" }).max(100),
