@@ -238,7 +238,7 @@ const Auth = () => {
           <CardDescription>הצטרפו לקהילת אוהבי הרכב הגדולה בישראל</CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="signin">
+          <Tabs defaultValue="signin" dir="rtl">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="signin">התחברות</TabsTrigger>
               <TabsTrigger value="signup">הרשמה</TabsTrigger>
