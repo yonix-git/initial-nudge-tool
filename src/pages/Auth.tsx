@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Car, Eye, EyeOff } from "lucide-react";
@@ -22,7 +22,6 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [username, setUsername] = useState("");
-  const [accountType, setAccountType] = useState<"private" | "business">("private");
   const [loginAttempts, setLoginAttempts] = useState(0);
   const [isBlocked, setIsBlocked] = useState(false);
   const [showVerification, setShowVerification] = useState(false);
@@ -138,6 +137,17 @@ const Auth = () => {
         throw new Error("הסיסמה שבחרת נפוצה מדי, אנא בחר סיסמה אחרת");
       }
 
+      // Check if username is already taken
+      const { data: existingUser } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('username', username.trim())
+        .maybeSingle();
+
+      if (existingUser) {
+        throw new Error("שם המשתמש הזה כבר תפוס, אנא בחר שם משתמש אחר");
+      }
+
       const trimmedEmail = email.trim();
 
       console.log("Sending verification code to:", trimmedEmail);
@@ -201,7 +211,7 @@ const Auth = () => {
           data: {
             full_name: fullName.trim(),
             username: username.trim(),
-            account_type: accountType,
+            account_type: "private",
           },
         },
       });
@@ -336,18 +346,6 @@ const Auth = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="account-type">סוג חשבון</Label>
-                    <Select value={accountType} onValueChange={(value: "private" | "business") => setAccountType(value)}>
-                      <SelectTrigger id="account-type">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="private">חשבון פרטי</SelectItem>
-                        <SelectItem value="business">חשבון עסקי</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
                     <Label htmlFor="signup-email">אימייל</Label>
                     <Input
                       id="signup-email"
@@ -412,10 +410,21 @@ const Auth = () => {
                         // Check for common weak passwords
                         const commonPasswords = ["password", "123456", "12345678", "qwerty", "abc123", "password123", "admin123"];
                         if (commonPasswords.includes(password.toLowerCase())) {
-                          throw new Error("הסיסמה שבחרת נפוצה מדי, אנא בחר סיסמה אחרת");
-                        }
+                        throw new Error("הסיסמה שבחרת נפוצה מדי, אנא בחר סיסמה אחרת");
+                      }
 
-                        const trimmedEmail = email.trim();
+                      // Check if username is already taken
+                      const { data: existingUser } = await supabase
+                        .from('profiles')
+                        .select('username')
+                        .eq('username', username.trim())
+                        .maybeSingle();
+
+                      if (existingUser) {
+                        throw new Error("שם המשתמש הזה כבר תפוס, אנא בחר שם משתמש אחר");
+                      }
+
+                      const trimmedEmail = email.trim();
 
                         console.log("Sending verification code to:", trimmedEmail);
 
