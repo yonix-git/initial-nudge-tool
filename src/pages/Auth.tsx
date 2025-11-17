@@ -293,7 +293,7 @@ const Auth = () => {
 
             <TabsContent value="signup" className="mt-4">
               {!showVerification ? (
-                <form onSubmit={handleSendVerificationCode} className="space-y-4">
+                <div className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="fullname">שם מלא</Label>
                     <Input
@@ -369,10 +369,70 @@ const Auth = () => {
                       </Button>
                     </div>
                   </div>
-                  <Button type="submit" className="w-full" disabled={loading}>
+                  <Button 
+                    type="button" 
+                    className="w-full" 
+                    disabled={loading}
+                    onClick={async () => {
+                      console.log("🟢 Button clicked!");
+                      setLoading(true);
+
+                      try {
+                        // Validate all inputs with zod
+                        const validationResult = signupSchema.safeParse({
+                          email,
+                          password,
+                          fullName,
+                          username,
+                        });
+
+                        if (!validationResult.success) {
+                          const firstError = validationResult.error.errors[0];
+                          throw new Error(firstError.message);
+                        }
+
+                        // Check for common weak passwords
+                        const commonPasswords = ["password", "123456", "12345678", "qwerty", "abc123", "password123", "admin123"];
+                        if (commonPasswords.includes(password.toLowerCase())) {
+                          throw new Error("הסיסמה שבחרת נפוצה מדי, אנא בחר סיסמה אחרת");
+                        }
+
+                        const trimmedEmail = email.trim();
+
+                        console.log("Sending verification code to:", trimmedEmail);
+
+                        // Send verification code
+                        const { data, error } = await supabase.functions.invoke('send-verification-code', {
+                          body: { email: trimmedEmail }
+                        });
+
+                        console.log("Verification response:", { data, error });
+
+                        if (error) {
+                          console.error("Verification error:", error);
+                          throw new Error(error.message || "שגיאה בשליחת קוד אימות");
+                        }
+
+                        setShowVerification(true);
+                        toast({
+                          title: "קוד אימות נשלח!",
+                          description: "בדוק את תיבת הדואר שלך והזן את הקוד שקיבלת",
+                        });
+                      } catch (error: any) {
+                        console.error("Error in handleSendVerificationCode:", error);
+                        toast({
+                          title: "שגיאה בשליחת קוד אימות",
+                          description: error.message || "אנא נסה שוב מאוחר יותר",
+                          variant: "destructive",
+                        });
+                      } finally {
+                        setLoading(false);
+                      }
+                    }}
+                  >
                     {loading ? "שולח קוד אימות..." : "שלח קוד אימות"}
                   </Button>
-                </form>
+                </div>
               ) : (
                 <form onSubmit={handleVerifyAndSignUp} className="space-y-4">
                   <div className="text-center mb-4">
