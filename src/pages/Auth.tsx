@@ -28,6 +28,7 @@ const Auth = () => {
   const [showVerification, setShowVerification] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [activeTab, setActiveTab] = useState<"signin" | "signup">("signin");
 
   // Schema validation with zod
   const signupSchema = z.object({
@@ -238,7 +239,7 @@ const Auth = () => {
           <CardDescription>הצטרפו לקהילת אוהבי הרכב הגדולה בישראל</CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="signin">
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "signin" | "signup")}>
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="signin">התחברות</TabsTrigger>
               <TabsTrigger value="signup">הרשמה</TabsTrigger>
