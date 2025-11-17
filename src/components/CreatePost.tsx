@@ -62,8 +62,14 @@ const CreatePost = ({ onPostCreated }: { onPostCreated?: () => void }) => {
   };
 
   const handlePost = async () => {
-    if (!user || (!content.trim() && !selectedFile)) {
-      toast.error("נא להוסיף תוכן או קובץ");
+    if (!user) {
+      toast.error("יש להתחבר כדי לפרסם");
+      return;
+    }
+
+    // Allow posts with only media (no text) or only text (no media)
+    if (!content.trim() && !selectedFile) {
+      toast.error("נא להוסיף טקסט או תמונה/וידאו");
       return;
     }
 

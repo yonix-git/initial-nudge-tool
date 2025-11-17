@@ -256,7 +256,7 @@ export type Database = {
       posts: {
         Row: {
           comments_count: number
-          content: string
+          content: string | null
           created_at: string
           id: string
           image_url: string | null
@@ -267,7 +267,7 @@ export type Database = {
         }
         Insert: {
           comments_count?: number
-          content: string
+          content?: string | null
           created_at?: string
           id?: string
           image_url?: string | null
@@ -278,7 +278,7 @@ export type Database = {
         }
         Update: {
           comments_count?: number
-          content?: string
+          content?: string | null
           created_at?: string
           id?: string
           image_url?: string | null
