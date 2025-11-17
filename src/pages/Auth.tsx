@@ -229,16 +229,16 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md" dir={dir}>
-        <CardHeader className="text-center">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center" dir={dir}>
           <div className="flex justify-center mb-4">
             <Car className="h-12 w-12 text-primary" />
           </div>
           <CardTitle className="text-2xl">ברוכים הבאים</CardTitle>
           <CardDescription>הצטרפו לקהילת אוהבי הרכב הגדולה בישראל</CardDescription>
         </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="signin">
+        <CardContent dir={dir}>
+          <Tabs defaultValue="signin" dir="ltr">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="signin">התחברות</TabsTrigger>
               <TabsTrigger value="signup">הרשמה</TabsTrigger>
