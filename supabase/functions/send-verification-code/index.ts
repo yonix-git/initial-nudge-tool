@@ -65,7 +65,7 @@ const handler = async (req: Request): Promise<Response> => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: "CarHub <onboarding@resend.dev>",
+        from: "CarHub <team@motorhub.co.il>",
         to: [email],
         subject: "קוד האימות שלך - CarHub",
         html: `
