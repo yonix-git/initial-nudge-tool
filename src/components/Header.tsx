@@ -1,14 +1,14 @@
-import { Car, Search, Bell, MessageCircle, Menu, Users, Wrench, Calendar, Download } from "lucide-react";
+import { Car, Search, Bell, Menu, Users, Wrench, Calendar, Download, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 const Header = () => {
@@ -16,10 +16,16 @@ const Header = () => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const [profile, setProfile] = useState<any>(null);
-  const [unreadMessages, setUnreadMessages] = useState(0);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+  
+  const isHomePage = location.pathname === "/";
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -83,6 +89,45 @@ const Header = () => {
       supabase.removeChannel(channel);
     };
   }, [user]);
+
+  useEffect(() => {
+    const searchUsers = async () => {
+      if (!searchQuery.trim() || !isHomePage) {
+        setSearchResults([]);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, username, full_name, profile_picture_url")
+        .or(`username.ilike.%${searchQuery}%,full_name.ilike.%${searchQuery}%`)
+        .limit(5);
+
+      if (!error && data) {
+        setSearchResults(data);
+      }
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowSearchResults(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+    const debounce = setTimeout(searchUsers, 300);
+    return () => clearTimeout(debounce);
+  }, [searchQuery, isHomePage]);
+
+  const handleProfileClick = (profileId: string) => {
+    navigate(`/profile?id=${profileId}`);
+    setSearchQuery("");
+    setShowSearchResults(false);
+  };
 
 
   const getInitials = (name: string) => {
@@ -174,15 +219,62 @@ const Header = () => {
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
-          <div className="hidden sm:flex items-center gap-2 max-w-sm">
-            <div className="relative flex-1">
-              <Search className={`absolute ${dir === 'rtl' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground`} />
-              <Input 
-                placeholder={t("header.search")}
-                className={dir === 'rtl' ? 'pr-10 bg-muted/50' : 'pl-10 bg-muted/50'}
-              />
+          {isHomePage && (
+            <div className="relative flex items-center gap-2 max-w-sm" ref={searchRef}>
+              <div className="relative flex-1">
+                <Search className={`absolute ${dir === 'rtl' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground`} />
+                <Input 
+                  placeholder="חפש משתמשים..."
+                  className={`${dir === 'rtl' ? 'pr-10' : 'pl-10'} bg-muted/50 w-48 sm:w-64`}
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setShowSearchResults(true);
+                  }}
+                  onFocus={() => setShowSearchResults(true)}
+                />
+                {searchQuery && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className={`absolute ${dir === 'rtl' ? 'left-1' : 'right-1'} top-1/2 -translate-y-1/2 h-6 w-6`}
+                    onClick={() => {
+                      setSearchQuery("");
+                      setSearchResults([]);
+                      setShowSearchResults(false);
+                    }}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                )}
+              
+                {showSearchResults && searchResults.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
+                    {searchResults.map((result) => (
+                      <div
+                        key={result.id}
+                        className="flex items-center gap-3 p-3 hover:bg-muted cursor-pointer transition-colors"
+                        onClick={() => handleProfileClick(result.id)}
+                      >
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={result.profile_picture_url || undefined} />
+                          <AvatarFallback>
+                            {getInitials(result.full_name || result.username || "")}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-medium">{result.full_name || result.username}</p>
+                          {result.username && result.full_name && (
+                            <p className="text-sm text-muted-foreground">@{result.username}</p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
           
           <Button 
             variant="ghost" 
@@ -193,27 +285,18 @@ const Header = () => {
             <Download className="h-5 w-5" />
           </Button>
           
-          <Button variant="ghost" size="icon" className="relative">
-            <MessageCircle className="h-5 w-5" />
-            {unreadMessages > 0 && (
-              <Badge 
-                className="absolute -top-1 -left-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-primary"
-              >
-                {unreadMessages > 99 ? '99+' : unreadMessages}
-              </Badge>
-            )}
-          </Button>
-          
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-5 w-5" />
-            {unreadNotifications > 0 && (
-              <Badge 
-                className="absolute -top-1 -left-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-primary"
-              >
-                {unreadNotifications > 99 ? '99+' : unreadNotifications}
-              </Badge>
-            )}
-          </Button>
+          {isHomePage && (
+            <Button variant="ghost" size="icon" className="relative">
+              <Bell className="h-5 w-5" />
+              {unreadNotifications > 0 && (
+                <Badge 
+                  className="absolute -top-1 -left-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-primary"
+                >
+                  {unreadNotifications > 99 ? '99+' : unreadNotifications}
+                </Badge>
+              )}
+            </Button>
+          )}
           
           {user ? (
             <>
