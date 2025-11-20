@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Header = () => {
   const { t, dir } = useLanguage();
@@ -23,7 +24,9 @@ const Header = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
   
   const isHomePage = location.pathname === "/";
 
@@ -127,6 +130,14 @@ const Header = () => {
     navigate(`/profile?id=${profileId}`);
     setSearchQuery("");
     setShowSearchResults(false);
+    setIsMobileSearchOpen(false);
+  };
+
+  const handleCloseMobileSearch = () => {
+    setSearchQuery("");
+    setSearchResults([]);
+    setShowSearchResults(false);
+    setIsMobileSearchOpen(false);
   };
 
 
@@ -166,6 +177,59 @@ const Header = () => {
   
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-card/70 backdrop-blur-2xl supports-[backdrop-filter]:bg-card/60 shadow-xl">
+      {/* Mobile Search Overlay */}
+      {isMobile && isMobileSearchOpen && isHomePage && (
+        <div className="absolute inset-0 bg-card z-50 flex items-center px-4" dir={dir}>
+          <div className="relative flex-1" ref={searchRef}>
+            <Search className={`absolute ${dir === 'rtl' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground`} />
+            <Input 
+              placeholder="חפש משתמשים..."
+              className={`${dir === 'rtl' ? 'pr-10' : 'pl-10'} bg-muted/50`}
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setShowSearchResults(true);
+              }}
+              onFocus={() => setShowSearchResults(true)}
+              autoFocus
+            />
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`absolute ${dir === 'rtl' ? 'left-1' : 'right-1'} top-1/2 -translate-y-1/2 h-8 w-8`}
+              onClick={handleCloseMobileSearch}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          
+            {showSearchResults && searchResults.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
+                {searchResults.map((result) => (
+                  <div
+                    key={result.id}
+                    className="flex items-center gap-3 p-3 hover:bg-muted cursor-pointer transition-colors"
+                    onClick={() => handleProfileClick(result.id)}
+                  >
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={result.profile_picture_url || undefined} />
+                      <AvatarFallback>
+                        {getInitials(result.full_name || result.username || "")}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-medium">{result.full_name || result.username}</p>
+                      {result.username && result.full_name && (
+                        <p className="text-sm text-muted-foreground">@{result.username}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="container flex h-16 items-center justify-between px-4" dir={dir}>
         <div className="flex items-center gap-3 sm:gap-6">
           {/* Mobile Menu */}
@@ -247,60 +311,76 @@ const Header = () => {
 
         <div className="flex items-center gap-2 sm:gap-3">
           {isHomePage && (
-            <div className="relative flex items-center gap-2 max-w-sm" ref={searchRef}>
-              <div className="relative flex-1">
-                <Search className={`absolute ${dir === 'rtl' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground`} />
-                <Input 
-                  placeholder="חפש משתמשים..."
-                  className={`${dir === 'rtl' ? 'pr-10' : 'pl-10'} bg-muted/50 w-48 sm:w-64`}
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setShowSearchResults(true);
-                  }}
-                  onFocus={() => setShowSearchResults(true)}
-                />
-                {searchQuery && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className={`absolute ${dir === 'rtl' ? 'left-1' : 'right-1'} top-1/2 -translate-y-1/2 h-6 w-6`}
-                    onClick={() => {
-                      setSearchQuery("");
-                      setSearchResults([]);
-                      setShowSearchResults(false);
-                    }}
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                )}
-              
-                {showSearchResults && searchResults.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
-                    {searchResults.map((result) => (
-                      <div
-                        key={result.id}
-                        className="flex items-center gap-3 p-3 hover:bg-muted cursor-pointer transition-colors"
-                        onClick={() => handleProfileClick(result.id)}
+            <>
+              {/* Desktop Search */}
+              {!isMobile && (
+                <div className="relative flex items-center gap-2 max-w-sm" ref={searchRef}>
+                  <div className="relative flex-1">
+                    <Search className={`absolute ${dir === 'rtl' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground`} />
+                    <Input 
+                      placeholder="חפש משתמשים..."
+                      className={`${dir === 'rtl' ? 'pr-10' : 'pl-10'} bg-muted/50 w-48 sm:w-64`}
+                      value={searchQuery}
+                      onChange={(e) => {
+                        setSearchQuery(e.target.value);
+                        setShowSearchResults(true);
+                      }}
+                      onFocus={() => setShowSearchResults(true)}
+                    />
+                    {searchQuery && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className={`absolute ${dir === 'rtl' ? 'left-1' : 'right-1'} top-1/2 -translate-y-1/2 h-6 w-6`}
+                        onClick={() => {
+                          setSearchQuery("");
+                          setSearchResults([]);
+                          setShowSearchResults(false);
+                        }}
                       >
-                        <Avatar className="h-10 w-10">
-                          <AvatarImage src={result.profile_picture_url || undefined} />
-                          <AvatarFallback>
-                            {getInitials(result.full_name || result.username || "")}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">{result.full_name || result.username}</p>
-                          {result.username && result.full_name && (
-                            <p className="text-sm text-muted-foreground">@{result.username}</p>
-                          )}
-                        </div>
+                        <X className="h-3 w-3" />
+                      </Button>
+                    )}
+                  
+                    {showSearchResults && searchResults.length > 0 && (
+                      <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
+                        {searchResults.map((result) => (
+                          <div
+                            key={result.id}
+                            className="flex items-center gap-3 p-3 hover:bg-muted cursor-pointer transition-colors"
+                            onClick={() => handleProfileClick(result.id)}
+                          >
+                            <Avatar className="h-10 w-10">
+                              <AvatarImage src={result.profile_picture_url || undefined} />
+                              <AvatarFallback>
+                                {getInitials(result.full_name || result.username || "")}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="font-medium">{result.full_name || result.username}</p>
+                              {result.username && result.full_name && (
+                                <p className="text-sm text-muted-foreground">@{result.username}</p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    )}
                   </div>
-                )}
-              </div>
-            </div>
+                </div>
+              )}
+              
+              {/* Mobile Search Icon */}
+              {isMobile && (
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  onClick={() => setIsMobileSearchOpen(true)}
+                >
+                  <Search className="h-5 w-5" />
+                </Button>
+              )}
+            </>
           )}
           
           <Button 
