@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { ArrowLeft, Send, Image as ImageIcon, Video as VideoIcon, Users, X, UserCheck, UserX, LogOut } from "lucide-react";
+import { ArrowLeft, Send, Image as ImageIcon, Video as VideoIcon, Users, X, UserCheck, UserX, LogOut, Bell, BellOff } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
   Dialog,
@@ -89,6 +89,7 @@ const GroupChat = () => {
   const [showMembers, setShowMembers] = useState(false);
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [memberToRemove, setMemberToRemove] = useState<GroupMember | null>(null);
+  const [isMuted, setIsMuted] = useState(false);
 
   useEffect(() => {
     if (!user || authLoading || !groupId) return;
@@ -105,6 +106,16 @@ const GroupChat = () => {
         if (groupError) throw groupError;
         setGroup(groupData);
         setIsAdmin(groupData.creator_id === user.id);
+
+        // Check notification settings
+        const { data: settingsData } = await supabase
+          .from("notification_settings")
+          .select("is_muted")
+          .eq("user_id", user.id)
+          .eq("group_id", groupId)
+          .maybeSingle();
+        
+        setIsMuted(settingsData?.is_muted || false);
 
         // Fetch messages
         const { data: messagesData, error: messagesError } = await supabase
@@ -233,6 +244,19 @@ const GroupChat = () => {
         }
       )
       .subscribe();
+
+    // Mark notifications as read for this group
+    const markNotificationsRead = async () => {
+      if (user && groupId) {
+        await supabase
+          .from("notifications")
+          .update({ is_read: true })
+          .eq("user_id", user.id)
+          .eq("group_id", groupId)
+          .eq("is_read", false);
+      }
+    };
+    markNotificationsRead();
 
     return () => {
       supabase.removeChannel(channel);
@@ -443,6 +467,44 @@ const GroupChat = () => {
       toast.error("שגיאה בהסרת החבר");
     }
   };
+
+  const toggleMute = async () => {
+    if (!user || !groupId) return;
+
+    try {
+      const { data: existing } = await supabase
+        .from("notification_settings")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("group_id", groupId)
+        .maybeSingle();
+
+      if (existing) {
+        const { error } = await supabase
+          .from("notification_settings")
+          .update({ is_muted: !isMuted })
+          .eq("id", existing.id);
+
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("notification_settings")
+          .insert({
+            user_id: user.id,
+            group_id: groupId,
+            is_muted: !isMuted,
+          });
+
+        if (error) throw error;
+      }
+
+      setIsMuted(!isMuted);
+      toast.success(isMuted ? "התראות הופעלו" : "התראות הושתקו");
+    } catch (error) {
+      console.error("Error toggling mute:", error);
+      toast.error("שגיאה בעדכון הגדרות התראות");
+    }
+  };
   if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-background" dir={dir}>
@@ -483,6 +545,19 @@ const GroupChat = () => {
           </Button>
 
           <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleMute}
+              title={isMuted ? "הפעל התראות" : "השתק התראות"}
+            >
+              {isMuted ? (
+                <BellOff className="h-5 w-5" />
+              ) : (
+                <Bell className="h-5 w-5" />
+              )}
+            </Button>
+            
             {isAdmin ? (
               <Button variant="outline" onClick={() => setShowMembers(true)}>
                 <Users className="h-4 w-4 ml-2" />
