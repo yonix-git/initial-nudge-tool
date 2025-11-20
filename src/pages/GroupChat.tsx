@@ -266,7 +266,7 @@ const GroupChat = () => {
   useEffect(() => {
     // Scroll to bottom when messages change
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      scrollRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
     }
   }, [messages]);
 
@@ -589,8 +589,8 @@ const GroupChat = () => {
 
           <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4" ref={scrollRef}>
-              <div className="space-y-4">
+            <ScrollArea className="flex-1">
+              <div className="p-4 space-y-4" ref={scrollRef}>
                 {messages.map((message) => (
                   <div
                     key={message.id}
@@ -648,7 +648,7 @@ const GroupChat = () => {
                   </div>
                 ))}
               </div>
-            </div>
+            </ScrollArea>
 
             {/* Message Input */}
             <div className="border-t p-4 space-y-2 flex-shrink-0">
