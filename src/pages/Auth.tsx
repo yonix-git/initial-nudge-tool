@@ -358,7 +358,7 @@ const Auth = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signup-password">סיסמה</Label>
+                    <Label htmlFor="signup-password">צור סיסמה</Label>
                     <div className="relative">
                       <Input
                         id="signup-password"
