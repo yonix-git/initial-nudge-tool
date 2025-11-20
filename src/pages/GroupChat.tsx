@@ -581,15 +581,15 @@ const GroupChat = () => {
           </div>
         </div>
 
-        <Card className="h-[calc(100vh-250px)] flex flex-col">
-          <CardHeader className="border-b">
+        <Card className="flex flex-col h-[calc(100vh-250px)]">
+          <CardHeader className="border-b flex-shrink-0">
             <CardTitle className="text-xl">{group.name}</CardTitle>
             <p className="text-sm text-muted-foreground">{group.description}</p>
           </CardHeader>
 
-          <CardContent className="flex-1 flex flex-col p-0">
+          <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
             {/* Messages */}
-            <ScrollArea className="flex-1 p-4" ref={scrollRef}>
+            <div className="flex-1 overflow-y-auto p-4" ref={scrollRef}>
               <div className="space-y-4">
                 {messages.map((message) => (
                   <div
@@ -648,10 +648,10 @@ const GroupChat = () => {
                   </div>
                 ))}
               </div>
-            </ScrollArea>
+            </div>
 
             {/* Message Input */}
-            <div className="border-t p-4 space-y-2">
+            <div className="border-t p-4 space-y-2 flex-shrink-0">
               {(imagePreview || videoPreview) && (
                 <div className="relative inline-block">
                   {imagePreview && (
