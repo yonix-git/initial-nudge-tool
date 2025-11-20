@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 
 interface Service {
   id: string;
@@ -26,45 +26,38 @@ interface Service {
 const Services = () => {
   const { t, dir } = useLanguage();
   const { user, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState<string>("all");
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      navigate("/auth");
-    }
-  }, [user, authLoading, navigate]);
+    if (!user || authLoading) return;
 
-  useEffect(() => {
-    if (user) {
-      const fetchServices = async () => {
-        try {
-          let query = supabase
-            .from('profiles')
-            .select('*')
-            .eq('account_type', 'business')
-            .not('business_type', 'is', null);
-          
-          if (filterType !== "all") {
-            query = query.eq('business_type', filterType);
-          }
-
-          const { data, error } = await query.order('average_rating', { ascending: false });
-
-          if (error) throw error;
-          setServices(data || []);
-        } catch (error) {
-          console.error('Error fetching services:', error);
-        } finally {
-          setLoading(false);
+    const fetchServices = async () => {
+      try {
+        let query = supabase
+          .from('profiles')
+          .select('*')
+          .eq('account_type', 'business')
+          .not('business_type', 'is', null);
+        
+        if (filterType !== "all") {
+          query = query.eq('business_type', filterType);
         }
-      };
 
-      fetchServices();
-    }
-  }, [filterType, user]);
+        const { data, error } = await query.order('average_rating', { ascending: false });
+
+        if (error) throw error;
+        setServices(data || []);
+      } catch (error) {
+        console.error('Error fetching services:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchServices();
+  }, [filterType, user, authLoading]);
 
   const getTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
@@ -91,7 +84,7 @@ const Services = () => {
     );
   };
 
-  if (authLoading) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-background" dir={dir}>
         <Header />
@@ -114,6 +107,10 @@ const Services = () => {
         </main>
       </div>
     );
+  }
+
+  if (!user) {
+    return <Navigate to="/auth" replace />;
   }
 
   return (

@@ -9,7 +9,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 
 interface Event {
   id: string;
@@ -27,38 +27,31 @@ interface Event {
 const Events = () => {
   const { t, dir } = useLanguage();
   const { user, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [interestedEvents, setInterestedEvents] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      navigate("/auth");
-    }
-  }, [user, authLoading, navigate]);
+    if (!user || authLoading) return;
 
-  useEffect(() => {
-    if (user) {
-      const fetchEvents = async () => {
-        try {
-          const { data, error } = await supabase
-            .from('events')
-            .select('*')
-            .order('date', { ascending: true });
+    const fetchEvents = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('events')
+          .select('*')
+          .order('date', { ascending: true });
 
-          if (error) throw error;
-          setEvents(data || []);
-        } catch (error) {
-          console.error('Error fetching events:', error);
-        } finally {
-          setLoading(false);
-        }
-      };
+        if (error) throw error;
+        setEvents(data || []);
+      } catch (error) {
+        console.error('Error fetching events:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      fetchEvents();
-    }
-  }, [user]);
+    fetchEvents();
+  }, [user, authLoading]);
 
   const handleInterest = async (eventId: string) => {
     const isInterested = interestedEvents.has(eventId);
@@ -156,7 +149,7 @@ const Events = () => {
     return colors[type] || "bg-gray-500";
   };
 
-  if (authLoading) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-background" dir={dir}>
         <Header />
@@ -179,6 +172,10 @@ const Events = () => {
         </main>
       </div>
     );
+  }
+
+  if (!user) {
+    return <Navigate to="/auth" replace />;
   }
 
   return (

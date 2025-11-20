@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 
 interface Group {
   id: string;
@@ -22,39 +22,32 @@ interface Group {
 const Groups = () => {
   const { t, dir } = useLanguage();
   const { user, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      navigate("/auth");
-    }
-  }, [user, authLoading, navigate]);
+    if (!user || authLoading) return;
 
-  useEffect(() => {
-    if (user) {
-      const fetchGroups = async () => {
-        try {
-          const { data, error } = await supabase
-            .from('groups')
-            .select('*')
-            .order('members', { ascending: false });
+    const fetchGroups = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('groups')
+          .select('*')
+          .order('members', { ascending: false });
 
-          if (error) throw error;
-          setGroups(data || []);
-        } catch (error) {
-          console.error('Error fetching groups:', error);
-        } finally {
-          setLoading(false);
-        }
-      };
+        if (error) throw error;
+        setGroups(data || []);
+      } catch (error) {
+        console.error('Error fetching groups:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      fetchGroups();
-    }
-  }, [user]);
+    fetchGroups();
+  }, [user, authLoading]);
 
-  if (authLoading) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-background" dir={dir}>
         <Header />
@@ -77,6 +70,10 @@ const Groups = () => {
         </main>
       </div>
     );
+  }
+
+  if (!user) {
+    return <Navigate to="/auth" replace />;
   }
 
   return (

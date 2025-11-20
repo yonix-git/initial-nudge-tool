@@ -5,12 +5,11 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 
 const Index = () => {
   const { dir } = useLanguage();
   const { user, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -27,38 +26,32 @@ const Index = () => {
   };
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      navigate("/auth");
-    }
-  }, [user, authLoading, navigate]);
+    if (!user || authLoading) return;
 
-  useEffect(() => {
-    if (user) {
-      fetchPosts();
+    fetchPosts();
 
-      // Subscribe to realtime updates
-      const channel = supabase
-        .channel('posts-changes')
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'posts'
-          },
-          () => {
-            fetchPosts();
-          }
-        )
-        .subscribe();
+    // Subscribe to realtime updates
+    const channel = supabase
+      .channel('posts-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'posts'
+        },
+        () => {
+          fetchPosts();
+        }
+      )
+      .subscribe();
 
-      return () => {
-        supabase.removeChannel(channel);
-      };
-    }
-  }, [user]);
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, authLoading]);
 
-  if (authLoading) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-background" dir={dir}>
         <Header />
@@ -76,6 +69,10 @@ const Index = () => {
         </main>
       </div>
     );
+  }
+
+  if (!user) {
+    return <Navigate to="/auth" replace />;
   }
 
   return (
