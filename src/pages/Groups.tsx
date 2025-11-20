@@ -371,7 +371,14 @@ const Groups = () => {
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <CardTitle className="text-lg mb-1">{group.name}</CardTitle>
+                      <div className="flex items-center gap-2 mb-1">
+                        <CardTitle className="text-lg">{group.name}</CardTitle>
+                        {group.creator_id === user?.id && pendingRequests[group.id]?.length > 0 && (
+                          <Badge variant="destructive" className="text-xs">
+                            {pendingRequests[group.id].length}
+                          </Badge>
+                        )}
+                      </div>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Users className="h-4 w-4" />
                         <span>{group.members.toLocaleString()} חברים</span>
@@ -473,7 +480,14 @@ const Groups = () => {
                       <CardHeader>
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
-                            <CardTitle className="text-lg mb-1">{group.name}</CardTitle>
+                            <div className="flex items-center gap-2 mb-1">
+                              <CardTitle className="text-lg">{group.name}</CardTitle>
+                              {pendingRequests[group.id]?.length > 0 && (
+                                <Badge variant="destructive" className="text-xs">
+                                  {pendingRequests[group.id].length} ממתינים
+                                </Badge>
+                              )}
+                            </div>
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                               <Users className="h-4 w-4" />
                               <span>{group.members.toLocaleString()} חברים</span>
