@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import Index from "./pages/Index";
 import Profile from "./pages/Profile";
 import Groups from "./pages/Groups";
+import GroupChat from "./pages/GroupChat";
 import Services from "./pages/Services";
 import Events from "./pages/Events";
 import Settings from "./pages/Settings";
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/groups" element={<Groups />} />
+            <Route path="/groups/:groupId" element={<GroupChat />} />
             <Route path="/services" element={<Services />} />
             <Route path="/events" element={<Events />} />
             <Route path="/settings" element={<Settings />} />
