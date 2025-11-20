@@ -10,14 +10,26 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { ArrowLeft, Send, Image as ImageIcon, Video as VideoIcon, Users, X, UserCheck, UserX } from "lucide-react";
+import { ArrowLeft, Send, Image as ImageIcon, Video as VideoIcon, Users, X, UserCheck, UserX, LogOut } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Group {
   id: string;
@@ -75,6 +87,7 @@ const GroupChat = () => {
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [pendingRequests, setPendingRequests] = useState<GroupMember[]>([]);
   const [showMembers, setShowMembers] = useState(false);
+  const [showLeaveDialog, setShowLeaveDialog] = useState(false);
 
   useEffect(() => {
     if (!user || authLoading || !groupId) return;
@@ -364,6 +377,26 @@ const GroupChat = () => {
     }
   };
 
+  const handleLeaveGroup = async () => {
+    if (!user || !groupId) return;
+
+    try {
+      const { error } = await supabase
+        .from("group_members")
+        .delete()
+        .eq("group_id", groupId)
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      toast.success("עזבת את הקבוצה בהצלחה");
+      navigate("/groups");
+    } catch (error) {
+      console.error("Error leaving group:", error);
+      toast.error("שגיאה בעזיבת הקבוצה");
+    }
+  };
+
   if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-background" dir={dir}>
@@ -403,17 +436,28 @@ const GroupChat = () => {
             חזרה לקבוצות
           </Button>
 
-          {isAdmin && (
-            <Button variant="outline" onClick={() => setShowMembers(true)}>
-              <Users className="h-4 w-4 ml-2" />
-              חברי הקבוצה ({members.length})
-              {pendingRequests.length > 0 && (
-                <span className="mr-2 bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-xs">
-                  {pendingRequests.length}
-                </span>
-              )}
-            </Button>
-          )}
+          <div className="flex gap-2">
+            {isAdmin ? (
+              <Button variant="outline" onClick={() => setShowMembers(true)}>
+                <Users className="h-4 w-4 ml-2" />
+                חברי הקבוצה ({members.length})
+                {pendingRequests.length > 0 && (
+                  <span className="mr-2 bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-xs">
+                    {pendingRequests.length}
+                  </span>
+                )}
+              </Button>
+            ) : (
+              <Button 
+                variant="outline" 
+                onClick={() => setShowLeaveDialog(true)}
+                className="text-destructive hover:text-destructive"
+              >
+                <LogOut className="h-4 w-4 ml-2" />
+                עזוב קבוצה
+              </Button>
+            )}
+          </div>
         </div>
 
         <Card className="h-[calc(100vh-250px)] flex flex-col">
@@ -638,6 +682,27 @@ const GroupChat = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Leave Group Confirmation Dialog */}
+      <AlertDialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>האם אתה בטוח?</AlertDialogTitle>
+            <AlertDialogDescription>
+              האם אתה בטוח שברצונך לעזוב את הקבוצה "{group?.name}"? תצטרך לבקש הצטרפות מחדש כדי לחזור.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>ביטול</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleLeaveGroup}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              עזוב קבוצה
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
