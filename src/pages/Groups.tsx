@@ -59,6 +59,7 @@ const Groups = () => {
   const [myGroups, setMyGroups] = useState<Group[]>([]);
   const [pendingRequests, setPendingRequests] = useState<Record<string, PendingRequest[]>>({});
   const [userMemberships, setUserMemberships] = useState<Record<string, string>>({});
+  const [groupNotifications, setGroupNotifications] = useState<Record<string, number>>({});
 
   useEffect(() => {
     if (!user || authLoading) return;
@@ -75,16 +76,35 @@ const Groups = () => {
         const allGroups = data || [];
         setGroups(allGroups);
         
-        // Filter my groups
-        const userGroups = allGroups.filter(g => g.creator_id === user.id);
-        setMyGroups(userGroups);
+        // Filter my groups - both created and member of
+        const createdGroups = allGroups.filter(g => g.creator_id === user.id);
         
-        // Fetch pending requests for my groups
-        if (userGroups.length > 0) {
+        // Get groups where user is a member
+        const { data: memberGroups } = await supabase
+          .from('group_members')
+          .select('group_id')
+          .eq('user_id', user.id)
+          .eq('status', 'approved');
+        
+        const memberGroupIds = memberGroups?.map(m => m.group_id) || [];
+        const userMemberGroups = allGroups.filter(g => memberGroupIds.includes(g.id));
+        
+        // Combine and remove duplicates
+        const combinedMyGroups = [...createdGroups];
+        userMemberGroups.forEach(g => {
+          if (!combinedMyGroups.find(cg => cg.id === g.id)) {
+            combinedMyGroups.push(g);
+          }
+        });
+        
+        setMyGroups(combinedMyGroups);
+        
+        // Fetch pending requests for groups I created
+        if (createdGroups.length > 0) {
           const { data: requests, error: reqError } = await supabase
             .from('group_members')
             .select('id, user_id, group_id')
-            .in('group_id', userGroups.map(g => g.id))
+            .in('group_id', createdGroups.map(g => g.id))
             .eq('status', 'pending');
           
           if (!reqError && requests) {
@@ -121,6 +141,21 @@ const Groups = () => {
           });
           setUserMemberships(membershipMap);
         }
+        
+        // Fetch unread notifications per group
+        const { data: notificationsData } = await supabase
+          .from('notifications')
+          .select('group_id')
+          .eq('user_id', user.id)
+          .eq('is_read', false);
+        
+        if (notificationsData) {
+          const notifMap: Record<string, number> = {};
+          notificationsData.forEach(n => {
+            notifMap[n.group_id] = (notifMap[n.group_id] || 0) + 1;
+          });
+          setGroupNotifications(notifMap);
+        }
       } catch (error) {
         console.error('Error fetching groups:', error);
         toast.error('שגיאה בטעינת הקבוצות');
@@ -130,6 +165,40 @@ const Groups = () => {
     };
 
     fetchGroups();
+
+    // Subscribe to real-time notifications
+    const notificationsChannel = supabase
+      .channel('group-notifications')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`,
+        },
+        async () => {
+          // Refetch notifications
+          const { data: notificationsData } = await supabase
+            .from('notifications')
+            .select('group_id')
+            .eq('user_id', user.id)
+            .eq('is_read', false);
+          
+          if (notificationsData) {
+            const notifMap: Record<string, number> = {};
+            notificationsData.forEach(n => {
+              notifMap[n.group_id] = (notifMap[n.group_id] || 0) + 1;
+            });
+            setGroupNotifications(notifMap);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(notificationsChannel);
+    };
   }, [user, authLoading]);
 
   const handleCreateGroup = async () => {
@@ -161,11 +230,30 @@ const Groups = () => {
         .order('members', { ascending: false });
       if (data) {
         setGroups(data);
-        setMyGroups(data.filter(g => g.creator_id === user.id));
+        
+        // Update my groups
+        const createdGroups = data.filter(g => g.creator_id === user?.id);
+        const { data: memberGroups } = await supabase
+          .from('group_members')
+          .select('group_id')
+          .eq('user_id', user!.id)
+          .eq('status', 'approved');
+        
+        const memberGroupIds = memberGroups?.map(m => m.group_id) || [];
+        const userMemberGroups = data.filter(g => memberGroupIds.includes(g.id));
+        
+        const combinedMyGroups = [...createdGroups];
+        userMemberGroups.forEach(g => {
+          if (!combinedMyGroups.find(cg => cg.id === g.id)) {
+            combinedMyGroups.push(g);
+          }
+        });
+        
+        setMyGroups(combinedMyGroups);
       }
     } catch (error) {
-      console.error('Error creating group:', error);
-      toast.error('שגיאה ביצירת הקבוצה');
+      console.error('Error approving request:', error);
+      toast.error('שגיאה באישור הבקשה');
     }
   };
 
@@ -193,7 +281,26 @@ const Groups = () => {
         .order('members', { ascending: false });
       if (data) {
         setGroups(data);
-        setMyGroups(data.filter(g => g.creator_id === user?.id));
+        
+        // Update my groups
+        const createdGroups = data.filter(g => g.creator_id === user?.id);
+        const { data: memberGroups } = await supabase
+          .from('group_members')
+          .select('group_id')
+          .eq('user_id', user!.id)
+          .eq('status', 'approved');
+        
+        const memberGroupIds = memberGroups?.map(m => m.group_id) || [];
+        const userMemberGroups = data.filter(g => memberGroupIds.includes(g.id));
+        
+        const combinedMyGroups = [...createdGroups];
+        userMemberGroups.forEach(g => {
+          if (!combinedMyGroups.find(cg => cg.id === g.id)) {
+            combinedMyGroups.push(g);
+          }
+        });
+        
+        setMyGroups(combinedMyGroups);
       }
     } catch (error) {
       console.error('Error approving request:', error);
@@ -378,6 +485,9 @@ const Groups = () => {
                             {pendingRequests[group.id].length}
                           </Badge>
                         )}
+                        {groupNotifications[group.id] > 0 && (
+                          <div className="h-2 w-2 rounded-full bg-destructive" />
+                        )}
                       </div>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Users className="h-4 w-4" />
@@ -467,7 +577,7 @@ const Groups = () => {
             <TabsContent value="my" className="space-y-4">
               {myGroups.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
-                  עדיין לא יצרת קבוצות
+                  עדיין לא הצטרפת לקבוצות
                 </div>
               ) : (
                 <div className="grid gap-4 md:grid-cols-2">
@@ -486,6 +596,9 @@ const Groups = () => {
                                 <Badge variant="destructive" className="text-xs">
                                   {pendingRequests[group.id].length} ממתינים
                                 </Badge>
+                              )}
+                              {groupNotifications[group.id] > 0 && (
+                                <div className="h-2 w-2 rounded-full bg-destructive" />
                               )}
                             </div>
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
