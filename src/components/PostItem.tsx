@@ -69,6 +69,7 @@ const PostItem = ({
   const [showDeleteCommentDialog, setShowDeleteCommentDialog] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState<string | null>(null);
   const [showFullscreen, setShowFullscreen] = useState(false);
+  const [clickTimer, setClickTimer] = useState<NodeJS.Timeout | null>(null);
   const { dir } = useLanguage();
 
   const isOwnPost = user?.id === userId;
@@ -129,6 +130,15 @@ const PostItem = ({
       fetchComments();
     }
   }, [id, showComments]);
+
+  useEffect(() => {
+    // Cleanup timer on unmount
+    return () => {
+      if (clickTimer) {
+        clearTimeout(clickTimer);
+      }
+    };
+  }, [clickTimer]);
 
   const handleShare = async () => {
     const postUrl = `${window.location.origin}/?post=${id}`;
@@ -372,9 +382,32 @@ const PostItem = ({
       
       <div 
         className="pb-3 cursor-pointer" 
-        onClick={() => setShowFullscreen(true)}
+        onClick={(e) => {
+          if (isEditing) return;
+          
+          // Clear any existing timer
+          if (clickTimer) {
+            clearTimeout(clickTimer);
+          }
+          
+          // Set a timer to open fullscreen after 250ms
+          const timer = setTimeout(() => {
+            setShowFullscreen(true);
+            setClickTimer(null);
+          }, 250);
+          
+          setClickTimer(timer);
+        }}
         onDoubleClick={(e) => {
           e.stopPropagation();
+          
+          // Cancel the single click timer
+          if (clickTimer) {
+            clearTimeout(clickTimer);
+            setClickTimer(null);
+          }
+          
+          // Only perform like action
           handleLike();
         }}
       >
