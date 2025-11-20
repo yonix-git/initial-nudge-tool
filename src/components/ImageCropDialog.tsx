@@ -9,6 +9,8 @@ interface ImageCropDialogProps {
   open: boolean;
   onClose: () => void;
   onCropComplete: (croppedImage: Blob) => void;
+  aspectRatio?: number;
+  cropShape?: "rect" | "round";
 }
 
 const createImage = (url: string): Promise<HTMLImageElement> =>
@@ -54,7 +56,14 @@ const getCroppedImg = async (imageSrc: string, pixelCrop: any): Promise<Blob> =>
   });
 };
 
-const ImageCropDialog = ({ image, open, onClose, onCropComplete }: ImageCropDialogProps) => {
+const ImageCropDialog = ({ 
+  image, 
+  open, 
+  onClose, 
+  onCropComplete, 
+  aspectRatio = 1, 
+  cropShape = "round" 
+}: ImageCropDialogProps) => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
@@ -82,16 +91,18 @@ const ImageCropDialog = ({ image, open, onClose, onCropComplete }: ImageCropDial
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px]" dir="rtl">
         <DialogHeader>
-          <DialogTitle>חתוך תמונת פרופיל</DialogTitle>
+          <DialogTitle>
+            {cropShape === "round" ? "חתוך תמונת פרופיל" : "חתוך תמונה"}
+          </DialogTitle>
         </DialogHeader>
         <div className="relative h-[400px] bg-gray-900 rounded-lg">
           <Cropper
             image={image}
             crop={crop}
             zoom={zoom}
-            aspect={1}
-            cropShape="round"
-            showGrid={false}
+            aspect={aspectRatio}
+            cropShape={cropShape}
+            showGrid={true}
             onCropChange={onCropChange}
             onZoomChange={onZoomChange}
             onCropComplete={onCropCompleteCallback}

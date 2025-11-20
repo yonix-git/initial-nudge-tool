@@ -1,4 +1,4 @@
-import { Image, Video, X, Edit } from "lucide-react";
+import { Image, Video, X, Edit, Crop } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { ImageTextEditor } from "./ImageTextEditor";
+import ImageCropDialog from "./ImageCropDialog";
 
 const CreatePost = ({ onPostCreated }: { onPostCreated?: () => void }) => {
   const { user } = useAuth();
@@ -18,6 +19,7 @@ const CreatePost = ({ onPostCreated }: { onPostCreated?: () => void }) => {
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [fileType, setFileType] = useState<"image" | "video" | null>(null);
   const [isEditingImage, setIsEditingImage] = useState(false);
+  const [isCroppingImage, setIsCroppingImage] = useState(false);
   const [editedImageBlob, setEditedImageBlob] = useState<Blob | null>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
@@ -59,6 +61,17 @@ const CreatePost = ({ onPostCreated }: { onPostCreated?: () => void }) => {
     setEditedImageBlob(blob);
     setIsEditingImage(false);
     toast.success("התמונה נערכה בהצלחה!");
+  };
+
+  const handleSaveCroppedImage = (blob: Blob) => {
+    setEditedImageBlob(blob);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setFilePreview(reader.result as string);
+    };
+    reader.readAsDataURL(blob);
+    setIsCroppingImage(false);
+    toast.success("התמונה נחתכה בהצלחה!");
   };
 
   const handlePost = async () => {
@@ -177,6 +190,15 @@ const CreatePost = ({ onPostCreated }: { onPostCreated?: () => void }) => {
                       <Button
                         variant="secondary"
                         size="icon"
+                        onClick={() => setIsCroppingImage(true)}
+                        disabled={isPosting}
+                        className="bg-background/80 hover:bg-background"
+                      >
+                        <Crop className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="icon"
                         onClick={() => setIsEditingImage(true)}
                         disabled={isPosting}
                         className="bg-background/80 hover:bg-background"
@@ -270,12 +292,22 @@ const CreatePost = ({ onPostCreated }: { onPostCreated?: () => void }) => {
     </Card>
 
     {filePreview && fileType === "image" && (
-      <ImageTextEditor
-        imageUrl={filePreview}
-        isOpen={isEditingImage}
-        onClose={() => setIsEditingImage(false)}
-        onSave={handleSaveEditedImage}
-      />
+      <>
+        <ImageCropDialog
+          image={filePreview}
+          open={isCroppingImage}
+          onClose={() => setIsCroppingImage(false)}
+          onCropComplete={handleSaveCroppedImage}
+          aspectRatio={4 / 3}
+          cropShape="rect"
+        />
+        <ImageTextEditor
+          imageUrl={filePreview}
+          isOpen={isEditingImage}
+          onClose={() => setIsEditingImage(false)}
+          onSave={handleSaveEditedImage}
+        />
+      </>
     )}
   </>
   );
