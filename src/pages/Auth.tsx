@@ -137,6 +137,12 @@ const Auth = () => {
         throw new Error("הסיסמה שבחרת נפוצה מדי, אנא בחר סיסמה אחרת");
       }
 
+      const trimmedEmail = email.trim();
+
+      // Check if email already exists by trying to find a profile with matching email
+      // Since we can't directly query auth.users, we check after the verification
+      // The real check will happen during signup where Supabase will reject duplicates
+
       // Check if username is already taken
       const { data: existingUser } = await supabase
         .from('profiles')
@@ -147,8 +153,6 @@ const Auth = () => {
       if (existingUser) {
         throw new Error("שם המשתמש הזה כבר תפוס, אנא בחר שם משתמש אחר");
       }
-
-      const trimmedEmail = email.trim();
 
       console.log("Sending verification code to:", trimmedEmail);
 
