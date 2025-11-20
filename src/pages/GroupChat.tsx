@@ -88,6 +88,7 @@ const GroupChat = () => {
   const [pendingRequests, setPendingRequests] = useState<GroupMember[]>([]);
   const [showMembers, setShowMembers] = useState(false);
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
+  const [memberToRemove, setMemberToRemove] = useState<GroupMember | null>(null);
 
   useEffect(() => {
     if (!user || authLoading || !groupId) return;
@@ -397,6 +398,51 @@ const GroupChat = () => {
     }
   };
 
+  const handleRemoveMember = async () => {
+    if (!memberToRemove || !groupId) return;
+
+    try {
+      const { error } = await supabase
+        .from("group_members")
+        .delete()
+        .eq("id", memberToRemove.id);
+
+      if (error) throw error;
+
+      toast.success("החבר הוסר מהקבוצה");
+      setMemberToRemove(null);
+      
+      // Refresh members list
+      const { data: membersData } = await supabase
+        .from("group_members")
+        .select("id, user_id, status")
+        .eq("group_id", groupId)
+        .eq("status", "approved");
+
+      if (membersData) {
+        const userIds = membersData.map((m) => m.user_id);
+        const { data: profilesData } = await supabase
+          .from("profiles")
+          .select("id, username, full_name, profile_picture_url")
+          .in("id", userIds);
+
+        const enrichedMembers = membersData.map((member) => ({
+          ...member,
+          profiles:
+            profilesData?.find((p) => p.id === member.user_id) || {
+              username: null,
+              full_name: null,
+              profile_picture_url: null,
+            },
+        }));
+
+        setMembers(enrichedMembers);
+      }
+    } catch (error) {
+      console.error("Error removing member:", error);
+      toast.error("שגיאה בהסרת החבר");
+    }
+  };
   if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-background" dir={dir}>
@@ -663,18 +709,28 @@ const GroupChat = () => {
               <h3 className="text-sm font-semibold mb-2">חברים מאושרים ({members.length})</h3>
               <div className="space-y-2 max-h-[300px] overflow-y-auto">
                 {members.map((member) => (
-                  <div key={member.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted">
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src={member.profiles.profile_picture_url || undefined} />
-                      <AvatarFallback>
-                        {(member.profiles.username || member.profiles.full_name || "?")[0].toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-medium">
-                        {member.profiles.full_name || member.profiles.username || "משתמש"}
-                      </p>
+                  <div key={member.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={member.profiles.profile_picture_url || undefined} />
+                        <AvatarFallback>
+                          {(member.profiles.username || member.profiles.full_name || "?")[0].toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium">
+                          {member.profiles.full_name || member.profiles.username || "משתמש"}
+                        </p>
+                      </div>
                     </div>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setMemberToRemove(member)}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <UserX className="h-4 w-4" />
+                    </Button>
                   </div>
                 ))}
               </div>
@@ -699,6 +755,27 @@ const GroupChat = () => {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               עזוב קבוצה
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Remove Member Confirmation Dialog */}
+      <AlertDialog open={!!memberToRemove} onOpenChange={(open) => !open && setMemberToRemove(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>האם אתה בטוח?</AlertDialogTitle>
+            <AlertDialogDescription>
+              האם אתה בטוח שברצונך להסיר את {memberToRemove?.profiles.full_name || memberToRemove?.profiles.username || "החבר"} מהקבוצה?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>ביטול</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleRemoveMember}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              הסר חבר
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
