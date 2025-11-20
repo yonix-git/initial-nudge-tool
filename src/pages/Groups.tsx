@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -47,6 +47,7 @@ interface PendingRequest {
 const Groups = () => {
   const { t, dir } = useLanguage();
   const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -356,8 +357,16 @@ const Groups = () => {
               groups.map((group, index) => (
               <Card 
                 key={group.id} 
-                className="hover:shadow-md transition-shadow animate-fade-in-up"
+                className="hover:shadow-md transition-shadow animate-fade-in-up cursor-pointer"
                 style={{ animationDelay: `${index * 0.1}s`, animationFillMode: 'backwards' }}
+                onClick={() => {
+                  // Check if user is owner or member
+                  const isOwner = group.creator_id === user?.id;
+                  const isMember = userMemberships[group.id] === 'approved';
+                  if (isOwner || isMember) {
+                    navigate(`/groups/${group.id}`);
+                  }
+                }}
               >
                 <CardHeader>
                   <div className="flex items-start justify-between">
@@ -404,7 +413,8 @@ const Groups = () => {
                     return (
                       <Button 
                         className="w-full"
-                        onClick={async () => {
+                        onClick={async (e) => {
+                          e.stopPropagation();
                           const { data: { user } } = await supabase.auth.getUser();
                           if (!user) {
                             toast.error('יש להתחבר כדי להצטרף לקבוצה');
@@ -455,7 +465,11 @@ const Groups = () => {
               ) : (
                 <div className="grid gap-4 md:grid-cols-2">
                   {myGroups.map((group) => (
-                    <Card key={group.id}>
+                    <Card 
+                      key={group.id}
+                      className="cursor-pointer hover:shadow-md transition-shadow"
+                      onClick={() => navigate(`/groups/${group.id}`)}
+                    >
                       <CardHeader>
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
