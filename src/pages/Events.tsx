@@ -8,6 +8,8 @@ import { useState, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 interface Event {
   id: string;
@@ -24,29 +26,39 @@ interface Event {
 
 const Events = () => {
   const { t, dir } = useLanguage();
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [interestedEvents, setInterestedEvents] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('events')
-          .select('*')
-          .order('date', { ascending: true });
+    if (!authLoading && !user) {
+      navigate("/auth");
+    }
+  }, [user, authLoading, navigate]);
 
-        if (error) throw error;
-        setEvents(data || []);
-      } catch (error) {
-        console.error('Error fetching events:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  useEffect(() => {
+    if (user) {
+      const fetchEvents = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('events')
+            .select('*')
+            .order('date', { ascending: true });
 
-    fetchEvents();
-  }, []);
+          if (error) throw error;
+          setEvents(data || []);
+        } catch (error) {
+          console.error('Error fetching events:', error);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchEvents();
+    }
+  }, [user]);
 
   const handleInterest = async (eventId: string) => {
     const isInterested = interestedEvents.has(eventId);
@@ -143,6 +155,31 @@ const Events = () => {
     };
     return colors[type] || "bg-gray-500";
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background" dir={dir}>
+        <Header />
+        <main className="container max-w-6xl py-6 px-4">
+          <Skeleton className="h-8 w-64 mb-4" />
+          <Skeleton className="h-10 w-full mb-6" />
+          <div className="grid gap-6 md:grid-cols-2">
+            {[...Array(4)].map((_, i) => (
+              <Card key={i}>
+                <CardHeader>
+                  <Skeleton className="h-6 w-3/4" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-4 w-full mb-4" />
+                  <Skeleton className="h-10 w-full" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background" dir={dir}>

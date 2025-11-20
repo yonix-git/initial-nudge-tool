@@ -8,6 +8,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 interface Group {
   id: string;
@@ -19,28 +21,63 @@ interface Group {
 
 const Groups = () => {
   const { t, dir } = useLanguage();
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchGroups = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('groups')
-          .select('*')
-          .order('members', { ascending: false });
+    if (!authLoading && !user) {
+      navigate("/auth");
+    }
+  }, [user, authLoading, navigate]);
 
-        if (error) throw error;
-        setGroups(data || []);
-      } catch (error) {
-        console.error('Error fetching groups:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  useEffect(() => {
+    if (user) {
+      const fetchGroups = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('groups')
+            .select('*')
+            .order('members', { ascending: false });
 
-    fetchGroups();
-  }, []);
+          if (error) throw error;
+          setGroups(data || []);
+        } catch (error) {
+          console.error('Error fetching groups:', error);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchGroups();
+    }
+  }, [user]);
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background" dir={dir}>
+        <Header />
+        <main className="container max-w-4xl py-6 px-4">
+          <Skeleton className="h-8 w-64 mb-4" />
+          <Skeleton className="h-10 w-full mb-6" />
+          <div className="grid gap-4 md:grid-cols-2">
+            {[...Array(4)].map((_, i) => (
+              <Card key={i}>
+                <CardHeader>
+                  <Skeleton className="h-6 w-3/4" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-4 w-full mb-4" />
+                  <Skeleton className="h-10 w-full" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background" dir={dir}>

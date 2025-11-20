@@ -9,6 +9,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 interface Service {
   id: string;
@@ -23,36 +25,46 @@ interface Service {
 
 const Services = () => {
   const { t, dir } = useLanguage();
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState<string>("all");
 
   useEffect(() => {
-    const fetchServices = async () => {
-      try {
-        let query = supabase
-          .from('profiles')
-          .select('*')
-          .eq('account_type', 'business')
-          .not('business_type', 'is', null);
-        
-        if (filterType !== "all") {
-          query = query.eq('business_type', filterType);
+    if (!authLoading && !user) {
+      navigate("/auth");
+    }
+  }, [user, authLoading, navigate]);
+
+  useEffect(() => {
+    if (user) {
+      const fetchServices = async () => {
+        try {
+          let query = supabase
+            .from('profiles')
+            .select('*')
+            .eq('account_type', 'business')
+            .not('business_type', 'is', null);
+          
+          if (filterType !== "all") {
+            query = query.eq('business_type', filterType);
+          }
+
+          const { data, error } = await query.order('average_rating', { ascending: false });
+
+          if (error) throw error;
+          setServices(data || []);
+        } catch (error) {
+          console.error('Error fetching services:', error);
+        } finally {
+          setLoading(false);
         }
+      };
 
-        const { data, error } = await query.order('average_rating', { ascending: false });
-
-        if (error) throw error;
-        setServices(data || []);
-      } catch (error) {
-        console.error('Error fetching services:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchServices();
-  }, [filterType]);
+      fetchServices();
+    }
+  }, [filterType, user]);
 
   const getTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
@@ -78,6 +90,31 @@ const Services = () => {
       </div>
     );
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background" dir={dir}>
+        <Header />
+        <main className="container max-w-6xl py-6 px-4">
+          <Skeleton className="h-8 w-64 mb-4" />
+          <Skeleton className="h-10 w-full mb-6" />
+          <div className="grid gap-4 md:grid-cols-2">
+            {[...Array(4)].map((_, i) => (
+              <Card key={i}>
+                <CardHeader>
+                  <Skeleton className="h-6 w-3/4" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-4 w-full mb-4" />
+                  <Skeleton className="h-10 w-full" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background" dir={dir}>
