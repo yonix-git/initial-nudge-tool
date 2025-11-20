@@ -94,11 +94,22 @@ const Settings = () => {
   };
 
   const handleLogout = async () => {
-    await signOut();
-    toast({
-      title: "התנתקת בהצלחה",
-    });
-    navigate("/auth");
+    try {
+      await signOut();
+      toast({
+        title: "התנתקת בהצלחה",
+      });
+      // Wait a bit for the auth state to update before navigating
+      setTimeout(() => {
+        navigate("/auth", { replace: true });
+      }, 100);
+    } catch (error) {
+      console.error("Error signing out:", error);
+      toast({
+        title: "שגיאה בהתנתקות",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleChangePassword = async () => {
