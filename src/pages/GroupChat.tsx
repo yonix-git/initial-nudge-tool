@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { ArrowLeft, Send, Image as ImageIcon, Video as VideoIcon, Users, X } from "lucide-react";
+import { ArrowLeft, Send, Image as ImageIcon, Video as VideoIcon, Users, X, UserCheck, UserX } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
   Dialog,
@@ -73,6 +73,7 @@ const GroupChat = () => {
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [members, setMembers] = useState<GroupMember[]>([]);
+  const [pendingRequests, setPendingRequests] = useState<GroupMember[]>([]);
   const [showMembers, setShowMembers] = useState(false);
 
   useEffect(() => {
@@ -148,6 +149,32 @@ const GroupChat = () => {
               },
             }));
             setMembers(enrichedMembers);
+          }
+
+          // Fetch pending requests
+          const { data: pendingData, error: pendingError } = await supabase
+            .from("group_members")
+            .select("*")
+            .eq("group_id", groupId)
+            .eq("status", "pending");
+
+          if (!pendingError && pendingData) {
+            const pendingUserIds = pendingData.map(m => m.user_id);
+            const { data: pendingProfilesData } = await supabase
+              .from("profiles")
+              .select("id, username, full_name, profile_picture_url")
+              .in("id", pendingUserIds);
+
+            const pendingProfilesMap = new Map(pendingProfilesData?.map(p => [p.id, p]) || []);
+            const enrichedPending = pendingData.map(req => ({
+              ...req,
+              profiles: pendingProfilesMap.get(req.user_id) || {
+                username: null,
+                full_name: null,
+                profile_picture_url: null,
+              },
+            }));
+            setPendingRequests(enrichedPending);
           }
         }
       } catch (error) {
@@ -297,6 +324,46 @@ const GroupChat = () => {
     setVideoPreview(null);
   };
 
+  const handleApproveRequest = async (requestId: string) => {
+    try {
+      const { error } = await supabase
+        .from("group_members")
+        .update({ status: "approved" })
+        .eq("id", requestId);
+
+      if (error) throw error;
+
+      toast.success("הבקשה אושרה!");
+      
+      // Move from pending to members
+      const approvedRequest = pendingRequests.find(r => r.id === requestId);
+      if (approvedRequest) {
+        setPendingRequests(prev => prev.filter(r => r.id !== requestId));
+        setMembers(prev => [...prev, { ...approvedRequest, status: "approved" }]);
+      }
+    } catch (error) {
+      console.error("Error approving request:", error);
+      toast.error("שגיאה באישור הבקשה");
+    }
+  };
+
+  const handleRejectRequest = async (requestId: string) => {
+    try {
+      const { error } = await supabase
+        .from("group_members")
+        .delete()
+        .eq("id", requestId);
+
+      if (error) throw error;
+
+      toast.success("הבקשה נדחתה");
+      setPendingRequests(prev => prev.filter(r => r.id !== requestId));
+    } catch (error) {
+      console.error("Error rejecting request:", error);
+      toast.error("שגיאה בדחיית הבקשה");
+    }
+  };
+
   if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-background" dir={dir}>
@@ -340,6 +407,11 @@ const GroupChat = () => {
             <Button variant="outline" onClick={() => setShowMembers(true)}>
               <Users className="h-4 w-4 ml-2" />
               חברי הקבוצה ({members.length})
+              {pendingRequests.length > 0 && (
+                <span className="mr-2 bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-xs">
+                  {pendingRequests.length}
+                </span>
+              )}
             </Button>
           )}
         </div>
@@ -495,26 +567,74 @@ const GroupChat = () => {
 
       {/* Members Dialog */}
       <Dialog open={showMembers} onOpenChange={setShowMembers}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>חברי הקבוצה</DialogTitle>
           </DialogHeader>
-          <div className="space-y-2 max-h-[400px] overflow-y-auto">
-            {members.map((member) => (
-              <div key={member.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted">
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src={member.profiles.profile_picture_url || undefined} />
-                  <AvatarFallback>
-                    {(member.profiles.username || member.profiles.full_name || "?")[0].toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="font-medium">
-                    {member.profiles.full_name || member.profiles.username || "משתמש"}
-                  </p>
+          <div className="space-y-4">
+            {/* Pending Requests Section */}
+            {pendingRequests.length > 0 && (
+              <div>
+                <h3 className="text-sm font-semibold mb-2">בקשות ממתינות ({pendingRequests.length})</h3>
+                <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                  {pendingRequests.map((request) => (
+                    <div key={request.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={request.profiles.profile_picture_url || undefined} />
+                          <AvatarFallback>
+                            {(request.profiles.username || request.profiles.full_name || "?")[0].toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <p className="font-medium">
+                          {request.profiles.full_name || request.profiles.username || "משתמש"}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 px-3"
+                          onClick={() => handleApproveRequest(request.id)}
+                        >
+                          <UserCheck className="h-4 w-4 text-green-600" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 px-3"
+                          onClick={() => handleRejectRequest(request.id)}
+                        >
+                          <UserX className="h-4 w-4 text-red-600" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-            ))}
+            )}
+
+            {/* Approved Members Section */}
+            <div>
+              <h3 className="text-sm font-semibold mb-2">חברים מאושרים ({members.length})</h3>
+              <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                {members.map((member) => (
+                  <div key={member.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={member.profiles.profile_picture_url || undefined} />
+                      <AvatarFallback>
+                        {(member.profiles.username || member.profiles.full_name || "?")[0].toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-medium">
+                        {member.profiles.full_name || member.profiles.username || "משתמש"}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
