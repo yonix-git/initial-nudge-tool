@@ -217,10 +217,19 @@ const Auth = () => {
       });
 
       if (signUpError) {
-        if (signUpError.message?.includes("User already registered") || signUpError.message?.includes("user_already_exists")) {
+        console.error("Signup error details:", signUpError);
+        
+        // Check for various "user already exists" error patterns
+        if (
+          signUpError.message?.toLowerCase().includes("user already registered") || 
+          signUpError.message?.toLowerCase().includes("user_already_exists") ||
+          signUpError.message?.toLowerCase().includes("already registered") ||
+          signUpError.status === 422
+        ) {
           throw new Error("המייל הזה כבר רשום במערכת. אנא התחבר במקום להירשם מחדש.");
         }
-        throw signUpError;
+        
+        throw new Error(signUpError.message || "שגיאה בהרשמה למערכת");
       }
 
       toast({
