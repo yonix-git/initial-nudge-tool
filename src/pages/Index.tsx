@@ -4,9 +4,13 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
   const { dir } = useLanguage();
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -23,28 +27,56 @@ const Index = () => {
   };
 
   useEffect(() => {
-    fetchPosts();
+    if (!authLoading && !user) {
+      navigate("/auth");
+    }
+  }, [user, authLoading, navigate]);
 
-    // Subscribe to realtime updates
-    const channel = supabase
-      .channel('posts-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'posts'
-        },
-        () => {
-          fetchPosts();
-        }
-      )
-      .subscribe();
+  useEffect(() => {
+    if (user) {
+      fetchPosts();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
+      // Subscribe to realtime updates
+      const channel = supabase
+        .channel('posts-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'posts'
+          },
+          () => {
+            fetchPosts();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, [user]);
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background" dir={dir}>
+        <Header />
+        <main className="container max-w-2xl py-6 px-4 relative z-10">
+          <div className="bg-card rounded-xl p-4 mb-3">
+            <div className="flex gap-3 mb-3">
+              <Skeleton className="h-10 w-10 rounded-full" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-3 w-24" />
+              </div>
+            </div>
+            <Skeleton className="h-20 w-full mb-3" />
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background" dir={dir}>
