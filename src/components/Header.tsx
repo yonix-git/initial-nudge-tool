@@ -35,6 +35,55 @@ const Header = () => {
     fetchProfile();
   }, [user]);
 
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchUnreadNotifications = async () => {
+      const { count } = await supabase
+        .from("notifications")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("is_read", false);
+
+      setUnreadNotifications(count || 0);
+    };
+
+    fetchUnreadNotifications();
+
+    // Subscribe to realtime notifications
+    const channel = supabase
+      .channel("notifications")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          fetchUnreadNotifications();
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          fetchUnreadNotifications();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
 
   const getInitials = (name: string) => {
     if (!name) return "U";
