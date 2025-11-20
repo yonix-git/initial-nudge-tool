@@ -83,16 +83,7 @@ const Groups = () => {
         if (userGroups.length > 0) {
           const { data: requests, error: reqError } = await supabase
             .from('group_members')
-            .select(`
-              id,
-              user_id,
-              group_id,
-              profiles:user_id (
-                full_name,
-                username,
-                profile_picture_url
-              )
-            `)
+            .select('id, user_id, group_id')
             .in('group_id', userGroups.map(g => g.id))
             .eq('status', 'pending');
           
@@ -102,7 +93,14 @@ const Groups = () => {
               if (!requestsByGroup[req.group_id]) {
                 requestsByGroup[req.group_id] = [];
               }
-              requestsByGroup[req.group_id].push(req);
+              requestsByGroup[req.group_id].push({
+                ...req,
+                profiles: {
+                  full_name: null,
+                  username: null,
+                  profile_picture_url: null
+                }
+              });
             });
             console.log('Pending requests by group:', requestsByGroup);
             setPendingRequests(requestsByGroup);
