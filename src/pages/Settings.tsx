@@ -13,6 +13,27 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 const Settings = () => {
   const { language, setLanguage, t, dir } = useLanguage();
@@ -22,6 +43,9 @@ const Settings = () => {
   const navigate = useNavigate();
   const [accountType, setAccountType] = useState<"private" | "business" | null>(null);
   const [loading, setLoading] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -75,6 +99,85 @@ const Settings = () => {
       title: "התנתקת בהצלחה",
     });
     navigate("/auth");
+  };
+
+  const handleChangePassword = async () => {
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "שגיאה",
+        description: "הסיסמאות לא תואמות",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast({
+        title: "שגיאה",
+        description: "הסיסמה חייבת להכיל לפחות 6 תווים",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "הסיסמה שונתה בהצלחה",
+      });
+      setPasswordDialogOpen(false);
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (error: any) {
+      toast({
+        title: "שגיאה בשינוי הסיסמה",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+
+    setLoading(true);
+    try {
+      // Delete user profile first
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .delete()
+        .eq("id", user.id);
+
+      if (profileError) throw profileError;
+
+      // Delete user account
+      const { error: authError } = await supabase.auth.admin.deleteUser(user.id);
+      
+      if (authError) throw authError;
+
+      toast({
+        title: "החשבון נמחק בהצלחה",
+      });
+      
+      await signOut();
+      navigate("/auth");
+    } catch (error: any) {
+      toast({
+        title: "שגיאה במחיקת החשבון",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -273,7 +376,49 @@ const Settings = () => {
                   <Label>{t("settings.changePassword")}</Label>
                   <p className="text-sm text-muted-foreground">{t("settings.changePasswordDesc")}</p>
                 </div>
-                <Button variant="outline" size="sm">{t("settings.change")}</Button>
+                <Dialog open={passwordDialogOpen} onOpenChange={setPasswordDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm">{t("settings.change")}</Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>שינוי סיסמה</DialogTitle>
+                      <DialogDescription>
+                        הזן סיסמה חדשה לחשבון שלך
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="new-password">סיסמה חדשה</Label>
+                        <Input
+                          id="new-password"
+                          type="password"
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          placeholder="הזן סיסמה חדשה"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="confirm-password">אימות סיסמה</Label>
+                        <Input
+                          id="confirm-password"
+                          type="password"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          placeholder="הזן שוב את הסיסמה החדשה"
+                        />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setPasswordDialogOpen(false)}>
+                        ביטול
+                      </Button>
+                      <Button onClick={handleChangePassword} disabled={loading}>
+                        {loading ? "משנה..." : "שנה סיסמה"}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </div>
               <Separator />
               <div className="flex items-center justify-between">
@@ -281,10 +426,31 @@ const Settings = () => {
                   <Label className="text-destructive">{t("settings.deleteAccount")}</Label>
                   <p className="text-sm text-muted-foreground">{t("settings.deleteAccountDesc")}</p>
                 </div>
-                <Button variant="destructive" size="sm">
-                  <Trash2 className={`h-4 w-4 ${dir === 'rtl' ? 'ml-2' : 'mr-2'}`} />
-                  {t("settings.delete")}
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="sm">
+                      <Trash2 className={`h-4 w-4 ${dir === 'rtl' ? 'ml-2' : 'mr-2'}`} />
+                      {t("settings.delete")}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>האם אתה בטוח שברצונך למחוק את החשבון?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        פעולה זו תמחק לצמיתות את החשבון שלך ואת כל הנתונים הקשורים אליו. לא ניתן לבטל פעולה זו.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>ביטול</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleDeleteAccount}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        {loading ? "מוחק..." : "מחק חשבון"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
               <Separator />
               <div className="flex items-center justify-between">
