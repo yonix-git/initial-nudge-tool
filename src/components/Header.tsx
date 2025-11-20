@@ -106,7 +106,11 @@ const Header = () => {
       if (!error && data) {
         setSearchResults(data);
       }
-  };
+    };
+
+    const debounce = setTimeout(searchUsers, 300);
+    return () => clearTimeout(debounce);
+  }, [searchQuery, isHomePage]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -118,10 +122,6 @@ const Header = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-    const debounce = setTimeout(searchUsers, 300);
-    return () => clearTimeout(debounce);
-  }, [searchQuery, isHomePage]);
 
   const handleProfileClick = (profileId: string) => {
     navigate(`/profile?id=${profileId}`);
