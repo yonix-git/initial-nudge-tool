@@ -103,7 +103,7 @@ const Header = () => {
 
           <Link to="/" className="flex items-center gap-2 sm:gap-3 group">
             <div className="relative rounded-2xl bg-gradient-to-br from-primary via-primary/95 to-primary/90 p-2 sm:p-2.5 shadow-lg group-hover:shadow-2xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 overflow-hidden">
-              <img src={sportCarLogo} alt="Sport Car" className="h-5 w-5 sm:h-6 sm:w-6 relative z-10 object-contain brightness-0 invert" />
+              <img src={sportCarLogo} alt="Sport Car" className="h-5 w-5 sm:h-6 sm:w-6 relative z-10 object-contain" />
               <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             </div>
             <span className="text-xl sm:text-2xl font-bebas tracking-wider bg-gradient-to-r from-foreground via-foreground/90 to-foreground/80 bg-clip-text text-transparent">MotorClub IL</span>
