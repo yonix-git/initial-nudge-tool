@@ -51,7 +51,7 @@ const Index = () => {
     };
   }, [user, authLoading]);
 
-  if (authLoading || loading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-background" dir={dir}>
         <Header />
