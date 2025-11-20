@@ -102,7 +102,6 @@ const Groups = () => {
                 }
               });
             });
-            console.log('Pending requests by group:', requestsByGroup);
             setPendingRequests(requestsByGroup);
           } else if (reqError) {
             console.error('Error fetching pending requests:', reqError);
@@ -472,12 +471,7 @@ const Groups = () => {
                 </div>
               ) : (
                 <div className="grid gap-4 md:grid-cols-2">
-                  {myGroups.map((group) => {
-                    console.log(`Group ${group.name} (${group.id}):`, {
-                      hasPending: !!pendingRequests[group.id],
-                      pendingCount: pendingRequests[group.id]?.length || 0
-                    });
-                    return (
+                  {myGroups.map((group) => (
                     <Card 
                       key={group.id}
                       className="cursor-pointer hover:shadow-md transition-shadow"
@@ -539,7 +533,7 @@ const Groups = () => {
                         )}
                       </CardContent>
                     </Card>
-                  )})}
+                  ))}
                 </div>
               )}
             </TabsContent>
