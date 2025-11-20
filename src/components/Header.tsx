@@ -101,11 +101,23 @@ const Header = () => {
           </Sheet>
 
           <Link to="/" className="flex items-center gap-2 sm:gap-3 group">
-            <div className="relative rounded-2xl bg-gradient-to-br from-primary via-primary/95 to-primary/90 p-2 sm:p-2.5 shadow-lg group-hover:shadow-2xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-3">
-              <Car className="h-5 w-5 sm:h-6 sm:w-6 text-primary-foreground relative z-10" />
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="relative">
+              {/* Speed lines effect */}
+              <div className="absolute -left-8 top-1/2 -translate-y-1/2 flex gap-1 opacity-0 group-hover:opacity-60 transition-all duration-300 group-hover:-translate-x-2">
+                <div className="h-0.5 w-3 bg-primary/40 rounded-full"></div>
+                <div className="h-0.5 w-4 bg-primary/60 rounded-full"></div>
+                <div className="h-0.5 w-2 bg-primary/40 rounded-full"></div>
+              </div>
+              
+              <div className="relative rounded-xl bg-gradient-to-br from-primary via-primary to-primary/80 p-2 sm:p-2.5 shadow-xl group-hover:shadow-2xl transition-all duration-300 group-hover:scale-110 -skew-x-12 group-hover:-skew-x-6 overflow-hidden">
+                <Car className="h-5 w-5 sm:h-6 sm:w-6 text-primary-foreground relative z-10 skew-x-12 group-hover:skew-x-6 transition-transform duration-300" />
+                {/* Shine effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                {/* Glow effect */}
+                <div className="absolute -inset-1 bg-primary/50 blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
+              </div>
             </div>
-            <span className="text-xl sm:text-2xl font-bebas tracking-wider bg-gradient-to-r from-foreground via-foreground/90 to-foreground/80 bg-clip-text text-transparent">MotorClub IL</span>
+            <span className="text-xl sm:text-2xl font-bebas tracking-wider bg-gradient-to-r from-foreground via-foreground/90 to-foreground/80 bg-clip-text text-transparent group-hover:tracking-widest transition-all duration-300">MotorClub IL</span>
           </Link>
           
           <nav className="hidden md:flex items-center gap-6">
