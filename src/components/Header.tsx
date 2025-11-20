@@ -136,6 +136,33 @@ const Header = () => {
     if (words.length === 1) return words[0].charAt(0).toUpperCase();
     return words.slice(0, 2).map(word => word.charAt(0).toUpperCase()).join("");
   };
+
+  const handleNotificationsClick = async () => {
+    if (!user) return;
+
+    // Get groups with unread notifications
+    const { data: notifications } = await supabase
+      .from("notifications")
+      .select("group_id")
+      .eq("user_id", user.id)
+      .eq("is_read", false);
+
+    if (!notifications || notifications.length === 0) {
+      navigate("/groups");
+      return;
+    }
+
+    // Get unique group IDs
+    const uniqueGroupIds = [...new Set(notifications.map(n => n.group_id))];
+
+    if (uniqueGroupIds.length === 1) {
+      // Navigate directly to the single group
+      navigate(`/groups/${uniqueGroupIds[0]}`);
+    } else {
+      // Navigate to groups page
+      navigate("/groups");
+    }
+  };
   
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-card/70 backdrop-blur-2xl supports-[backdrop-filter]:bg-card/60 shadow-xl">
@@ -286,7 +313,12 @@ const Header = () => {
           </Button>
           
           {isHomePage && (
-            <Button variant="ghost" size="icon" className="relative">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="relative"
+              onClick={handleNotificationsClick}
+            >
               <Bell className="h-5 w-5" />
               {unreadNotifications > 0 && (
                 <Badge 
