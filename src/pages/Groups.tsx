@@ -57,6 +57,7 @@ const Groups = () => {
   });
   const [myGroups, setMyGroups] = useState<Group[]>([]);
   const [pendingRequests, setPendingRequests] = useState<Record<string, PendingRequest[]>>({});
+  const [userMemberships, setUserMemberships] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!user || authLoading) return;
@@ -104,6 +105,20 @@ const Groups = () => {
             });
             setPendingRequests(requestsByGroup);
           }
+        }
+        
+        // Fetch user memberships
+        const { data: memberships, error: memError } = await supabase
+          .from('group_members')
+          .select('group_id, status')
+          .eq('user_id', user.id);
+        
+        if (!memError && memberships) {
+          const membershipMap: Record<string, string> = {};
+          memberships.forEach(m => {
+            membershipMap[m.group_id] = m.status;
+          });
+          setUserMemberships(membershipMap);
         }
       } catch (error) {
         console.error('Error fetching groups:', error);
@@ -358,37 +373,73 @@ const Groups = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground mb-4">{group.description}</p>
-                  <Button 
-                    className="w-full"
-                    onClick={async () => {
-                      const { data: { user } } = await supabase.auth.getUser();
-                      if (!user) {
-                        toast.error('יש להתחבר כדי להצטרף לקבוצה');
-                        return;
-                      }
-                      
-                      const { error } = await supabase
-                        .from('group_members')
-                        .insert({
-                          group_id: group.id,
-                          user_id: user.id,
-                          status: 'pending',
-                        });
+                  {(() => {
+                    // Check if user is the creator
+                    if (group.creator_id === user?.id) {
+                      return (
+                        <Button className="w-full" variant="secondary" disabled>
+                          הקבוצה שלך
+                        </Button>
+                      );
+                    }
+                    
+                    // Check membership status
+                    const status = userMemberships[group.id];
+                    if (status === 'approved') {
+                      return (
+                        <Button className="w-full" variant="secondary" disabled>
+                          חבר בקבוצה
+                        </Button>
+                      );
+                    }
+                    if (status === 'pending') {
+                      return (
+                        <Button className="w-full" variant="outline" disabled>
+                          בקשה ממתינה
+                        </Button>
+                      );
+                    }
+                    
+                    // Default: show join button
+                    return (
+                      <Button 
+                        className="w-full"
+                        onClick={async () => {
+                          const { data: { user } } = await supabase.auth.getUser();
+                          if (!user) {
+                            toast.error('יש להתחבר כדי להצטרף לקבוצה');
+                            return;
+                          }
+                          
+                          const { error } = await supabase
+                            .from('group_members')
+                            .insert({
+                              group_id: group.id,
+                              user_id: user.id,
+                              status: 'pending',
+                            });
 
-                      if (error) {
-                        if (error.code === '23505') {
-                          toast.info('כבר שלחת בקשה להצטרף לקבוצה זו');
-                        } else {
-                          console.error('Error joining group:', error);
-                          toast.error('שגיאה בהצטרפות לקבוצה');
-                        }
-                      } else {
-                        toast.success('הבקשה שלך נשלחה ליוצר הקבוצה');
-                      }
-                    }}
-                  >
-                    שלח בקשה להצטרפות
-                  </Button>
+                          if (error) {
+                            if (error.code === '23505') {
+                              toast.info('כבר שלחת בקשה להצטרף לקבוצה זו');
+                            } else {
+                              console.error('Error joining group:', error);
+                              toast.error('שגיאה בהצטרפות לקבוצה');
+                            }
+                          } else {
+                            toast.success('הבקשה שלך נשלחה ליוצר הקבוצה');
+                            // Update local state
+                            setUserMemberships(prev => ({
+                              ...prev,
+                              [group.id]: 'pending'
+                            }));
+                          }
+                        }}
+                      >
+                        שלח בקשה להצטרפות
+                      </Button>
+                    );
+                  })()}
                 </CardContent>
               </Card>
               ))
