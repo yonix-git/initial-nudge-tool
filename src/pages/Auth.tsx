@@ -76,8 +76,10 @@ const Auth = () => {
     setLoading(true);
 
     try {
+      const trimmedEmail = email.trim();
+
       const { error } = await supabase.auth.signInWithPassword({
-        email,
+        email: trimmedEmail,
         password,
       });
 
@@ -92,7 +94,17 @@ const Auth = () => {
           }, 60000); // Unblock after 1 minute
         }
         
-        throw error;
+        // Check if it's a wrong password error vs user not found
+        const errorMsg = error.message.toLowerCase();
+        if (errorMsg.includes('email not confirmed')) {
+          throw new Error("מייל אינו רשום, אנא עבור לדף הרשמה");
+        } else if (errorMsg.includes('invalid') || 
+                   errorMsg.includes('credentials') ||
+                   errorMsg.includes('password')) {
+          throw new Error("סיסמה שגויה");
+        }
+        
+        throw new Error("מייל אינו רשום, אנא עבור לדף הרשמה");
       }
 
       // Reset on successful login
@@ -113,8 +125,8 @@ const Auth = () => {
     }
   };
 
-  const handleSendVerificationCode = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSendVerificationCode = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setLoading(true);
 
     try {
@@ -139,26 +151,14 @@ const Auth = () => {
 
       const trimmedEmail = email.trim();
 
-      // Check if email already exists by trying to find a profile with matching email
-      // Since we can't directly query auth.users, we check after the verification
-      // The real check will happen during signup where Supabase will reject duplicates
-
-      // Check if username is already taken
-      const { data: existingUser } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('username', username.trim())
-        .maybeSingle();
-
-      if (existingUser) {
-        throw new Error("שם המשתמש הזה כבר תפוס, אנא בחר שם משתמש אחר");
-      }
-
       console.log("Sending verification code to:", trimmedEmail);
 
-      // Send verification code
+      // Send verification code with email and username for validation
       const { data, error } = await supabase.functions.invoke('send-verification-code', {
-        body: { email: trimmedEmail }
+        body: { 
+          email: trimmedEmail,
+          username: username.trim()
+        }
       });
 
       console.log("Verification response:", { data, error });
@@ -166,6 +166,11 @@ const Auth = () => {
       if (error) {
         console.error("Verification error:", error);
         throw new Error(error.message || "שגיאה בשליחת קוד אימות");
+      }
+
+      // Check if there's an error message in the response data
+      if (data?.error) {
+        throw new Error(data.error);
       }
 
       setShowVerification(true);
@@ -176,7 +181,7 @@ const Auth = () => {
     } catch (error: any) {
       console.error("Error in handleSendVerificationCode:", error);
       toast({
-        title: "שגיאה בשליחת קוד אימות",
+        title: "שגיאה",
         description: error.message || "אנא נסה שוב מאוחר יותר",
         variant: "destructive",
       });
@@ -409,75 +414,9 @@ const Auth = () => {
                     type="button" 
                     className="w-full" 
                     disabled={loading}
-                    onClick={async () => {
-                      console.log("🟢 Button clicked!");
-                      setLoading(true);
-
-                      try {
-                        // Validate all inputs with zod
-                        const validationResult = signupSchema.safeParse({
-                          email,
-                          password,
-                          fullName,
-                          username,
-                        });
-
-                        if (!validationResult.success) {
-                          const firstError = validationResult.error.errors[0];
-                          throw new Error(firstError.message);
-                        }
-
-                        // Check for common weak passwords
-                        const commonPasswords = ["password", "123456", "12345678", "qwerty", "abc123", "password123", "admin123"];
-                        if (commonPasswords.includes(password.toLowerCase())) {
-                        throw new Error("הסיסמה שבחרת נפוצה מדי, אנא בחר סיסמה אחרת");
-                      }
-
-                      // Check if username is already taken
-                      const { data: existingUser } = await supabase
-                        .from('profiles')
-                        .select('username')
-                        .eq('username', username.trim())
-                        .maybeSingle();
-
-                      if (existingUser) {
-                        throw new Error("שם המשתמש הזה כבר תפוס, אנא בחר שם משתמש אחר");
-                      }
-
-                      const trimmedEmail = email.trim();
-
-                        console.log("Sending verification code to:", trimmedEmail);
-
-                        // Send verification code
-                        const { data, error } = await supabase.functions.invoke('send-verification-code', {
-                          body: { email: trimmedEmail }
-                        });
-
-                        console.log("Verification response:", { data, error });
-
-                        if (error) {
-                          console.error("Verification error:", error);
-                          throw new Error(error.message || "שגיאה בשליחת קוד אימות");
-                        }
-
-                        setShowVerification(true);
-                        toast({
-                          title: "קוד אימות נשלח!",
-                          description: "בדוק את תיבת הדואר שלך והזן את הקוד שקיבלת",
-                        });
-                      } catch (error: any) {
-                        console.error("Error in handleSendVerificationCode:", error);
-                        toast({
-                          title: "שגיאה בשליחת קוד אימות",
-                          description: error.message || "אנא נסה שוב מאוחר יותר",
-                          variant: "destructive",
-                        });
-                      } finally {
-                        setLoading(false);
-                      }
-                    }}
+                    onClick={() => handleSendVerificationCode()}
                   >
-                    {loading ? "שולח קוד אימות..." : "שלח קוד אימות"}
+                    {loading ? "שולח קוד..." : "שלח קוד אימות"}
                   </Button>
                 </div>
               ) : (

@@ -10,6 +10,7 @@ const corsHeaders = {
 
 interface VerificationRequest {
   email: string;
+  username: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -18,23 +19,52 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email }: VerificationRequest = await req.json();
+    const { email, username }: VerificationRequest = await req.json();
 
     if (!email || !email.includes('@')) {
       throw new Error('כתובת אימייל לא תקינה');
     }
 
-    // Generate 5-digit code
-    const code = Math.floor(10000 + Math.random() * 90000).toString();
-    
-    // Set expiration to 10 minutes from now
-    const expiresAt = new Date();
-    expiresAt.setMinutes(expiresAt.getMinutes() + 10);
+    if (!username || username.trim().length < 3) {
+      throw new Error('שם משתמש חייב להכיל לפחות 3 תווים');
+    }
 
-    // Initialize Supabase client
+    // Initialize Supabase client with service role to check auth.users
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Check if email already exists in auth.users
+    const { data: existingUsers, error: userCheckError } = await supabase.auth.admin.listUsers();
+    
+    if (userCheckError) {
+      console.error('Error checking existing users:', userCheckError);
+      throw new Error('שגיאה בבדיקת משתמשים קיימים');
+    }
+
+    const emailExists = existingUsers.users.some(user => user.email === email.toLowerCase());
+    
+    if (emailExists) {
+      throw new Error('מייל זה כבר רשום אנא עבור לדף התחברות');
+    }
+
+    // Check if username already exists in profiles
+    const { data: existingProfile } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('username', username.trim())
+      .maybeSingle();
+
+    if (existingProfile) {
+      throw new Error('שם משתמש זה כבר קיים אנא בחר שם משתמש אחר');
+    }
+
+    // Generate 5-digit code
+    const code = Math.floor(10000 + Math.random() * 90000).toString();
+    
+    // Set expiration to 5 minutes from now
+    const expiresAt = new Date();
+    expiresAt.setMinutes(expiresAt.getMinutes() + 5);
 
     // Delete old verification codes for this email
     await supabase
@@ -135,7 +165,7 @@ const handler = async (req: Request): Promise<Response> => {
               </div>
               
               <p class="info">
-                <strong>הקוד תקף ל-10 דקות בלבד.</strong><br>
+                <strong>הקוד תקף ל-5 דקות בלבד.</strong><br>
                 אם לא ביקשת להירשם, אנא התעלם ממייל זה.
               </p>
               
