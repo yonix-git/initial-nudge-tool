@@ -489,7 +489,23 @@ const PostItem = ({
                     clearTimeout(clickTimer);
                     setClickTimer(null);
                   }
-                  setShowFullscreen(true);
+                  
+                  const timer = setTimeout(() => {
+                    setShowFullscreen(true);
+                    setClickTimer(null);
+                  }, 250);
+                  
+                  setClickTimer(timer);
+                }}
+                onDoubleClick={(e) => {
+                  e.stopPropagation();
+                  
+                  if (clickTimer) {
+                    clearTimeout(clickTimer);
+                    setClickTimer(null);
+                  }
+                  
+                  handleLike();
                 }}
               />
             )}
