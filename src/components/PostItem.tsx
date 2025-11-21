@@ -1,7 +1,7 @@
 import { Heart, MessageCircle, Share2, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -70,6 +70,8 @@ const PostItem = ({
   const [commentToDelete, setCommentToDelete] = useState<string | null>(null);
   const [showFullscreen, setShowFullscreen] = useState(false);
   const [clickTimer, setClickTimer] = useState<NodeJS.Timeout | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const fullscreenVideoRef = useRef<HTMLVideoElement>(null);
   const { dir } = useLanguage();
 
   const isOwnPost = user?.id === userId;
@@ -139,6 +141,32 @@ const PostItem = ({
       }
     };
   }, [clickTimer]);
+
+  // Auto-play video when in viewport
+  useEffect(() => {
+    if (!videoRef.current || !videoUrl) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            videoRef.current?.play().catch(() => {
+              // Autoplay might fail, that's okay
+            });
+          } else {
+            videoRef.current?.pause();
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+
+    observer.observe(videoRef.current);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [videoUrl]);
 
   const handleShare = async () => {
     const postUrl = `${window.location.origin}/?post=${id}`;
@@ -449,9 +477,20 @@ const PostItem = ({
             )}
             {videoUrl && (
               <video 
+                ref={videoRef}
                 src={videoUrl} 
-                controls 
-                className="w-full rounded-lg max-h-96 mb-3"
+                loop
+                muted
+                playsInline
+                className="w-full rounded-lg max-h-96 mb-3 cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (clickTimer) {
+                    clearTimeout(clickTimer);
+                    setClickTimer(null);
+                  }
+                  setShowFullscreen(true);
+                }}
               />
             )}
             {content && <p className="text-sm whitespace-pre-wrap">{content}</p>}
@@ -611,9 +650,22 @@ const PostItem = ({
             )}
             {videoUrl && (
               <video 
-                src={videoUrl} 
-                controls 
-                className="max-w-full max-h-full"
+                ref={fullscreenVideoRef}
+                src={videoUrl}
+                autoPlay
+                loop
+                playsInline
+                className="max-w-full max-h-full cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (fullscreenVideoRef.current) {
+                    if (fullscreenVideoRef.current.paused) {
+                      fullscreenVideoRef.current.play();
+                    } else {
+                      fullscreenVideoRef.current.pause();
+                    }
+                  }
+                }}
                 onDoubleClick={(e) => {
                   e.stopPropagation();
                   handleLike();
