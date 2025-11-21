@@ -176,7 +176,7 @@ const Header = () => {
   };
   
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-card/70 backdrop-blur-2xl supports-[backdrop-filter]:bg-card/60 shadow-xl">
+    <header className="sticky z-50 w-full border-b border-border/40 bg-card/70 backdrop-blur-2xl supports-[backdrop-filter]:bg-card/60 shadow-xl" style={{ top: 'env(safe-area-inset-top, 0)' }}>
       {/* Mobile Search Overlay */}
       {isMobile && isMobileSearchOpen && isHomePage && (
         <div className="absolute inset-0 bg-card z-50 flex items-center px-4" dir={dir}>

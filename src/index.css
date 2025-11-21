@@ -121,6 +121,7 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
     position: relative;
     overflow-x: hidden;
+    padding-top: env(safe-area-inset-top);
   }
   
   body::before {
