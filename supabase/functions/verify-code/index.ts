@@ -102,12 +102,8 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('קוד האימות שגוי או שפג תוקפו');
     }
 
-    // Success - mark as verified and clear failed attempts
-    await supabase
-      .from('verification_codes')
-      .update({ verified: true })
-      .eq('id', verificationData.id);
-
+    // Success - DON'T mark as verified yet, let the signup process handle that
+    // Just clear failed attempts and return success
     failedAttempts.delete(attemptKey);
 
     console.log(`Successfully verified code for ${trimmedEmail}`);
