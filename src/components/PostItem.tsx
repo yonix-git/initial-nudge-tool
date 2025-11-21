@@ -365,7 +365,7 @@ const PostItem = ({
   });
 
   return (
-    <div className="bg-card/40 backdrop-blur-sm rounded-xl p-4 mb-3 border-0 shadow-sm hover:shadow-md transition-shadow">
+    <div className="bg-transparent p-4 pb-6 mb-4 border-b border-border/30">
       <div className="flex flex-row items-center justify-between pb-3">
         <div className="flex items-center gap-3">
           <Avatar>
