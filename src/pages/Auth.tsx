@@ -236,6 +236,13 @@ const Auth = () => {
         throw new Error(signUpError.message || "שגיאה בהרשמה למערכת");
       }
 
+      // Mark verification code as used only after successful signup
+      await supabase
+        .from('verification_codes')
+        .update({ verified: true })
+        .eq('email', email.trim())
+        .eq('code', verificationCode.trim());
+
       toast({
         title: "נרשמת בהצלחה!",
         description: "מיד תועבר לדף הראשי",
