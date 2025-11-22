@@ -533,8 +533,8 @@ const GroupChat = () => {
     <div className="min-h-screen bg-background" dir={dir}>
       <Header />
 
-      <main className="container max-w-4xl py-6 px-4">
-        <div className="mb-4 flex items-center justify-between">
+      <main className="container max-w-4xl py-2 px-4">
+        <div className="mb-2 flex items-center justify-between">
           <Button
             variant="ghost"
             onClick={() => navigate("/groups")}
@@ -581,10 +581,10 @@ const GroupChat = () => {
           </div>
         </div>
 
-        <Card className="flex flex-col h-[calc(100vh-250px)]">
-          <CardHeader className="border-b flex-shrink-0">
-            <CardTitle className="text-xl">{group.name}</CardTitle>
-            <p className="text-sm text-muted-foreground">{group.description}</p>
+        <Card className="flex flex-col h-[calc(100vh-180px)]">
+          <CardHeader className="border-b flex-shrink-0 py-3">
+            <CardTitle className="text-lg">{group.name}</CardTitle>
+            <p className="text-xs text-muted-foreground">{group.description}</p>
           </CardHeader>
 
           <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
