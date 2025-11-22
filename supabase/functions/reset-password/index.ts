@@ -49,7 +49,7 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
     );
 
-    // Verify the code - don't check verified status since verify-code already marked it
+    // Verify the code - use maybeSingle to handle no results gracefully
     const { data: verificationData, error: verifyError } = await supabase
       .from("verification_codes")
       .select("*")
@@ -58,10 +58,23 @@ const handler = async (req: Request): Promise<Response> => {
       .gt("expires_at", new Date().toISOString())
       .order("created_at", { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
 
-    if (verifyError || !verificationData) {
-      console.error("Verification error:", verifyError);
+    console.log("Verification query result:", { verificationData, verifyError });
+
+    if (verifyError) {
+      console.error("Verification query error:", verifyError);
+      return new Response(
+        JSON.stringify({ error: "שגיאה בבדיקת קוד האימות" }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    if (!verificationData) {
+      console.error("No verification code found for:", email, code);
       return new Response(
         JSON.stringify({ error: "קוד האימות שגוי או פג תוקפו" }),
         {
