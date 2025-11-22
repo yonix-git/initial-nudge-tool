@@ -3,7 +3,6 @@ import { useParams, useNavigate, Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/Header";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -511,11 +510,9 @@ const GroupChat = () => {
         <Header />
         <main className="container max-w-4xl py-6 px-4">
           <Skeleton className="h-8 w-64 mb-4" />
-          <Card className="h-[600px]">
-            <CardContent className="p-4">
-              <Skeleton className="h-full w-full" />
-            </CardContent>
-          </Card>
+          <div className="h-[600px] bg-card/80 backdrop-blur-sm rounded-xl p-4">
+            <Skeleton className="h-full w-full" />
+          </div>
         </main>
       </div>
     );
@@ -581,15 +578,15 @@ const GroupChat = () => {
           </div>
         </div>
 
-        <Card className="flex flex-col h-[calc(100vh-180px)]">
-          <CardHeader className="border-b flex-shrink-0 py-3">
-            <CardTitle className="text-lg">{group.name}</CardTitle>
+        <div className="flex flex-col h-[calc(100vh-180px)]">
+          <div className="border-b flex-shrink-0 py-3 px-4 bg-card/80 backdrop-blur-sm rounded-t-xl">
+            <h2 className="text-lg font-semibold">{group.name}</h2>
             <p className="text-xs text-muted-foreground">{group.description}</p>
-          </CardHeader>
+          </div>
 
-          <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
+          <div className="flex-1 flex flex-col overflow-hidden">
             {/* Messages */}
-            <ScrollArea className="flex-1">
+            <ScrollArea className="flex-1 pb-24">
               <div className="p-4 space-y-4" ref={scrollRef}>
                 {messages.map((message) => (
                   <div
@@ -649,11 +646,13 @@ const GroupChat = () => {
                 ))}
               </div>
             </ScrollArea>
+          </div>
 
-            {/* Message Input */}
-            <div className="border-t p-4 space-y-2 flex-shrink-0">
+          {/* Message Input - Fixed to bottom */}
+          <div className="fixed bottom-0 left-0 right-0 border-t bg-card/95 backdrop-blur-md p-4 space-y-2 z-40">
+            <div className="container max-w-4xl mx-auto px-4">
               {(imagePreview || videoPreview) && (
-                <div className="relative inline-block">
+                <div className="relative inline-block mb-2">
                   {imagePreview && (
                     <img
                       src={imagePreview}
@@ -726,8 +725,8 @@ const GroupChat = () => {
                 </Button>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </main>
 
       {/* Members Dialog */}
