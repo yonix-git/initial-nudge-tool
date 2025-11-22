@@ -49,12 +49,13 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
     );
 
-    // Check that the code exists and is still valid (no usage limit)
+    // Check that the code exists, is valid, and hasn't been used yet
     const { data: verificationData, error: verifyError } = await supabase
       .from("verification_codes")
       .select("*")
       .eq("email", email.toLowerCase())
       .eq("code", code)
+      .eq("verified", false)  // Must not be used yet
       .gt("expires_at", new Date().toISOString())
       .order("created_at", { ascending: false })
       .limit(1)
@@ -129,7 +130,12 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Don't mark as used - allow reuse until expiration
+    // Mark verification code as used (prevent reuse)
+    await supabase
+      .from("verification_codes")
+      .update({ verified: true })
+      .eq("id", verificationData.id);
+
     console.log("Password reset successful for:", email);
 
     return new Response(
