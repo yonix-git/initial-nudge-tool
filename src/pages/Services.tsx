@@ -189,7 +189,7 @@ const Services = () => {
                       </CardHeader>
                       <CardContent className="space-y-3">
                         <div className="space-y-2 text-sm">
-                          {service.business_address && (
+                          {service.business_address && service.business_type === 'garage' && (
                             <div className="flex items-center gap-2">
                               <MapPin className="h-4 w-4 text-muted-foreground" />
                               <span>{service.business_address}</span>
