@@ -179,26 +179,57 @@ const Settings = () => {
 
     setLoading(true);
     try {
-      // Delete user profile first
-      const { error: profileError } = await supabase
+      // Get user profile to check for files
+      const { data: profile } = await supabase
         .from("profiles")
-        .delete()
-        .eq("id", user.id);
+        .select("profile_picture_url")
+        .eq("id", user.id)
+        .single();
 
-      if (profileError) throw profileError;
+      // Delete profile picture from storage if exists
+      if (profile?.profile_picture_url) {
+        const fileName = profile.profile_picture_url.split("/").pop();
+        if (fileName) {
+          await supabase.storage
+            .from("avatars")
+            .remove([`${user.id}/${fileName}`]);
+        }
+      }
 
-      // Delete user account
+      // Delete all user's video posts from storage
+      const { data: posts } = await supabase
+        .from("posts")
+        .select("video_url")
+        .eq("user_id", user.id)
+        .not("video_url", "is", null);
+
+      if (posts && posts.length > 0) {
+        const videoFiles = posts
+          .map((post) => {
+            const fileName = post.video_url?.split("/").pop();
+            return fileName ? `${user.id}/${fileName}` : null;
+          })
+          .filter(Boolean) as string[];
+
+        if (videoFiles.length > 0) {
+          await supabase.storage.from("videos").remove(videoFiles);
+        }
+      }
+
+      // Delete user from auth (this will cascade delete all related data)
       const { error: authError } = await supabase.auth.admin.deleteUser(user.id);
       
       if (authError) throw authError;
 
       toast({
         title: "החשבון נמחק בהצלחה",
+        description: "כל הנתונים והקבצים שלך נמחקו",
       });
       
       await signOut();
       navigate("/auth");
     } catch (error: any) {
+      console.error("Error deleting account:", error);
       toast({
         title: "שגיאה במחיקת החשבון",
         description: error.message,
