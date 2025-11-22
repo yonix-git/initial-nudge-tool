@@ -1,7 +1,7 @@
 import { Heart, MessageCircle, Share2, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useState, useEffect, useRef, memo } from "react";
+import { useState, useEffect, useRef, memo, useCallback, useMemo } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -169,7 +169,7 @@ const PostItem = ({
     };
   }, [videoUrl]);
 
-  const handleShare = async () => {
+  const handleShare = useCallback(async () => {
     const postUrl = `${window.location.origin}/?post=${id}`;
     
     if (navigator.share) {
@@ -194,9 +194,9 @@ const PostItem = ({
         toast.error("שגיאה בהעתקת הקישור");
       }
     }
-  };
+  }, [id, profile, content]);
 
-  const handleLike = async () => {
+  const handleLike = useCallback(async () => {
     if (!user) {
       toast.error("יש להתחבר כדי לתת לייק");
       return;
@@ -226,7 +226,7 @@ const PostItem = ({
       console.error("Error toggling like:", error);
       toast.error("שגיאה בעדכון הלייק");
     }
-  };
+  }, [user, isLiked, id]);
 
   const handleAddComment = async () => {
     if (!user) {
@@ -353,17 +353,17 @@ const PostItem = ({
     }
   };
 
-  const getInitials = (name: string) => {
+  const getInitials = useCallback((name: string) => {
     if (!name) return "U";
     const words = name.trim().split(/\s+/);
     if (words.length === 1) return words[0].charAt(0).toUpperCase();
     return words.slice(0, 2).map(word => word.charAt(0).toUpperCase()).join("");
-  };
+  }, []);
 
-  const timeAgo = formatDistanceToNow(new Date(createdAt), { 
+  const timeAgo = useMemo(() => formatDistanceToNow(new Date(createdAt), { 
     addSuffix: true, 
     locale: he 
-  });
+  }), [createdAt]);
 
   return (
     <div className="bg-transparent p-4 pb-6 mb-4 border-b border-border/30">
@@ -477,6 +477,8 @@ const PostItem = ({
               <img 
                 src={imageUrl} 
                 alt="Post content" 
+                loading="lazy"
+                decoding="async"
                 className="w-full rounded-lg object-cover max-h-96 mb-3"
               />
             )}

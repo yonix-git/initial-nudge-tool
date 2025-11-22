@@ -1,7 +1,7 @@
 import Header from "@/components/Header";
 import PostItem from "@/components/PostItem";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
