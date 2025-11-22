@@ -396,7 +396,7 @@ const Header = () => {
             <Button 
               variant="ghost" 
               size="icon" 
-              className="relative"
+              className="relative overflow-visible"
               onClick={handleNotificationsClick}
             >
               <Bell className="h-5 w-5" />
