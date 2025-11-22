@@ -29,7 +29,7 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [activeTab, setActiveTab] = useState<"signin" | "signup">("signin");
   const [forgotPasswordMode, setForgotPasswordMode] = useState(false);
-  const [resetStep, setResetStep] = useState<"email" | "code" | "password">("email");
+  const [resetStep, setResetStep] = useState<"email" | "reset">("email");
   const [resetEmail, setResetEmail] = useState("");
   const [resetCode, setResetCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -287,10 +287,10 @@ const Auth = () => {
         throw new Error(data?.error || error?.message || "שגיאה בשליחת קוד אימות");
       }
 
-      setResetStep("code");
+      setResetStep("reset");
       toast({
         title: "קוד נשלח!",
-        description: "בדוק את תיבת הדואר שלך",
+        description: "הזן את הקוד והסיסמה החדשה",
       });
     } catch (error: any) {
       toast({
@@ -303,41 +303,7 @@ const Auth = () => {
     }
   };
 
-  const handleVerifyResetCode = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      if (!resetCode || resetCode.length !== 5) {
-        throw new Error("נא להזין קוד בן 5 ספרות");
-      }
-
-      const { data, error } = await supabase.functions.invoke('verify-code', {
-        body: { 
-          email: resetEmail.trim(),
-          code: resetCode.trim()
-        }
-      });
-
-      if (error || !data?.success) {
-        throw new Error(data?.error || error?.message || "קוד האימות שגוי או שפג תוקפו");
-      }
-
-      setResetStep("password");
-      toast({
-        title: "קוד אומת בהצלחה",
-        description: "כעת הזן סיסמה חדשה",
-      });
-    } catch (error: any) {
-      toast({
-        title: "שגיאה באימות",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Removed separate verification step - now handled in reset-password function
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -513,8 +479,8 @@ const Auth = () => {
                   </form>
                 )}
 
-                {resetStep === "code" && (
-                  <form onSubmit={handleVerifyResetCode} className="space-y-4">
+                {resetStep === "reset" && (
+                  <form onSubmit={handleResetPassword} className="space-y-4">
                     <div className="text-center mb-4">
                       <p className="text-sm text-muted-foreground">
                         שלחנו קוד אימות לכתובת
@@ -535,25 +501,6 @@ const Auth = () => {
                         className="text-center text-2xl tracking-widest"
                       />
                     </div>
-                    <Button type="submit" className="w-full" disabled={loading}>
-                      {loading ? "מאמת..." : "אמת קוד"}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      className="w-full"
-                      onClick={() => {
-                        setResetStep("email");
-                        setResetCode("");
-                      }}
-                    >
-                      חזור
-                    </Button>
-                  </form>
-                )}
-
-                {resetStep === "password" && (
-                  <form onSubmit={handleResetPassword} className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="new-password">סיסמה חדשה</Label>
                       <div className="relative">
@@ -587,6 +534,18 @@ const Auth = () => {
                     </div>
                     <Button type="submit" className="w-full" disabled={loading}>
                       {loading ? "משנה סיסמה..." : "שנה סיסמה"}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="w-full"
+                      onClick={() => {
+                        setResetStep("email");
+                        setResetCode("");
+                        setNewPassword("");
+                      }}
+                    >
+                      חזור
                     </Button>
                   </form>
                 )}
