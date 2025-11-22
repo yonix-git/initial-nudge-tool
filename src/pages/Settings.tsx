@@ -43,6 +43,7 @@ const Settings = () => {
   const navigate = useNavigate();
   const [accountType, setAccountType] = useState<"private" | "business" | null>(null);
   const [loading, setLoading] = useState(false);
+  const [upgradeRequestStatus, setUpgradeRequestStatus] = useState<"pending" | "approved" | "rejected" | null>(null);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
@@ -60,6 +61,19 @@ const Settings = () => {
       if (!error && data) {
         setAccountType(data.account_type);
       }
+
+      // Check for existing upgrade request
+      if (data?.account_type === "private") {
+        const { data: requestData } = await supabase
+          .from("business_upgrade_requests")
+          .select("status")
+          .eq("user_id", user.id)
+          .single();
+
+        if (requestData) {
+          setUpgradeRequestStatus(requestData.status as "pending" | "approved" | "rejected");
+        }
+      }
     };
 
     fetchProfile();
@@ -70,21 +84,25 @@ const Settings = () => {
 
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from("profiles")
-        .update({ account_type: "business" })
-        .eq("id", user.id);
+      const { data, error } = await supabase.functions.invoke("request-business-upgrade");
 
       if (error) throw error;
 
-      setAccountType("business");
-      toast({
-        title: "החשבון שודרג בהצלחה!",
-        description: "החשבון שלך כעת הוא חשבון עסקי",
-      });
+      if (data?.existingRequest) {
+        toast({
+          title: "בקשה קיימת",
+          description: data.error,
+        });
+      } else {
+        setUpgradeRequestStatus("pending");
+        toast({
+          title: "הבקשה נשלחה בהצלחה!",
+          description: "הבקשה נשלחה לאישור. תקבל עדכון כאשר החשבון ישודרג",
+        });
+      }
     } catch (error: any) {
       toast({
-        title: "שגיאה בשדרוג החשבון",
+        title: "שגיאה בשליחת הבקשה",
         description: error.message,
         variant: "destructive",
       });
@@ -361,10 +379,19 @@ const Settings = () => {
                         <Building2 className="h-4 w-4" />
                         שדרוג לחשבון עסקי
                       </Label>
-                      <p className="text-sm text-muted-foreground">קבל גישה לכלים עסקיים ופרופיל מקצועי</p>
+                      <p className="text-sm text-muted-foreground">
+                        {upgradeRequestStatus === "pending" 
+                          ? "הבקשה ממתינה לאישור מנהל" 
+                          : "קבל גישה לכלים עסקיים ופרופיל מקצועי"}
+                      </p>
                     </div>
-                    <Button variant="default" size="sm" disabled>
-                      בקרוב
+                    <Button 
+                      variant="default" 
+                      size="sm" 
+                      onClick={handleUpgradeToBusinessAccount}
+                      disabled={loading || upgradeRequestStatus === "pending"}
+                    >
+                      {loading ? "שולח..." : upgradeRequestStatus === "pending" ? "ממתין לאישור" : "שלח בקשה"}
                     </Button>
                   </div>
                   <Separator />
