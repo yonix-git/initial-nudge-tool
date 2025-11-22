@@ -1,7 +1,7 @@
 import { Heart, MessageCircle, Share2, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, memo } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -700,4 +700,14 @@ const PostItem = ({
   );
 };
 
-export default PostItem;
+export default memo(PostItem, (prevProps, nextProps) => {
+  // Only re-render if these specific props change
+  return (
+    prevProps.id === nextProps.id &&
+    prevProps.likesCount === nextProps.likesCount &&
+    prevProps.commentsCount === nextProps.commentsCount &&
+    prevProps.content === nextProps.content &&
+    prevProps.imageUrl === nextProps.imageUrl &&
+    prevProps.videoUrl === nextProps.videoUrl
+  );
+});
