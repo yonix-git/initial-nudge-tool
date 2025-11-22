@@ -247,11 +247,11 @@ const EditProfileDialog = ({ currentName, currentBio, currentVehicle, currentPro
                 <RadioGroup value={businessType} onValueChange={setBusinessType}>
                   <div className="flex items-center space-x-2 space-x-reverse">
                     <RadioGroupItem value="garage" id="garage" />
-                    <Label htmlFor="garage" className="cursor-pointer font-normal">מוסך</Label>
+                    <Label htmlFor="garage" className="cursor-pointer font-normal">יש לי מקום</Label>
                   </div>
                   <div className="flex items-center space-x-2 space-x-reverse">
                     <RadioGroupItem value="independent_professional" id="independent" />
-                    <Label htmlFor="independent" className="cursor-pointer font-normal">בעל מקצוע ללא מוסך</Label>
+                    <Label htmlFor="independent" className="cursor-pointer font-normal">אני נייד</Label>
                   </div>
                 </RadioGroup>
               </div>
