@@ -62,8 +62,8 @@ const Services = () => {
 
   const getTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
-      'garage': 'מוסך',
-      'independent_professional': 'בעל מקצוע'
+      'garage': 'יש לי מקום',
+      'independent_professional': 'אני נייד'
     };
     return labels[type] || type;
   };
@@ -148,8 +148,8 @@ const Services = () => {
           <Tabs value={filterType} onValueChange={setFilterType} className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="all">הכל</TabsTrigger>
-              <TabsTrigger value="garage">מוסכים</TabsTrigger>
-              <TabsTrigger value="independent_professional">בעלי מקצוע</TabsTrigger>
+              <TabsTrigger value="garage">יש להם מקום</TabsTrigger>
+              <TabsTrigger value="independent_professional">ניידים</TabsTrigger>
             </TabsList>
 
             <TabsContent value={filterType} className="mt-6">
