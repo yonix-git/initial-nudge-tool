@@ -28,6 +28,11 @@ const Auth = () => {
   const [verificationCode, setVerificationCode] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [activeTab, setActiveTab] = useState<"signin" | "signup">("signin");
+  const [forgotPasswordMode, setForgotPasswordMode] = useState(false);
+  const [resetStep, setResetStep] = useState<"email" | "code" | "password">("email");
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetCode, setResetCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
 
   // Schema validation with zod
   const signupSchema = z.object({
@@ -263,6 +268,127 @@ const Auth = () => {
     }
   };
 
+  const handleSendResetCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const trimmedEmail = resetEmail.trim();
+
+      if (!trimmedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+        throw new Error("אנא הזן כתובת אימייל תקינה");
+      }
+
+      const { data, error } = await supabase.functions.invoke('send-password-reset-code', {
+        body: { email: trimmedEmail }
+      });
+
+      if (error || data?.error) {
+        throw new Error(data?.error || error?.message || "שגיאה בשליחת קוד אימות");
+      }
+
+      setResetStep("code");
+      toast({
+        title: "קוד נשלח!",
+        description: "בדוק את תיבת הדואר שלך",
+      });
+    } catch (error: any) {
+      toast({
+        title: "שגיאה",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyResetCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      if (!resetCode || resetCode.length !== 5) {
+        throw new Error("נא להזין קוד בן 5 ספרות");
+      }
+
+      const { data, error } = await supabase.functions.invoke('verify-code', {
+        body: { 
+          email: resetEmail.trim(),
+          code: resetCode.trim()
+        }
+      });
+
+      if (error || !data?.success) {
+        throw new Error(data?.error || error?.message || "קוד האימות שגוי או שפג תוקפו");
+      }
+
+      setResetStep("password");
+      toast({
+        title: "קוד אומת בהצלחה",
+        description: "כעת הזן סיסמה חדשה",
+      });
+    } catch (error: any) {
+      toast({
+        title: "שגיאה באימות",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      if (!newPassword || newPassword.length < 8) {
+        throw new Error("הסיסמה חייבת להכיל לפחות 8 תווים");
+      }
+
+      if (!/[A-Z]/.test(newPassword)) {
+        throw new Error("הסיסמה חייבת להכיל לפחות אות גדולה אחת באנגלית");
+      }
+
+      // Use edge function to reset password
+      const { data, error } = await supabase.functions.invoke('reset-password', {
+        body: { 
+          email: resetEmail.trim(),
+          code: resetCode.trim(),
+          newPassword
+        }
+      });
+
+      if (error || data?.error) {
+        throw new Error(data?.error || error?.message || "שגיאה בשינוי הסיסמה");
+      }
+
+      toast({
+        title: "הסיסמה שונתה בהצלחה!",
+        description: "כעת תוכל להתחבר עם הסיסמה החדשה",
+      });
+
+      // Reset state and go back to sign in
+      setForgotPasswordMode(false);
+      setResetStep("email");
+      setResetEmail("");
+      setResetCode("");
+      setNewPassword("");
+      setActiveTab("signin");
+      setEmail(resetEmail); // Fill in the email in the sign-in form
+    } catch (error: any) {
+      toast({
+        title: "שגיאה בשינוי סיסמה",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
@@ -294,7 +420,7 @@ const Auth = () => {
               </Button>
             </div>
 
-            {activeTab === "signin" && (
+            {activeTab === "signin" && !forgotPasswordMode && (
               <div dir="rtl">
                 <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
@@ -339,7 +465,131 @@ const Auth = () => {
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "מתחבר..." : "התחבר"}
                 </Button>
+                <Button
+                  type="button"
+                  variant="link"
+                  className="w-full text-sm text-muted-foreground"
+                  onClick={() => {
+                    setForgotPasswordMode(true);
+                    setResetStep("email");
+                  }}
+                >
+                  שכחתי את הסיסמה
+                </Button>
               </form>
+              </div>
+            )}
+
+            {activeTab === "signin" && forgotPasswordMode && (
+              <div dir="rtl">
+                {resetStep === "email" && (
+                  <form onSubmit={handleSendResetCode} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="reset-email">אימייל</Label>
+                      <Input
+                        id="reset-email"
+                        type="email"
+                        placeholder="yourEmail@email.com"
+                        value={resetEmail}
+                        onChange={(e) => setResetEmail(e.target.value)}
+                        required
+                        dir="ltr"
+                      />
+                    </div>
+                    <Button type="submit" className="w-full" disabled={loading}>
+                      {loading ? "שולח..." : "שלח קוד אימות"}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="w-full"
+                      onClick={() => {
+                        setForgotPasswordMode(false);
+                        setResetEmail("");
+                      }}
+                    >
+                      חזור להתחברות
+                    </Button>
+                  </form>
+                )}
+
+                {resetStep === "code" && (
+                  <form onSubmit={handleVerifyResetCode} className="space-y-4">
+                    <div className="text-center mb-4">
+                      <p className="text-sm text-muted-foreground">
+                        שלחנו קוד אימות לכתובת
+                      </p>
+                      <p className="font-semibold" dir="ltr">{resetEmail}</p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="reset-code">קוד אימות</Label>
+                      <Input
+                        id="reset-code"
+                        type="text"
+                        placeholder="12345"
+                        value={resetCode}
+                        onChange={(e) => setResetCode(e.target.value.replace(/\D/g, '').slice(0, 5))}
+                        required
+                        maxLength={5}
+                        dir="ltr"
+                        className="text-center text-2xl tracking-widest"
+                      />
+                    </div>
+                    <Button type="submit" className="w-full" disabled={loading}>
+                      {loading ? "מאמת..." : "אמת קוד"}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="w-full"
+                      onClick={() => {
+                        setResetStep("email");
+                        setResetCode("");
+                      }}
+                    >
+                      חזור
+                    </Button>
+                  </form>
+                )}
+
+                {resetStep === "password" && (
+                  <form onSubmit={handleResetPassword} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="new-password">סיסמה חדשה</Label>
+                      <div className="relative">
+                        <Input
+                          id="new-password"
+                          type={showPassword ? "text" : "password"}
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          required
+                          minLength={8}
+                          dir="ltr"
+                          className="pr-10"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-4 w-4 text-muted-foreground" />
+                          ) : (
+                            <Eye className="h-4 w-4 text-muted-foreground" />
+                          )}
+                        </Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        הסיסמה חייבת להכיל לפחות 8 תווים ואות גדולה אחת
+                      </p>
+                    </div>
+                    <Button type="submit" className="w-full" disabled={loading}>
+                      {loading ? "משנה סיסמה..." : "שנה סיסמה"}
+                    </Button>
+                  </form>
+                )}
               </div>
             )}
 
