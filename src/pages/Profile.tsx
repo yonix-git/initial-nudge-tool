@@ -5,7 +5,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings as SettingsIcon, Phone, MapPin, Star, Package } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Settings as SettingsIcon, Phone, MapPin, Star, Package, MessageSquare, Heart, Play } from "lucide-react";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import EditProfileDialog from "@/components/EditProfileDialog";
 import AddProductDialog from "@/components/AddProductDialog";
@@ -31,6 +32,7 @@ const Profile = () => {
   const [products, setProducts] = useState<Tables<"products">[]>([]);
   const [reviews, setReviews] = useState<Tables<"reviews">[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedPost, setSelectedPost] = useState<any>(null);
   const { t, dir } = useLanguage();
 
   const fetchPosts = async () => {
@@ -450,19 +452,49 @@ const Profile = () => {
                     </CardContent>
                   </Card>
                 ) : (
-                  posts.map((post) => (
-                    <PostItem 
-                      key={post.id}
-                      id={post.id}
-                      userId={post.user_id}
-                      content={post.content}
-                      imageUrl={post.image_url}
-                      videoUrl={post.video_url}
-                      likesCount={post.likes_count}
-                      commentsCount={post.comments_count}
-                      createdAt={post.created_at}
-                    />
-                  ))
+                  <div className="grid grid-cols-3 gap-1">
+                    {posts.map((post) => (
+                      <div
+                        key={post.id}
+                        className="aspect-square relative cursor-pointer group overflow-hidden rounded-sm"
+                        onClick={() => setSelectedPost(post)}
+                      >
+                        {post.image_url ? (
+                          <img
+                            src={post.image_url}
+                            alt="Post"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : post.video_url ? (
+                          <div className="relative w-full h-full bg-muted">
+                            <video
+                              src={post.video_url}
+                              className="w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <Play className="h-8 w-8 text-white drop-shadow-lg" />
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="w-full h-full bg-muted flex items-center justify-center p-2">
+                            <p className="text-xs text-center line-clamp-4">{post.content}</p>
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                          <div className="flex gap-4 text-white">
+                            <div className="flex items-center gap-1">
+                              <Heart className="h-5 w-5 fill-white" />
+                              <span className="text-sm font-semibold">{post.likes_count}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <MessageSquare className="h-5 w-5 fill-white" />
+                              <span className="text-sm font-semibold">{post.comments_count}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </TabsContent>
             </Tabs>
@@ -479,24 +511,72 @@ const Profile = () => {
                     </CardContent>
                   </Card>
                 ) : (
-                  posts.map((post) => (
-                    <PostItem 
-                      key={post.id}
-                      id={post.id}
-                      userId={post.user_id}
-                      content={post.content}
-                      imageUrl={post.image_url}
-                      videoUrl={post.video_url}
-                      likesCount={post.likes_count}
-                      commentsCount={post.comments_count}
-                      createdAt={post.created_at}
-                    />
-                  ))
+                  <div className="grid grid-cols-3 gap-1">
+                    {posts.map((post) => (
+                      <div
+                        key={post.id}
+                        className="aspect-square relative cursor-pointer group overflow-hidden rounded-sm"
+                        onClick={() => setSelectedPost(post)}
+                      >
+                        {post.image_url ? (
+                          <img
+                            src={post.image_url}
+                            alt="Post"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : post.video_url ? (
+                          <div className="relative w-full h-full bg-muted">
+                            <video
+                              src={post.video_url}
+                              className="w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <Play className="h-8 w-8 text-white drop-shadow-lg" />
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="w-full h-full bg-muted flex items-center justify-center p-2">
+                            <p className="text-xs text-center line-clamp-4">{post.content}</p>
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                          <div className="flex gap-4 text-white">
+                            <div className="flex items-center gap-1">
+                              <Heart className="h-5 w-5 fill-white" />
+                              <span className="text-sm font-semibold">{post.likes_count}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <MessageSquare className="h-5 w-5 fill-white" />
+                              <span className="text-sm font-semibold">{post.comments_count}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
             </>
           )}
         </div>
+
+        {/* Post Dialog */}
+        <Dialog open={!!selectedPost} onOpenChange={() => setSelectedPost(null)}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
+            {selectedPost && (
+              <PostItem
+                id={selectedPost.id}
+                userId={selectedPost.user_id}
+                content={selectedPost.content}
+                imageUrl={selectedPost.image_url}
+                videoUrl={selectedPost.video_url}
+                likesCount={selectedPost.likes_count}
+                commentsCount={selectedPost.comments_count}
+                createdAt={selectedPost.created_at}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   );
