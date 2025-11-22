@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 
 interface Service {
   id: string;
@@ -25,6 +25,7 @@ interface Service {
 
 const Services = () => {
   const { t, dir } = useLanguage();
+  const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
@@ -213,7 +214,12 @@ const Services = () => {
                         )}
                         
                         <div className="flex gap-2">
-                          <Button className="flex-1">פרטים נוספים</Button>
+                          <Button 
+                            className="flex-1"
+                            onClick={() => navigate(`/profile?id=${service.id}`)}
+                          >
+                            פרטים נוספים
+                          </Button>
                         </div>
                       </CardContent>
                     </Card>
