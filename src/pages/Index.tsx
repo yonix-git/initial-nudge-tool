@@ -1,7 +1,7 @@
 import Header from "@/components/Header";
 import PostItem from "@/components/PostItem";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
@@ -13,7 +13,7 @@ const Index = () => {
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async () => {
     const { data, error } = await supabase
       .from("posts")
       .select("*")
@@ -23,25 +23,47 @@ const Index = () => {
       setPosts(data);
     }
     setLoading(false);
-  };
+  }, []);
 
   useEffect(() => {
     if (!user || authLoading) return;
 
     fetchPosts();
 
-    // Subscribe to realtime updates
+    // Subscribe to realtime updates - only for INSERT and DELETE
     const channel = supabase
       .channel('posts-changes')
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'INSERT',
           schema: 'public',
           table: 'posts'
         },
-        () => {
-          fetchPosts();
+        (payload) => {
+          setPosts(prev => [payload.new as any, ...prev]);
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'posts'
+        },
+        (payload) => {
+          setPosts(prev => prev.filter(p => p.id !== payload.old.id));
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'posts'
+        },
+        (payload) => {
+          setPosts(prev => prev.map(p => p.id === payload.new.id ? payload.new as any : p));
         }
       )
       .subscribe();
@@ -49,7 +71,7 @@ const Index = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, authLoading]);
+  }, [user, authLoading, fetchPosts]);
 
   if (authLoading) {
     return (
