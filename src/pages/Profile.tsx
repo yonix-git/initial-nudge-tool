@@ -12,7 +12,7 @@ import AddProductDialog from "@/components/AddProductDialog";
 import ProductCard from "@/components/ProductCard";
 import AddReviewDialog from "@/components/AddReviewDialog";
 import ReviewCard from "@/components/ReviewCard";
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
@@ -22,6 +22,10 @@ import { Tables } from "@/integrations/supabase/types";
 
 const Profile = () => {
   const { user, loading: authLoading } = useAuth();
+  const [searchParams] = useSearchParams();
+  const profileUserId = searchParams.get('id') || user?.id;
+  const isOwnProfile = user?.id === profileUserId;
+  
   const [profile, setProfile] = useState<any>(null);
   const [posts, setPosts] = useState<any[]>([]);
   const [products, setProducts] = useState<Tables<"products">[]>([]);
@@ -30,12 +34,12 @@ const Profile = () => {
   const { t, dir } = useLanguage();
 
   const fetchPosts = async () => {
-    if (!user) return;
+    if (!profileUserId) return;
 
     const { data, error } = await supabase
       .from("posts")
       .select("*")
-      .eq("user_id", user.id)
+      .eq("user_id", profileUserId)
       .order("created_at", { ascending: false });
 
     if (data) {
@@ -44,12 +48,12 @@ const Profile = () => {
   };
 
   const fetchProducts = async () => {
-    if (!user) return;
+    if (!profileUserId) return;
 
     const { data } = await supabase
       .from("products")
       .select("*")
-      .eq("business_id", user.id)
+      .eq("business_id", profileUserId)
       .order("created_at", { ascending: false });
 
     if (data) {
@@ -69,12 +73,12 @@ const Profile = () => {
   };
 
   const fetchReviews = async () => {
-    if (!user) return;
+    if (!profileUserId) return;
 
     const { data } = await supabase
       .from("reviews")
       .select("*")
-      .eq("business_id", user.id)
+      .eq("business_id", profileUserId)
       .order("created_at", { ascending: false });
 
     if (data) {
@@ -84,7 +88,7 @@ const Profile = () => {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      if (!user) {
+      if (!profileUserId) {
         setLoading(false);
         return;
       }
@@ -92,7 +96,7 @@ const Profile = () => {
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
-        .eq("id", user.id)
+        .eq("id", profileUserId)
         .single();
 
       if (data) {
@@ -113,7 +117,7 @@ const Profile = () => {
     if (!authLoading) {
       fetchProfile();
     }
-  }, [user, authLoading]);
+  }, [user, authLoading, profileUserId]);
 
   const handleSaveProfile = async (
     name: string, 
@@ -216,7 +220,7 @@ const Profile = () => {
     );
   }
 
-  if (!user) {
+  if (!user && !profileUserId) {
     return <Navigate to="/auth" replace />;
   }
 
@@ -254,21 +258,23 @@ const Profile = () => {
                       </div>
                       {profile?.username && <p className="text-sm text-muted-foreground truncate">@{profile.username}</p>}
                     </div>
-                    <div className="flex gap-2 flex-shrink-0">
-                      <EditProfileDialog 
-                        currentName={profile?.full_name || profile?.username || ""}
-                        currentBio={profile?.bio || ""}
-                        currentVehicle={profile?.vehicle_type || ""}
-                        currentProfilePicture={profile?.profile_picture_url || null}
-                        currentProfile={profile}
-                        onSave={handleSaveProfile}
-                      />
-                      <Link to="/settings">
-                        <Button variant="outline" size="sm">
-                          <SettingsIcon className="h-4 w-4" />
-                        </Button>
-                      </Link>
-                    </div>
+                    {isOwnProfile && (
+                      <div className="flex gap-2 flex-shrink-0">
+                        <EditProfileDialog 
+                          currentName={profile?.full_name || profile?.username || ""}
+                          currentBio={profile?.bio || ""}
+                          currentVehicle={profile?.vehicle_type || ""}
+                          currentProfilePicture={profile?.profile_picture_url || null}
+                          currentProfile={profile}
+                          onSave={handleSaveProfile}
+                        />
+                        <Link to="/settings">
+                          <Button variant="outline" size="sm">
+                            <SettingsIcon className="h-4 w-4" />
+                          </Button>
+                        </Link>
+                      </div>
+                    )}
                   </div>
                   <p className="text-muted-foreground text-sm sm:text-base mt-1 whitespace-pre-wrap break-words">{profile?.bio || "אין תיאור"}</p>
                   
@@ -387,13 +393,13 @@ const Profile = () => {
 
               <TabsContent value="products" className="space-y-4 mt-4">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                  <h2 className="text-lg sm:text-xl font-semibold">המוצרים שלי</h2>
-                  <AddProductDialog businessId={user!.id} onProductAdded={fetchProducts} />
+                  <h2 className="text-lg sm:text-xl font-semibold">{isOwnProfile ? 'המוצרים שלי' : 'מוצרים'}</h2>
+                  {isOwnProfile && user && <AddProductDialog businessId={user.id} onProductAdded={fetchProducts} />}
                 </div>
                 {products.length === 0 ? (
                   <Card>
                     <CardContent className="pt-6 text-center text-muted-foreground text-sm">
-                      עדיין לא הוספת מוצרים. הוסף את המוצר הראשון שלך!
+                      {isOwnProfile ? 'עדיין לא הוספת מוצרים. הוסף את המוצר הראשון שלך!' : 'אין מוצרים להצגה'}
                     </CardContent>
                   </Card>
                 ) : (
@@ -403,7 +409,7 @@ const Profile = () => {
                         key={product.id} 
                         product={product} 
                         onDelete={handleDeleteProduct}
-                        showDelete={true}
+                        showDelete={isOwnProfile}
                       />
                     ))}
                   </div>
@@ -412,7 +418,7 @@ const Profile = () => {
 
               <TabsContent value="reviews" className="space-y-4 mt-4">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
-                  <h2 className="text-lg sm:text-xl font-semibold">הביקורות שלי</h2>
+                  <h2 className="text-lg sm:text-xl font-semibold">{isOwnProfile ? 'הביקורות שלי' : 'ביקורות'}</h2>
                   <div className="flex items-center gap-2 text-base sm:text-lg">
                     <Star className="h-5 w-5 sm:h-6 sm:w-6 fill-yellow-400 text-yellow-400" />
                     <span className="font-bold">{profile?.average_rating?.toFixed(1) || "0.0"}</span>
@@ -422,7 +428,7 @@ const Profile = () => {
                 {reviews.length === 0 ? (
                   <Card>
                     <CardContent className="pt-6 text-center text-muted-foreground text-sm">
-                      עדיין אין ביקורות לעסק שלך
+                      {isOwnProfile ? 'עדיין אין ביקורות לעסק שלך' : 'אין ביקורות עדיין'}
                     </CardContent>
                   </Card>
                 ) : (
@@ -435,12 +441,12 @@ const Profile = () => {
               </TabsContent>
 
               <TabsContent value="posts" className="space-y-4 mt-4">
-                <CreatePost onPostCreated={fetchPosts} />
-                <h2 className="text-lg sm:text-xl font-semibold">הפוסטים שלי</h2>
+                {isOwnProfile && <CreatePost onPostCreated={fetchPosts} />}
+                <h2 className="text-lg sm:text-xl font-semibold">{isOwnProfile ? 'הפוסטים שלי' : 'פוסטים'}</h2>
                 {posts.length === 0 ? (
                   <Card>
                     <CardContent className="pt-6 text-center text-muted-foreground text-sm">
-                      עדיין לא פרסמת פוסטים. צור את הפוסט הראשון שלך!
+                      {isOwnProfile ? 'עדיין לא פרסמת פוסטים. צור את הפוסט הראשון שלך!' : 'אין פוסטים להצגה'}
                     </CardContent>
                   </Card>
                 ) : (
@@ -463,13 +469,13 @@ const Profile = () => {
           ) : (
             /* Regular User Profile */
             <>
-              <CreatePost onPostCreated={fetchPosts} />
+              {isOwnProfile && <CreatePost onPostCreated={fetchPosts} />}
               <div className="space-y-4">
-                <h2 className="text-lg sm:text-xl font-semibold">הפוסטים שלי</h2>
+                <h2 className="text-lg sm:text-xl font-semibold">{isOwnProfile ? 'הפוסטים שלי' : 'פוסטים'}</h2>
                 {posts.length === 0 ? (
                   <Card>
                     <CardContent className="pt-6 text-center text-muted-foreground text-sm">
-                      עדיין לא פרסמת פוסטים. צור את הפוסט הראשון שלך!
+                      {isOwnProfile ? 'עדיין לא פרסמת פוסטים. צור את הפוסט הראשון שלך!' : 'אין פוסטים להצגה'}
                     </CardContent>
                   </Card>
                 ) : (
