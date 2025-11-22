@@ -420,12 +420,21 @@ const Profile = () => {
 
               <TabsContent value="reviews" className="space-y-4 mt-4">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
-                  <h2 className="text-lg sm:text-xl font-semibold">{isOwnProfile ? 'הביקורות שלי' : 'ביקורות'}</h2>
-                  <div className="flex items-center gap-2 text-base sm:text-lg">
-                    <Star className="h-5 w-5 sm:h-6 sm:w-6 fill-yellow-400 text-yellow-400" />
-                    <span className="font-bold">{profile?.average_rating?.toFixed(1) || "0.0"}</span>
-                    <span className="text-muted-foreground text-sm sm:text-base">({profile?.reviews_count || 0} ביקורות)</span>
+                  <div className="flex-1">
+                    <h2 className="text-lg sm:text-xl font-semibold">{isOwnProfile ? 'הביקורות שלי' : 'ביקורות'}</h2>
+                    <div className="flex items-center gap-2 text-base sm:text-lg mt-1">
+                      <Star className="h-5 w-5 sm:h-6 sm:w-6 fill-yellow-400 text-yellow-400" />
+                      <span className="font-bold">{profile?.average_rating?.toFixed(1) || "0.0"}</span>
+                      <span className="text-muted-foreground text-sm sm:text-base">({profile?.reviews_count || 0} ביקורות)</span>
+                    </div>
                   </div>
+                  {!isOwnProfile && user && (
+                    <AddReviewDialog 
+                      businessId={profileUserId!} 
+                      reviewerId={user.id} 
+                      onReviewAdded={fetchReviews}
+                    />
+                  )}
                 </div>
                 {reviews.length === 0 ? (
                   <Card>
