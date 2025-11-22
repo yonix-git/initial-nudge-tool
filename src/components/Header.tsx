@@ -402,7 +402,7 @@ const Header = () => {
               <Bell className="h-5 w-5" />
               {unreadNotifications > 0 && (
                 <Badge 
-                  className="absolute -top-1 -left-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-primary"
+                  className="absolute -top-1 -left-1 min-w-[20px] h-5 px-1.5 flex items-center justify-center text-[10px] font-semibold bg-primary"
                 >
                   {unreadNotifications > 99 ? '99+' : unreadNotifications}
                 </Badge>
