@@ -363,19 +363,29 @@ const Auth = () => {
         throw new Error(data?.error || error?.message || "שגיאה בשינוי הסיסמה");
       }
 
-      toast({
-        title: "הסיסמה שונתה בהצלחה!",
-        description: "כעת תוכל להתחבר עם הסיסמה החדשה",
+      // Sign in automatically with the new password
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: resetEmail.trim(),
+        password: newPassword,
       });
 
-      // Reset state and go back to sign in
+      if (signInError) {
+        throw new Error("הסיסמה שונתה אך ההתחברות נכשלה. אנא נסה להתחבר ידנית.");
+      }
+
+      toast({
+        title: "הסיסמה שונתה בהצלחה!",
+        description: "מתחבר לחשבון שלך...",
+      });
+
+      // Reset state
       setForgotPasswordMode(false);
       setResetStep("email");
       setResetEmail("");
       setResetCode("");
       setNewPassword("");
-      setActiveTab("signin");
-      setEmail(resetEmail); // Fill in the email in the sign-in form
+      
+      // Navigation will happen automatically via useEffect when session is set
     } catch (error: any) {
       toast({
         title: "שגיאה בשינוי סיסמה",
