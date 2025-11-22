@@ -312,7 +312,7 @@ const Profile = () => {
                             <p className="text-xs text-muted-foreground truncate max-w-full">{profile.business_phone}</p>
                           </div>
                         )}
-                        {profile?.business_address && (
+                        {profile?.business_address && profile?.business_type === 'garage' && (
                           <div className="flex flex-col items-start gap-1 w-full sm:w-auto">
                             <Button 
                               size="sm" 

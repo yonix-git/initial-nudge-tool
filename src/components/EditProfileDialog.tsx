@@ -255,21 +255,23 @@ const EditProfileDialog = ({ currentName, currentBio, currentVehicle, currentPro
                   </div>
                 </RadioGroup>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="businessAddress">
-                  כתובת העסק {isGarage && <span className="text-destructive">*</span>}
-                </Label>
-                <Input
-                  id="businessAddress"
-                  value={businessAddress}
-                  onChange={(e) => setBusinessAddress(e.target.value)}
-                  placeholder="רחוב עיר, מספר"
-                  className={isAddressRequired ? "border-destructive" : ""}
-                />
-                {isAddressRequired && (
-                  <p className="text-sm text-destructive">כתובת העסק חובה עבור מוסך</p>
-                )}
-              </div>
+              {isGarage && (
+                <div className="space-y-2">
+                  <Label htmlFor="businessAddress">
+                    כתובת העסק <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="businessAddress"
+                    value={businessAddress}
+                    onChange={(e) => setBusinessAddress(e.target.value)}
+                    placeholder="רחוב עיר, מספר"
+                    className={isAddressRequired ? "border-destructive" : ""}
+                  />
+                  {isAddressRequired && (
+                    <p className="text-sm text-destructive">כתובת העסק חובה עבור מוסך</p>
+                  )}
+                </div>
+              )}
               <div className="space-y-2">
                 <Label>התמחויות (בחר לפחות אחת)</Label>
                 <div className="grid grid-cols-2 gap-3 p-4 border rounded-md bg-background/50">
