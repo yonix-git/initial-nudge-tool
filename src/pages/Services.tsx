@@ -148,8 +148,8 @@ const Services = () => {
           <Tabs value={filterType} onValueChange={setFilterType} className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="all">הכל</TabsTrigger>
-              <TabsTrigger value="garage">יש להם מקום</TabsTrigger>
-              <TabsTrigger value="independent_professional">ניידים</TabsTrigger>
+              <TabsTrigger value="garage">מוסכים</TabsTrigger>
+              <TabsTrigger value="independent_professional">בעלי מקצוע</TabsTrigger>
             </TabsList>
 
             <TabsContent value={filterType} className="mt-6">
