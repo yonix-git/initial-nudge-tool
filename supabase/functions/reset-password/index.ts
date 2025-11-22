@@ -49,6 +49,15 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
     );
 
+    // First, let's see ALL codes for this email for debugging
+    const { data: allCodes } = await supabase
+      .from("verification_codes")
+      .select("*")
+      .eq("email", email.toLowerCase())
+      .order("created_at", { ascending: false });
+    
+    console.log("All codes for email:", email, "->", JSON.stringify(allCodes, null, 2));
+
     // Check that the code has been verified (by verify-code function)
     const { data: verificationData, error: verifyError } = await supabase
       .from("verification_codes")

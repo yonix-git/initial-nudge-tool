@@ -103,10 +103,17 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Mark code as verified - allow reuse in reset-password
-    await supabase
+    const { error: updateError } = await supabase
       .from('verification_codes')
       .update({ verified: true })
       .eq('id', verificationData.id);
+
+    if (updateError) {
+      console.error(`Failed to mark code as verified for ${trimmedEmail}:`, updateError);
+      throw new Error('שגיאה בסימון הקוד כמאומת');
+    }
+
+    console.log(`Marked code ${trimmedCode} as verified for ${trimmedEmail}`);
 
     failedAttempts.delete(attemptKey);
 
