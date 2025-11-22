@@ -49,12 +49,13 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
     );
 
-    // Verify the code - use maybeSingle to handle no results gracefully
+    // Verify the code - must be verified=true (already passed through verify-code)
     const { data: verificationData, error: verifyError } = await supabase
       .from("verification_codes")
       .select("*")
       .eq("email", email.toLowerCase())
       .eq("code", code)
+      .eq("verified", true)
       .gt("expires_at", new Date().toISOString())
       .order("created_at", { ascending: false })
       .limit(1)
