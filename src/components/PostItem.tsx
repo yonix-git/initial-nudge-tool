@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { he } from "date-fns/locale";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
+import { Link } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -368,17 +369,21 @@ const PostItem = ({
     <div className="bg-transparent p-4 pb-6 mb-4 border-b border-border/30">
       <div className="flex flex-row items-center justify-between pb-3">
         <div className="flex items-center gap-3">
-          <Avatar>
-            {profile?.profile_picture_url && (
-              <AvatarImage src={profile.profile_picture_url} />
-            )}
-            <AvatarFallback className="bg-primary text-primary-foreground">
-              {getInitials(profile?.full_name || profile?.username || "")}
-            </AvatarFallback>
-          </Avatar>
+          <Link to={`/profile?id=${userId}`}>
+            <Avatar className="cursor-pointer">
+              {profile?.profile_picture_url && (
+                <AvatarImage src={profile.profile_picture_url} />
+              )}
+              <AvatarFallback className="bg-primary text-primary-foreground">
+                {getInitials(profile?.full_name || profile?.username || "")}
+              </AvatarFallback>
+            </Avatar>
+          </Link>
           <div>
             <div className="flex items-center gap-1.5">
-              <p className="font-semibold text-sm">{profile?.full_name || profile?.username || "משתמש"}</p>
+              <Link to={`/profile?id=${userId}`} className="hover:underline">
+                <p className="font-semibold text-sm">{profile?.full_name || profile?.username || "משתמש"}</p>
+              </Link>
               {profile?.is_verified && <VerifiedBadge size={14} />}
             </div>
             <p className="text-xs text-muted-foreground">{timeAgo}</p>
