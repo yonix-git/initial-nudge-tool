@@ -14,7 +14,7 @@ const translations = {
     // Header
     "header.feed": "פיד",
     "header.groups": "קבוצות",
-    "header.services": "שירותים",
+    "header.services": "שירותי רכב",
     "header.events": "אירועים",
     "header.search": "חיפוש...",
     
@@ -111,7 +111,7 @@ const translations = {
     // Header
     "header.feed": "Feed",
     "header.groups": "Groups",
-    "header.services": "Services",
+    "header.services": "Vehicle Services",
     "header.events": "Events",
     "header.search": "Search...",
     
@@ -198,7 +198,7 @@ const translations = {
     // Header
     "header.feed": "التغذية",
     "header.groups": "المجموعات",
-    "header.services": "الخدمات",
+    "header.services": "خدمات السيارات",
     "header.events": "الفعاليات",
     "header.search": "بحث...",
     
