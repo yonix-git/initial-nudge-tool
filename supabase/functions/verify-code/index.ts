@@ -102,8 +102,12 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('קוד האימות שגוי או שפג תוקפו');
     }
 
-    // Success - DON'T mark as verified for password reset flow
-    // Let reset-password handle marking as verified after password change
+    // Mark code as verified - allow reuse in reset-password
+    await supabase
+      .from('verification_codes')
+      .update({ verified: true })
+      .eq('id', verificationData.id);
+
     failedAttempts.delete(attemptKey);
 
     console.log(`Successfully verified code for ${trimmedEmail}`);
