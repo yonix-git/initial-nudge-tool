@@ -9,8 +9,5 @@ verify_jwt = false
 [functions.approve-business-upgrade]
 verify_jwt = false
 
-[functions.send-password-reset-code]
-verify_jwt = false
-
-[functions.reset-password]
+[functions.request-business-upgrade]
 verify_jwt = false
