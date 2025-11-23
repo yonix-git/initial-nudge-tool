@@ -6,6 +6,9 @@ verify_jwt = false
 [functions.verify-code]
 verify_jwt = false
 
+[functions.delete-user-by-email]
+verify_jwt = false
+
 [functions.approve-business-upgrade]
 verify_jwt = false
 
