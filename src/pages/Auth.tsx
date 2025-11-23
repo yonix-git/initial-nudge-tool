@@ -197,6 +197,8 @@ const Auth = () => {
         throw new Error("נא להזין קוד בן 5 ספרות");
       }
 
+      console.log("Starting verification for:", email.trim());
+      
       // Verify the code using secure edge function
       const { data, error: verifyError } = await supabase.functions.invoke('verify-code', {
         body: { 
@@ -205,12 +207,16 @@ const Auth = () => {
         }
       });
 
+      console.log("Verification result:", { data, verifyError });
+
       if (verifyError || !data?.success) {
         throw new Error(data?.error || verifyError?.message || "קוד האימות שגוי או שפג תוקפו");
       }
 
+      console.log("Code verified successfully, proceeding to sign up...");
+
       // Now sign up the user
-      const { error: signUpError } = await supabase.auth.signUp({
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: email.trim(),
         password,
         options: {
@@ -222,6 +228,8 @@ const Auth = () => {
           },
         },
       });
+
+      console.log("SignUp result:", { signUpData, signUpError });
 
       if (signUpError) {
         console.error("Signup error details:", signUpError);
@@ -238,6 +246,8 @@ const Auth = () => {
         
         throw new Error(signUpError.message || "שגיאה בהרשמה למערכת");
       }
+
+      console.log("User signed up successfully:", signUpData.user?.id);
 
       // Mark verification code as used only after successful signup
       await supabase
