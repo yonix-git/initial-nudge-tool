@@ -50,19 +50,17 @@ const ForgotPassword = () => {
         }
       });
 
-      // In password reset: error with "כבר רשום" = GOOD (user exists)
-      // Check both error object and data.error
-      const errorMessage = checkError?.message || authData?.error;
-      
-      if (errorMessage?.includes("כבר רשום")) {
+      if (checkError) {
+        throw new Error(checkError.message || "שגיאה בבדיקת המייל");
+      }
+
+      // In password reset: emailExists = true is GOOD (user exists)
+      if (authData?.emailExists) {
         // Perfect! User exists, we can proceed
         console.log("User exists, proceeding with password reset");
-      } else if (!errorMessage) {
-        // No error means email is available = user doesn't exist
-        throw new Error("המשתמש אינו קיים במערכת");
       } else {
-        // Some other error occurred
-        throw new Error(errorMessage);
+        // User doesn't exist
+        throw new Error("המשתמש אינו קיים במערכת");
       }
 
       // Send verification code
