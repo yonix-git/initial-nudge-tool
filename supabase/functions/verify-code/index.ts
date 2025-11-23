@@ -49,7 +49,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (!verificationData) {
       console.error('Code not found or already used');
-      throw new Error('קוד האימות שגוי או שכבר נעשה בו שימוש');
+      throw new Error('קוד שגוי, אנא נסה שנית');
     }
 
     // Check if code has expired
