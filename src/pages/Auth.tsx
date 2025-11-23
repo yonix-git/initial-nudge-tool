@@ -380,6 +380,16 @@ const Auth = () => {
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "מתחבר..." : "התחבר"}
                 </Button>
+                <div className="text-center">
+                  <Button
+                    type="button"
+                    variant="link"
+                    className="text-sm text-primary"
+                    onClick={() => navigate("/forgot-password")}
+                  >
+                    שכחתי את הסיסמה
+                  </Button>
+                </div>
               </form>
               </div>
             )}
