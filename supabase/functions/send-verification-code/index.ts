@@ -40,25 +40,43 @@ const handler = async (req: Request): Promise<Response> => {
 
     const emailExists = existingUsers.users.some(user => user.email === email.toLowerCase());
     
+    // If checkOnly, return the status without throwing error
+    if (checkOnly) {
+      if (emailExists) {
+        return new Response(
+          JSON.stringify({ 
+            error: 'מייל זה כבר רשום במערכת',
+            emailExists: true
+          }),
+          {
+            status: 200,
+            headers: {
+              "Content-Type": "application/json",
+              ...corsHeaders,
+            },
+          }
+        );
+      } else {
+        return new Response(
+          JSON.stringify({ 
+            success: true,
+            message: 'מייל זמין',
+            emailExists: false
+          }),
+          {
+            status: 200,
+            headers: {
+              "Content-Type": "application/json",
+              ...corsHeaders,
+            },
+          }
+        );
+      }
+    }
+    
+    // For actual signup (not checkOnly), throw error if email exists
     if (emailExists) {
       throw new Error('מייל זה כבר רשום במערכת');
-    }
-
-    // If checkOnly, return success without sending code
-    if (checkOnly) {
-      return new Response(
-        JSON.stringify({ 
-          success: true,
-          message: 'מייל זמין'
-        }),
-        {
-          status: 200,
-          headers: {
-            "Content-Type": "application/json",
-            ...corsHeaders,
-          },
-        }
-      );
     }
 
     // Generate 5-digit code
