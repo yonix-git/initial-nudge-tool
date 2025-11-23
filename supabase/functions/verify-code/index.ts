@@ -40,10 +40,15 @@ const handler = async (req: Request): Promise<Response> => {
       .eq('email', trimmedEmail)
       .eq('code', trimmedCode)
       .eq('verified', false)
-      .single();
+      .maybeSingle();
 
-    if (fetchError || !verificationData) {
-      console.error('Code not found or already used:', fetchError);
+    if (fetchError) {
+      console.error('Database error:', fetchError);
+      throw new Error('שגיאה בבדיקת קוד האימות');
+    }
+
+    if (!verificationData) {
+      console.error('Code not found or already used');
       throw new Error('קוד האימות שגוי או שכבר נעשה בו שימוש');
     }
 
