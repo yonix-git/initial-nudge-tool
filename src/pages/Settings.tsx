@@ -44,6 +44,7 @@ const Settings = () => {
   const [accountType, setAccountType] = useState<"private" | "business" | null>(null);
   const [loading, setLoading] = useState(false);
   const [upgradeRequestStatus, setUpgradeRequestStatus] = useState<"pending" | "approved" | "rejected" | null>(null);
+  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
@@ -131,6 +132,15 @@ const Settings = () => {
   };
 
   const handleChangePassword = async () => {
+    if (!currentPassword) {
+      toast({
+        title: "שגיאה",
+        description: "נא להזין את הסיסמה הנוכחית",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (newPassword !== confirmPassword) {
       toast({
         title: "שגיאה",
@@ -140,10 +150,10 @@ const Settings = () => {
       return;
     }
 
-    if (newPassword.length < 6) {
+    if (newPassword.length < 8) {
       toast({
         title: "שגיאה",
-        description: "הסיסמה חייבת להכיל לפחות 6 תווים",
+        description: "הסיסמה חייבת להכיל לפחות 8 תווים",
         variant: "destructive",
       });
       return;
@@ -151,6 +161,21 @@ const Settings = () => {
 
     setLoading(true);
     try {
+      // Verify current password first
+      if (!user?.email) {
+        throw new Error("לא נמצא מייל משתמש");
+      }
+
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: currentPassword,
+      });
+
+      if (signInError) {
+        throw new Error("הסיסמה הנוכחית שגויה");
+      }
+
+      // If verification succeeded, update to new password
       const { error } = await supabase.auth.updateUser({
         password: newPassword,
       });
@@ -161,6 +186,7 @@ const Settings = () => {
         title: "הסיסמה שונתה בהצלחה",
       });
       setPasswordDialogOpen(false);
+      setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     } catch (error: any) {
@@ -457,6 +483,16 @@ const Settings = () => {
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="current-password">סיסמה נוכחית</Label>
+                        <Input
+                          id="current-password"
+                          type="password"
+                          value={currentPassword}
+                          onChange={(e) => setCurrentPassword(e.target.value)}
+                          placeholder="הזן את הסיסמה הנוכחית שלך"
+                        />
+                      </div>
                       <div className="space-y-2">
                         <Label htmlFor="new-password">סיסמה חדשה</Label>
                         <Input
