@@ -140,6 +140,21 @@ const ForgotPassword = () => {
         throw new Error(data?.error || error?.message || "שגיאה בעדכון הסיסמה");
       }
 
+      // Sign in the user with the new password
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: trimmedEmail,
+        password: newPassword,
+      });
+
+      if (signInError) {
+        toast({
+          title: "הסיסמה שונתה בהצלחה!",
+          description: "אנא התחבר עם הסיסמה החדשה",
+        });
+        navigate("/auth");
+        return;
+      }
+
       toast({
         title: "הסיסמה שונתה בהצלחה!",
         description: "מיד תועבר לדף הבית",
