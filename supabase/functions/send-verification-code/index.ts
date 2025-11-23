@@ -10,7 +10,7 @@ const corsHeaders = {
 
 interface VerificationRequest {
   email: string;
-  username: string;
+  checkOnly?: boolean;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -19,14 +19,10 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email, username }: VerificationRequest = await req.json();
+    const { email, checkOnly }: VerificationRequest = await req.json();
 
     if (!email || !email.includes('@')) {
       throw new Error('כתובת אימייל לא תקינה');
-    }
-
-    if (!username || username.trim().length < 3) {
-      throw new Error('שם משתמש חייב להכיל לפחות 3 תווים');
     }
 
     // Initialize Supabase client with service role to check auth.users
@@ -45,18 +41,24 @@ const handler = async (req: Request): Promise<Response> => {
     const emailExists = existingUsers.users.some(user => user.email === email.toLowerCase());
     
     if (emailExists) {
-      throw new Error('מייל זה כבר רשום אנא עבור לדף התחברות');
+      throw new Error('מייל זה כבר רשום במערכת');
     }
 
-    // Check if username already exists in profiles
-    const { data: existingProfile } = await supabase
-      .from('profiles')
-      .select('username')
-      .eq('username', username.trim())
-      .maybeSingle();
-
-    if (existingProfile) {
-      throw new Error('שם משתמש זה כבר קיים אנא בחר שם משתמש אחר');
+    // If checkOnly, return success without sending code
+    if (checkOnly) {
+      return new Response(
+        JSON.stringify({ 
+          success: true,
+          message: 'מייל זמין'
+        }),
+        {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+            ...corsHeaders,
+          },
+        }
+      );
     }
 
     // Generate 5-digit code

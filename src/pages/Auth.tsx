@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { createClient } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,7 +36,7 @@ const Auth = () => {
       .regex(/[A-Z]/, { message: "הסיסמה חייבת להכיל לפחות אות גדולה אחת באנגלית" }),
     fullName: z.string().trim().min(2, { message: "שם מלא חייב להכיל לפחות 2 תווים" }).max(100),
     username: z.string().trim().min(3, { message: "שם משתמש חייב להכיל לפחות 3 תווים" }).max(50)
-      .regex(/^[a-zA-Z0-9_]+$/, { message: "שם משתמש יכול להכיל רק אותיות באנגלית, מספרים וקו תחתון" }),
+      .regex(/^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{}|;:'",.<>?/`~\\]+$/, { message: "שם משתמש יכול להכיל רק אותיות באנגלית, מספרים וסימנים" }),
   });
 
   useEffect(() => {
@@ -148,25 +149,52 @@ const Auth = () => {
       }
 
       const trimmedEmail = email.trim();
+      const trimmedUsername = username.trim();
 
-      console.log("Sending verification code to:", trimmedEmail);
+      // First check if username exists in profiles
+      const { data: existingProfile, error: profileError } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('username', trimmedUsername)
+        .maybeSingle();
 
-      // Send verification code with email and username for validation
-      const { data, error } = await supabase.functions.invoke('send-verification-code', {
+      if (profileError && profileError.code !== 'PGRST116') {
+        console.error("Error checking username:", profileError);
+        throw new Error("שגיאה בבדיקת שם המשתמש");
+      }
+
+      if (existingProfile) {
+        throw new Error("אנא בחר שם משתמש אחר");
+      }
+
+      // Then check if email exists in auth.users using service role edge function
+      const { data: emailCheckData, error: emailCheckError } = await supabase.functions.invoke('send-verification-code', {
         body: { 
           email: trimmedEmail,
-          username: username.trim()
+          checkOnly: true
         }
       });
 
-      console.log("Verification response:", { data, error });
+      if (emailCheckError || emailCheckData?.error) {
+        const errorMsg = emailCheckData?.error || emailCheckError?.message || "שגיאה בבדיקת המייל";
+        if (errorMsg.includes("כבר רשום")) {
+          throw new Error("מייל זה כבר רשום במערכת");
+        }
+        throw new Error(errorMsg);
+      }
+
+      // Now send verification code
+      const { data, error } = await supabase.functions.invoke('send-verification-code', {
+        body: { 
+          email: trimmedEmail
+        }
+      });
 
       if (error) {
         console.error("Verification error:", error);
         throw new Error(error.message || "שגיאה בשליחת קוד אימות");
       }
 
-      // Check if there's an error message in the response data
       if (data?.error) {
         throw new Error(data.error);
       }
@@ -197,12 +225,16 @@ const Auth = () => {
         throw new Error("נא להזין קוד בן 5 ספרות");
       }
 
-      console.log("Starting verification for:", email.trim());
+      const trimmedEmail = email.trim();
+      const trimmedUsername = username.trim();
+      const trimmedFullName = fullName.trim();
+
+      console.log("Starting verification for:", trimmedEmail);
       
       // Verify the code using secure edge function
       const { data, error: verifyError } = await supabase.functions.invoke('verify-code', {
         body: { 
-          email: email.trim(),
+          email: trimmedEmail,
           code: verificationCode.trim()
         }
       });
@@ -217,13 +249,13 @@ const Auth = () => {
 
       // Now sign up the user
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email: email.trim(),
+        email: trimmedEmail,
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/`,
           data: {
-            full_name: fullName.trim(),
-            username: username.trim(),
+            full_name: trimmedFullName,
+            username: trimmedUsername,
             account_type: "private",
           },
         },
@@ -233,26 +265,33 @@ const Auth = () => {
 
       if (signUpError) {
         console.error("Signup error details:", signUpError);
-        
-        // Check for various "user already exists" error patterns
-        if (
-          signUpError.message?.toLowerCase().includes("user already registered") || 
-          signUpError.message?.toLowerCase().includes("user_already_exists") ||
-          signUpError.message?.toLowerCase().includes("already registered") ||
-          signUpError.status === 422
-        ) {
-          throw new Error("המייל הזה כבר רשום במערכת. אנא התחבר במקום להירשם מחדש.");
-        }
-        
         throw new Error(signUpError.message || "שגיאה בהרשמה למערכת");
       }
 
-      console.log("User signed up successfully:", signUpData.user?.id);
+      if (!signUpData.user) {
+        throw new Error("שגיאה ביצירת המשתמש");
+      }
+
+      console.log("User signed up successfully:", signUpData.user.id);
+
+      // Mark verification code as verified
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      const adminClient = createClient(supabaseUrl, supabaseKey);
+      
+      await adminClient
+        .from('verification_codes')
+        .update({ verified: true })
+        .eq('email', trimmedEmail)
+        .eq('code', verificationCode.trim());
 
       toast({
         title: "נרשמת בהצלחה!",
         description: "מיד תועבר לדף הראשי",
       });
+
+      // Navigate to home page
+      navigate("/");
     } catch (error: any) {
       toast({
         title: "שגיאה באימות",
