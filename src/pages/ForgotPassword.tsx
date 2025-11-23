@@ -42,29 +42,8 @@ const ForgotPassword = () => {
         throw new Error(validationResult.error.errors[0].message);
       }
 
-      // Check if user exists - for password reset we WANT the email to exist
-      const { data: authData, error: checkError } = await supabase.functions.invoke('send-verification-code', {
-        body: { 
-          email: trimmedEmail,
-          checkOnly: true
-        }
-      });
-
-      if (checkError) {
-        throw new Error(checkError.message || "שגיאה בבדיקת המייל");
-      }
-
-      // In password reset: emailExists = true is GOOD (user exists)
-      if (authData?.emailExists) {
-        // Perfect! User exists, we can proceed
-        console.log("User exists, proceeding with password reset");
-      } else {
-        // User doesn't exist
-        throw new Error("המשתמש אינו קיים במערכת");
-      }
-
-      // Send verification code
-      const { data, error } = await supabase.functions.invoke('send-verification-code', {
+      // Send password reset code - the function checks if user exists
+      const { data, error } = await supabase.functions.invoke('send-password-reset-code', {
         body: { 
           email: trimmedEmail
         }
