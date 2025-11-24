@@ -143,7 +143,7 @@ const Auth = () => {
         throw new Error(firstError.message);
       }
 
-      // Check for common weak passwords
+      // Check for common weak passwords BEFORE sending verification code
       const commonPasswords = ["password", "123456", "12345678", "qwerty", "abc123", "password123", "admin123"];
       if (commonPasswords.includes(password.toLowerCase())) {
         throw new Error("הסיסמה שבחרת נפוצה מדי, אנא בחר סיסמה אחרת");
