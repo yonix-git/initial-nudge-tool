@@ -152,45 +152,12 @@ const Auth = () => {
       const trimmedEmail = email.trim();
       const trimmedUsername = username.trim();
 
-      // First check if username exists in profiles
-      const { data: existingProfile, error: profileError } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('username', trimmedUsername)
-        .maybeSingle();
-
-      if (profileError) {
-        console.error("Error checking username:", profileError);
-        // If it's not a "no rows" error, it's a real error
-        if (profileError.code !== 'PGRST116') {
-          throw new Error(`שגיאת מערכת: ${profileError.message}`);
-        }
-      }
-
-      if (existingProfile) {
-        throw new Error("שם המשתמש כבר תפוס, אנא בחר שם משתמש אחר");
-      }
-
-      // Then check if email exists in auth.users using service role edge function
-      const { data: emailCheckData, error: emailCheckError } = await supabase.functions.invoke('send-verification-code', {
-        body: { 
-          email: trimmedEmail,
-          checkOnly: true
-        }
-      });
-
-      if (emailCheckError || emailCheckData?.error) {
-        const errorMsg = emailCheckData?.error || emailCheckError?.message || "שגיאה בבדיקת המייל";
-        if (errorMsg.includes("כבר רשום")) {
-          throw new Error("מייל זה כבר רשום במערכת");
-        }
-        throw new Error(errorMsg);
-      }
-
-      // Now send verification code
+      // Check both email and username, then send verification code
+      // This is done in one call to the edge function which uses service role
       const { data, error } = await supabase.functions.invoke('send-verification-code', {
         body: { 
-          email: trimmedEmail
+          email: trimmedEmail,
+          username: trimmedUsername
         }
       });
 

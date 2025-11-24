@@ -10,6 +10,7 @@ const corsHeaders = {
 
 interface VerificationRequest {
   email: string;
+  username?: string;
   checkOnly?: boolean;
 }
 
@@ -19,7 +20,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email, checkOnly }: VerificationRequest = await req.json();
+    const { email, username, checkOnly }: VerificationRequest = await req.json();
 
     if (!email || !email.includes('@')) {
       throw new Error('כתובת אימייל לא תקינה');
@@ -29,6 +30,24 @@ const handler = async (req: Request): Promise<Response> => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Check if username exists in profiles (if username provided)
+    if (username) {
+      const { data: existingProfile, error: profileError } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('username', username)
+        .maybeSingle();
+
+      if (profileError) {
+        console.error('Error checking username:', profileError);
+        throw new Error('שגיאה בבדיקת שם המשתמש');
+      }
+
+      if (existingProfile) {
+        throw new Error('שם המשתמש כבר תפוס, אנא בחר שם משתמש אחר');
+      }
+    }
 
     // Check if email already exists in auth.users
     const { data: existingUsers, error: userCheckError } = await supabase.auth.admin.listUsers();
