@@ -33,6 +33,22 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Check if username exists in profiles (if username provided)
     if (username) {
+      // Validate username format
+      if (username.length < 3) {
+        throw new Error('שם משתמש חייב להכיל לפחות 3 תווים');
+      }
+      
+      if (username.length > 50) {
+        throw new Error('שם משתמש ארוך מדי (מקסימום 50 תווים)');
+      }
+
+      // Check if username contains only English letters, numbers, and special characters
+      const usernameRegex = /^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{}|;:'",.<>?/`~\\]+$/;
+      if (!usernameRegex.test(username)) {
+        throw new Error('שם משתמש יכול להכיל רק אותיות באנגלית, מספרים וסימנים מיוחדים');
+      }
+
+      // Check if username already exists in profiles table
       const { data: existingProfile, error: profileError } = await supabase
         .from('profiles')
         .select('username')
