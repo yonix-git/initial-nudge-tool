@@ -159,13 +159,16 @@ const Auth = () => {
         .eq('username', trimmedUsername)
         .maybeSingle();
 
-      if (profileError && profileError.code !== 'PGRST116') {
+      if (profileError) {
         console.error("Error checking username:", profileError);
-        throw new Error("שגיאה בבדיקת שם המשתמש");
+        // If it's not a "no rows" error, it's a real error
+        if (profileError.code !== 'PGRST116') {
+          throw new Error(`שגיאת מערכת: ${profileError.message}`);
+        }
       }
 
       if (existingProfile) {
-        throw new Error("אנא בחר שם משתמש אחר");
+        throw new Error("שם המשתמש כבר תפוס, אנא בחר שם משתמש אחר");
       }
 
       // Then check if email exists in auth.users using service role edge function
