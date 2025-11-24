@@ -143,14 +143,44 @@ const Auth = () => {
         throw new Error(firstError.message);
       }
 
-      // Check for common weak passwords BEFORE sending verification code
-      const commonPasswords = ["password", "123456", "12345678", "qwerty", "abc123", "password123", "admin123"];
-      if (commonPasswords.includes(password.toLowerCase())) {
-        throw new Error("הסיסמה שבחרת נפוצה מדי, אנא בחר סיסמה אחרת");
-      }
-
       const trimmedEmail = email.trim();
       const trimmedUsername = username.trim();
+      const lowerPassword = password.toLowerCase();
+
+      // Check for common weak passwords BEFORE sending verification code
+      const commonPasswords = [
+        "password", "123456", "12345678", "qwerty", "abc123", "password123", "admin123",
+        "welcome", "monkey", "1234567890", "letmein", "password1", "123123", "123456789",
+        "qwertyuiop", "1q2w3e4r", "football", "iloveyou", "admin", "welcome123"
+      ];
+      if (commonPasswords.includes(lowerPassword)) {
+        throw new Error("הסיסמה שבחרת נפוצה מדי ונמצאת ברשימת סיסמאות ידועות. אנא בחר סיסמה אחרת");
+      }
+
+      // Check for sequential characters
+      const sequentialPatterns = [
+        "123", "234", "345", "456", "567", "678", "789",
+        "abc", "bcd", "cde", "def", "efg", "fgh", "ghi"
+      ];
+      if (sequentialPatterns.some(pattern => lowerPassword.includes(pattern))) {
+        throw new Error("הסיסמה מכילה רצף תווים רציף (123, abc וכד'). אנא בחר סיסמה מורכבת יותר");
+      }
+
+      // Check if password contains the username
+      if (lowerPassword.includes(trimmedUsername.toLowerCase())) {
+        throw new Error("הסיסמה לא יכולה להכיל את שם המשתמש");
+      }
+
+      // Check if password contains part of the email
+      const emailUsername = trimmedEmail.split('@')[0].toLowerCase();
+      if (lowerPassword.includes(emailUsername)) {
+        throw new Error("הסיסמה לא יכולה להכיל חלק מכתובת המייל");
+      }
+
+      // Check for repeated characters (e.g., "aaaa", "1111")
+      if (/(.)\1{3,}/.test(password)) {
+        throw new Error("הסיסמה מכילה יותר מדי תווים זהים ברצף. אנא בחר סיסמה מורכבת יותר");
+      }
 
       // Check both email and username, then send verification code
       // This is done in one call to the edge function which uses service role
