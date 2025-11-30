@@ -60,6 +60,7 @@ const Groups = () => {
   const [pendingRequests, setPendingRequests] = useState<Record<string, PendingRequest[]>>({});
   const [userMemberships, setUserMemberships] = useState<Record<string, string>>({});
   const [groupNotifications, setGroupNotifications] = useState<Record<string, number>>({});
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     if (!user || authLoading) return;
@@ -330,6 +331,16 @@ const Groups = () => {
     }
   };
 
+  // Filter groups based on search query
+  const filteredGroups = groups.filter((group) => {
+    const searchLower = searchQuery.toLowerCase();
+    
+    return !searchQuery || 
+      group.name?.toLowerCase().includes(searchLower) ||
+      group.description?.toLowerCase().includes(searchLower) ||
+      group.category?.toLowerCase().includes(searchLower);
+  });
+
   if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-background" dir={dir}>
@@ -437,6 +448,8 @@ const Groups = () => {
                 <Input 
                   placeholder="חפש קבוצות..." 
                   className="pr-10"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
 
@@ -456,12 +469,12 @@ const Groups = () => {
                   </CardContent>
                 </Card>
               ))
-            ) : groups.length === 0 ? (
+            ) : filteredGroups.length === 0 ? (
               <div className="col-span-2 text-center py-8 text-muted-foreground">
-                לא נמצאו קבוצות
+                {searchQuery ? "לא נמצאו תוצאות מתאימות לחיפוש" : "לא נמצאו קבוצות"}
               </div>
             ) : (
-              groups.map((group, index) => (
+              filteredGroups.map((group, index) => (
               <Card 
                 key={group.id} 
                 className="hover:shadow-md transition-shadow animate-fade-in-up cursor-pointer"
