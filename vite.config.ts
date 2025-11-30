@@ -17,8 +17,8 @@ export default defineConfig(({ mode }) => ({
       registerType: "autoUpdate",
       includeAssets: ["favicon.png", "apple-touch-icon.png"],
       manifest: {
-        name: "Nudge - קהילת הרכב הישראלית",
-        short_name: "Nudge",
+        name: "קהילת הרכב הישראלית",
+        short_name: "קהילת רכב",
         description: "קהילת רכב חברתית - שתפו, התחברו ותגלו",
         theme_color: "#E73838",
         background_color: "#FAFAFA",
