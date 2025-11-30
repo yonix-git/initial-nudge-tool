@@ -15,9 +15,9 @@ export default defineConfig(({ mode }) => ({
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.ico", "apple-touch-icon.png"],
+      includeAssets: ["favicon.png", "apple-touch-icon.png"],
       manifest: {
-        name: "Initial Nudge Tool",
+        name: "Nudge - קהילת הרכב הישראלית",
         short_name: "Nudge",
         description: "קהילת רכב חברתית - שתפו, התחברו ותגלו",
         theme_color: "#E73838",
