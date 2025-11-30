@@ -30,6 +30,8 @@ const Services = () => {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [locationQuery, setLocationQuery] = useState("");
 
   useEffect(() => {
     if (!user || authLoading) return;
@@ -85,6 +87,24 @@ const Services = () => {
     );
   };
 
+  // Filter services based on search and location
+  const filteredServices = services.filter((service) => {
+    const searchLower = searchQuery.toLowerCase();
+    const locationLower = locationQuery.toLowerCase();
+    
+    // Search filter - check in name, categories, phone
+    const matchesSearch = !searchQuery || 
+      service.full_name?.toLowerCase().includes(searchLower) ||
+      service.business_categories?.some(cat => cat.toLowerCase().includes(searchLower)) ||
+      service.business_phone?.includes(searchQuery);
+    
+    // Location filter - check in address
+    const matchesLocation = !locationQuery || 
+      service.business_address?.toLowerCase().includes(locationLower);
+    
+    return matchesSearch && matchesLocation;
+  });
+
   if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-background" dir={dir}>
@@ -132,6 +152,8 @@ const Services = () => {
               <Input 
                 placeholder="חפש לפי שם עסק או סוג שירות..." 
                 className="pr-10"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
             <div className="relative w-64">
@@ -139,7 +161,8 @@ const Services = () => {
               <Input 
                 placeholder="מיקום..." 
                 className="pr-10"
-                defaultValue="תל אביב"
+                value={locationQuery}
+                onChange={(e) => setLocationQuery(e.target.value)}
               />
             </div>
           </div>
@@ -168,12 +191,12 @@ const Services = () => {
                       </CardContent>
                     </Card>
                   ))
-                ) : services.length === 0 ? (
+                ) : filteredServices.length === 0 ? (
                   <div className="col-span-2 text-center py-8 text-muted-foreground">
-                    לא נמצאו שירותים
+                    {searchQuery || locationQuery ? "לא נמצאו תוצאות מתאימות לחיפוש" : "לא נמצאו שירותים"}
                   </div>
                 ) : (
-                  services.map((service) => (
+                  filteredServices.map((service) => (
                     <Card key={service.id} className="hover:shadow-md transition-shadow">
                       <CardHeader>
                         <div className="flex items-start justify-between mb-2">
