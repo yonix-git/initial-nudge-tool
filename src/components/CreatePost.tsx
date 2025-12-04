@@ -12,6 +12,7 @@ import ImageCropDialog from "./ImageCropDialog";
 
 const MAX_IMAGES = 10;
 const MAX_VIDEOS = 5;
+const MAX_FILE_SIZE = 30 * 1024 * 1024; // 30MB
 
 interface FileItem {
   file: File;
@@ -62,6 +63,10 @@ const CreatePost = ({ onPostCreated }: { onPostCreated?: () => void }) => {
     }
 
     filesToAdd.forEach(file => {
+      if (file.size > MAX_FILE_SIZE) {
+        toast.error("הקובץ גדול מדי. גודל מקסימלי: 30MB");
+        return;
+      }
       const reader = new FileReader();
       reader.onloadend = () => {
         setSelectedImages(prev => [...prev, {
@@ -89,6 +94,10 @@ const CreatePost = ({ onPostCreated }: { onPostCreated?: () => void }) => {
     }
 
     filesToAdd.forEach(file => {
+      if (file.size > MAX_FILE_SIZE) {
+        toast.error("הקובץ גדול מדי. גודל מקסימלי: 30MB");
+        return;
+      }
       const reader = new FileReader();
       reader.onloadend = () => {
         setSelectedVideos(prev => [...prev, {

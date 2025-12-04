@@ -30,7 +30,7 @@ const productSchema = z.object({
 });
 
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_IMAGE_SIZE = 30 * 1024 * 1024; // 30MB
 const MAX_IMAGES = 10;
 
 interface ImageItem {
@@ -77,7 +77,7 @@ const AddProductDialog = ({ businessId, onProductAdded }: AddProductDialogProps)
       if (file.size > MAX_IMAGE_SIZE) {
         toast({
           title: "שגיאה",
-          description: "הקובץ גדול מדי. גודל מקסימלי: 5MB",
+          description: "הקובץ גדול מדי. גודל מקסימלי: 30MB",
           variant: "destructive",
         });
         return;
