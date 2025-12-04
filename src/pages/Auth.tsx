@@ -83,6 +83,17 @@ const Auth = () => {
         }
         break;
       case 'password':
+        const lowerPassword = value.toLowerCase();
+        const commonPasswords = [
+          "password", "123456", "12345678", "qwerty", "abc123", "password123", "admin123",
+          "welcome", "monkey", "1234567890", "letmein", "password1", "123123", "123456789",
+          "qwertyuiop", "1q2w3e4r", "football", "iloveyou", "admin", "welcome123"
+        ];
+        const sequentialPatterns = [
+          "123", "234", "345", "456", "567", "678", "789",
+          "abc", "bcd", "cde", "def", "efg", "fgh", "ghi"
+        ];
+        
         if (!value) {
           errors.password = "סיסמה היא שדה חובה";
         } else if (value.length < 8) {
@@ -93,6 +104,16 @@ const Auth = () => {
           errors.password = "הסיסמה חייבת להכיל לפחות מספר אחד";
         } else if (!/^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{}|;:'",.<>?/`~\\]+$/.test(value)) {
           errors.password = "הסיסמה יכולה להכיל רק אותיות באנגלית, מספרים וסימנים מיוחדים";
+        } else if (commonPasswords.includes(lowerPassword)) {
+          errors.password = "הסיסמה שבחרת נפוצה מדי. אנא בחר סיסמה אחרת";
+        } else if (sequentialPatterns.some(pattern => lowerPassword.includes(pattern))) {
+          errors.password = "הסיסמה מכילה רצף תווים רציף (123, abc וכד')";
+        } else if (/(.)\1{3,}/.test(value)) {
+          errors.password = "הסיסמה מכילה יותר מדי תווים זהים ברצף";
+        } else if (username.trim() && lowerPassword.includes(username.trim().toLowerCase())) {
+          errors.password = "הסיסמה לא יכולה להכיל את שם המשתמש";
+        } else if (email.trim() && lowerPassword.includes(email.trim().split('@')[0].toLowerCase())) {
+          errors.password = "הסיסמה לא יכולה להכיל חלק מכתובת המייל";
         } else {
           delete errors.password;
         }
@@ -104,18 +125,44 @@ const Auth = () => {
 
   // Check if form is valid
   const isSignupFormValid = () => {
+    const lowerPassword = password.toLowerCase();
+    const commonPasswords = [
+      "password", "123456", "12345678", "qwerty", "abc123", "password123", "admin123",
+      "welcome", "monkey", "1234567890", "letmein", "password1", "123123", "123456789",
+      "qwertyuiop", "1q2w3e4r", "football", "iloveyou", "admin", "welcome123"
+    ];
+    const sequentialPatterns = [
+      "123", "234", "345", "456", "567", "678", "789",
+      "abc", "bcd", "cde", "def", "efg", "fgh", "ghi"
+    ];
+    
+    const passwordValid = 
+      password.length >= 8 &&
+      /[a-zA-Z]/.test(password) &&
+      /[0-9]/.test(password) &&
+      /^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{}|;:'",.<>?/`~\\]+$/.test(password) &&
+      !commonPasswords.includes(lowerPassword) &&
+      !sequentialPatterns.some(pattern => lowerPassword.includes(pattern)) &&
+      !/(.)\1{3,}/.test(password) &&
+      !(username.trim() && lowerPassword.includes(username.trim().toLowerCase())) &&
+      !(email.trim() && lowerPassword.includes(email.trim().split('@')[0].toLowerCase()));
+    
     return (
       fullName.trim().length >= 2 &&
       username.trim().length >= 3 &&
       /^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{}|;:'",.<>?/`~\\]+$/.test(username.trim()) &&
       /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) &&
-      password.length >= 8 &&
-      /[a-zA-Z]/.test(password) &&
-      /[0-9]/.test(password) &&
-      /^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{}|;:'",.<>?/`~\\]+$/.test(password) &&
+      passwordValid &&
       Object.keys(fieldErrors).length === 0
     );
   };
+
+  // Re-validate password when username or email changes
+  useEffect(() => {
+    if (password) {
+      validateField('password', password);
+    }
+  }, [username, email]);
 
   useEffect(() => {
     // Check if user is already logged in
