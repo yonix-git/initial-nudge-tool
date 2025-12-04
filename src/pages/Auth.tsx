@@ -28,6 +28,14 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [activeTab, setActiveTab] = useState<"signin" | "signup">("signin");
 
+  // Field-level validation errors
+  const [fieldErrors, setFieldErrors] = useState<{
+    fullName?: string;
+    username?: string;
+    email?: string;
+    password?: string;
+  }>({});
+
   // Schema validation with zod
   const signupSchema = z.object({
     email: z.string().trim().email({ message: "אנא הזן כתובת אימייל תקינה" }).max(255),
@@ -39,6 +47,75 @@ const Auth = () => {
     username: z.string().trim().min(3, { message: "שם משתמש חייב להכיל לפחות 3 תווים" }).max(50)
       .regex(/^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{}|;:'",.<>?/`~\\]+$/, { message: "שם משתמש יכול להכיל רק אותיות באנגלית, מספרים וסימנים" }),
   });
+
+  // Real-time validation function
+  const validateField = (field: string, value: string) => {
+    const errors: typeof fieldErrors = { ...fieldErrors };
+    
+    switch (field) {
+      case 'fullName':
+        if (!value.trim()) {
+          errors.fullName = "שם מלא הוא שדה חובה";
+        } else if (value.trim().length < 2) {
+          errors.fullName = "שם מלא חייב להכיל לפחות 2 תווים";
+        } else {
+          delete errors.fullName;
+        }
+        break;
+      case 'username':
+        if (!value.trim()) {
+          errors.username = "שם משתמש הוא שדה חובה";
+        } else if (value.trim().length < 3) {
+          errors.username = "שם משתמש חייב להכיל לפחות 3 תווים";
+        } else if (!/^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{}|;:'",.<>?/`~\\]+$/.test(value.trim())) {
+          errors.username = "שם משתמש יכול להכיל רק אותיות באנגלית, מספרים וסימנים";
+        } else {
+          delete errors.username;
+        }
+        break;
+      case 'email':
+        if (!value.trim()) {
+          errors.email = "אימייל הוא שדה חובה";
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())) {
+          errors.email = "אנא הזן כתובת אימייל תקינה";
+        } else {
+          delete errors.email;
+        }
+        break;
+      case 'password':
+        if (!value) {
+          errors.password = "סיסמה היא שדה חובה";
+        } else if (value.length < 8) {
+          errors.password = "הסיסמה חייבת להכיל לפחות 8 תווים";
+        } else if (!/[a-zA-Z]/.test(value)) {
+          errors.password = "הסיסמה חייבת להכיל לפחות אות אחת באנגלית";
+        } else if (!/[0-9]/.test(value)) {
+          errors.password = "הסיסמה חייבת להכיל לפחות מספר אחד";
+        } else if (!/^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{}|;:'",.<>?/`~\\]+$/.test(value)) {
+          errors.password = "הסיסמה יכולה להכיל רק אותיות באנגלית, מספרים וסימנים מיוחדים";
+        } else {
+          delete errors.password;
+        }
+        break;
+    }
+    
+    setFieldErrors(errors);
+  };
+
+  // Check if form is valid
+  const isSignupFormValid = () => {
+    return (
+      fullName.trim().length >= 2 &&
+      username.trim().length >= 3 &&
+      /^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{}|;:'",.<>?/`~\\]+$/.test(username.trim()) &&
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) &&
+      password.length >= 8 &&
+      /[a-zA-Z]/.test(password) &&
+      /[0-9]/.test(password) &&
+      /^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{}|;:'",.<>?/`~\\]+$/.test(password) &&
+      Object.keys(fieldErrors).length === 0
+    );
+  };
 
   useEffect(() => {
     // Check if user is already logged in
@@ -398,53 +475,81 @@ const Auth = () => {
               <div dir="rtl">
                 {!showVerification ? (
                   <div className="space-y-4">
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <Label htmlFor="fullname">שם מלא</Label>
                     <Input
                       id="fullname"
                       type="text"
                       placeholder=""
                       value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
+                      onChange={(e) => {
+                        setFullName(e.target.value);
+                        validateField('fullName', e.target.value);
+                      }}
+                      onBlur={() => validateField('fullName', fullName)}
                       required
+                      className={fieldErrors.fullName ? "border-destructive" : ""}
                     />
+                    {fieldErrors.fullName && (
+                      <p className="text-xs text-destructive">{fieldErrors.fullName}</p>
+                    )}
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <Label htmlFor="username">שם משתמש</Label>
                     <Input
                       id="username"
                       type="text"
                       placeholder=""
                       value={username}
-                      onChange={(e) => setUsername(e.target.value)}
+                      onChange={(e) => {
+                        setUsername(e.target.value);
+                        validateField('username', e.target.value);
+                      }}
+                      onBlur={() => validateField('username', username)}
                       required
                       dir="ltr"
+                      className={fieldErrors.username ? "border-destructive" : ""}
                     />
+                    {fieldErrors.username && (
+                      <p className="text-xs text-destructive">{fieldErrors.username}</p>
+                    )}
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <Label htmlFor="signup-email">אימייל</Label>
                     <Input
                       id="signup-email"
                       type="email"
                       placeholder="yourEmail@email.com"
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        validateField('email', e.target.value);
+                      }}
+                      onBlur={() => validateField('email', email)}
                       required
                       dir="ltr"
+                      className={fieldErrors.email ? "border-destructive" : ""}
                     />
+                    {fieldErrors.email && (
+                      <p className="text-xs text-destructive">{fieldErrors.email}</p>
+                    )}
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <Label htmlFor="signup-password">צור סיסמה</Label>
                     <div className="relative">
                       <Input
                         id="signup-password"
                         type={showPassword ? "text" : "password"}
                         value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        onChange={(e) => {
+                          setPassword(e.target.value);
+                          validateField('password', e.target.value);
+                        }}
+                        onBlur={() => validateField('password', password)}
                         required
                         minLength={8}
                         dir="ltr"
-                        className="pr-10"
+                        className={`pr-10 ${fieldErrors.password ? "border-destructive" : ""}`}
                       />
                       <Button
                         type="button"
@@ -460,11 +565,14 @@ const Auth = () => {
                         )}
                       </Button>
                     </div>
+                    {fieldErrors.password && (
+                      <p className="text-xs text-destructive">{fieldErrors.password}</p>
+                    )}
                   </div>
                   <Button 
                     type="button" 
                     className="w-full" 
-                    disabled={loading}
+                    disabled={loading || !isSignupFormValid()}
                     onClick={() => handleSendVerificationCode()}
                   >
                     {loading ? "שולח קוד..." : "שלח קוד אימות"}
