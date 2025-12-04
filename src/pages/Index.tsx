@@ -133,6 +133,8 @@ const Index = () => {
                 content={post.content}
                 imageUrl={post.image_url}
                 videoUrl={post.video_url}
+                imageUrls={post.image_urls}
+                videoUrls={post.video_urls}
                 likesCount={post.likes_count}
                 commentsCount={post.comments_count}
                 createdAt={post.created_at}

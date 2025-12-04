@@ -579,6 +579,8 @@ const Profile = () => {
                 content={selectedPost.content}
                 imageUrl={selectedPost.image_url}
                 videoUrl={selectedPost.video_url}
+                imageUrls={selectedPost.image_urls}
+                videoUrls={selectedPost.video_urls}
                 likesCount={selectedPost.likes_count}
                 commentsCount={selectedPost.comments_count}
                 createdAt={selectedPost.created_at}
