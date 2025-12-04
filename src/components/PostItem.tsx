@@ -10,6 +10,7 @@ import { formatDistanceToNow } from "date-fns";
 import { he } from "date-fns/locale";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { Link } from "react-router-dom";
+import MediaCarousel from "./MediaCarousel";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,6 +39,8 @@ interface PostItemProps {
   content: string;
   imageUrl?: string;
   videoUrl?: string;
+  imageUrls?: string[];
+  videoUrls?: string[];
   likesCount: number;
   commentsCount: number;
   createdAt: string;
@@ -50,13 +53,19 @@ const PostItem = ({
   userId, 
   content, 
   imageUrl,
-  videoUrl, 
+  videoUrl,
+  imageUrls = [],
+  videoUrls = [],
   likesCount, 
   commentsCount, 
   createdAt,
   onDelete,
   onUpdate 
 }: PostItemProps) => {
+  // Use arrays if available, otherwise fall back to single URLs
+  const effectiveImageUrls = imageUrls.length > 0 ? imageUrls : (imageUrl ? [imageUrl] : []);
+  const effectiveVideoUrls = videoUrls.length > 0 ? videoUrls : (videoUrl ? [videoUrl] : []);
+  const hasMedia = effectiveImageUrls.length > 0 || effectiveVideoUrls.length > 0;
   const { user } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [isLiked, setIsLiked] = useState(false);
@@ -473,48 +482,30 @@ const PostItem = ({
           </div>
         ) : (
           <>
-            {imageUrl && (
-              <img 
-                src={imageUrl} 
-                alt="Post content" 
-                loading="lazy"
-                decoding="async"
-                className="w-full rounded-lg object-cover max-h-96 mb-3"
-              />
-            )}
-            {videoUrl && (
-              <video 
-                ref={videoRef}
-                src={videoUrl} 
-                loop
-                muted
-                playsInline
-                className="w-full rounded-lg max-h-96 mb-3 cursor-pointer"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (clickTimer) {
-                    clearTimeout(clickTimer);
-                    setClickTimer(null);
-                  }
-                  
-                  const timer = setTimeout(() => {
-                    setShowFullscreen(true);
-                    setClickTimer(null);
-                  }, 250);
-                  
-                  setClickTimer(timer);
-                }}
-                onDoubleClick={(e) => {
-                  e.stopPropagation();
-                  
-                  if (clickTimer) {
-                    clearTimeout(clickTimer);
-                    setClickTimer(null);
-                  }
-                  
-                  handleLike();
-                }}
-              />
+            {hasMedia && (
+              <div className="mb-3">
+                <MediaCarousel 
+                  imageUrls={effectiveImageUrls}
+                  videoUrls={effectiveVideoUrls}
+                  onClick={() => {
+                    if (clickTimer) {
+                      clearTimeout(clickTimer);
+                    }
+                    const timer = setTimeout(() => {
+                      setShowFullscreen(true);
+                      setClickTimer(null);
+                    }, 250);
+                    setClickTimer(timer);
+                  }}
+                  onDoubleClick={() => {
+                    if (clickTimer) {
+                      clearTimeout(clickTimer);
+                      setClickTimer(null);
+                    }
+                    handleLike();
+                  }}
+                />
+              </div>
             )}
             {content && <p className="text-sm whitespace-pre-wrap">{content}</p>}
           </>
@@ -660,41 +651,12 @@ const PostItem = ({
       <Dialog open={showFullscreen} onOpenChange={setShowFullscreen}>
         <DialogContent className="max-w-7xl w-full h-[95vh] p-0 border-0 bg-black/95">
           <div className="relative w-full h-full flex items-center justify-center">
-            {imageUrl && (
-              <img 
-                src={imageUrl} 
-                alt="Post content" 
-                className="max-w-full max-h-full object-contain"
-                onDoubleClick={(e) => {
-                  e.stopPropagation();
-                  handleLike();
-                }}
-              />
-            )}
-            {videoUrl && (
-              <video 
-                ref={fullscreenVideoRef}
-                src={videoUrl}
-                autoPlay
-                loop
-                playsInline
-                className="max-w-full max-h-full cursor-pointer"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (fullscreenVideoRef.current) {
-                    if (fullscreenVideoRef.current.paused) {
-                      fullscreenVideoRef.current.play();
-                    } else {
-                      fullscreenVideoRef.current.pause();
-                    }
-                  }
-                }}
-                onDoubleClick={(e) => {
-                  e.stopPropagation();
-                  handleLike();
-                }}
-              />
-            )}
+            <MediaCarousel 
+              imageUrls={effectiveImageUrls}
+              videoUrls={effectiveVideoUrls}
+              className="max-w-full max-h-full"
+              onDoubleClick={handleLike}
+            />
           </div>
         </DialogContent>
       </Dialog>
@@ -710,6 +672,8 @@ export default memo(PostItem, (prevProps, nextProps) => {
     prevProps.commentsCount === nextProps.commentsCount &&
     prevProps.content === nextProps.content &&
     prevProps.imageUrl === nextProps.imageUrl &&
-    prevProps.videoUrl === nextProps.videoUrl
+    prevProps.videoUrl === nextProps.videoUrl &&
+    JSON.stringify(prevProps.imageUrls) === JSON.stringify(nextProps.imageUrls) &&
+    JSON.stringify(prevProps.videoUrls) === JSON.stringify(nextProps.videoUrls)
   );
 });

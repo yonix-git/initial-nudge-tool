@@ -414,10 +414,12 @@ export type Database = {
           created_at: string
           id: string
           image_url: string | null
+          image_urls: string[] | null
           likes_count: number
           updated_at: string
           user_id: string
           video_url: string | null
+          video_urls: string[] | null
         }
         Insert: {
           comments_count?: number
@@ -425,10 +427,12 @@ export type Database = {
           created_at?: string
           id?: string
           image_url?: string | null
+          image_urls?: string[] | null
           likes_count?: number
           updated_at?: string
           user_id: string
           video_url?: string | null
+          video_urls?: string[] | null
         }
         Update: {
           comments_count?: number
@@ -436,10 +440,12 @@ export type Database = {
           created_at?: string
           id?: string
           image_url?: string | null
+          image_urls?: string[] | null
           likes_count?: number
           updated_at?: string
           user_id?: string
           video_url?: string | null
+          video_urls?: string[] | null
         }
         Relationships: []
       }
@@ -450,6 +456,7 @@ export type Database = {
           description: string | null
           id: string
           image_url: string | null
+          image_urls: string[] | null
           name: string
           price: number
           updated_at: string
@@ -460,6 +467,7 @@ export type Database = {
           description?: string | null
           id?: string
           image_url?: string | null
+          image_urls?: string[] | null
           name: string
           price: number
           updated_at?: string
@@ -470,6 +478,7 @@ export type Database = {
           description?: string | null
           id?: string
           image_url?: string | null
+          image_urls?: string[] | null
           name?: string
           price?: number
           updated_at?: string
