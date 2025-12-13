@@ -9,6 +9,32 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+// Generate a secure HMAC signature for approval tokens
+async function generateApprovalToken(requestId: string, expiresAt: number): Promise<string> {
+  const secretKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const message = `${requestId}:${expiresAt}`;
+  
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(secretKey);
+  const messageData = encoder.encode(message);
+  
+  const cryptoKey = await crypto.subtle.importKey(
+    "raw",
+    keyData,
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  
+  const signature = await crypto.subtle.sign("HMAC", cryptoKey, messageData);
+  const signatureArray = Array.from(new Uint8Array(signature));
+  const signatureHex = signatureArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  
+  // Return base64url encoded token containing requestId, expiresAt, and signature
+  const tokenData = JSON.stringify({ requestId, expiresAt, signature: signatureHex });
+  return btoa(tokenData).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -75,8 +101,12 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Created upgrade request:", request.id);
 
-    // Generate approval URL
-    const approvalUrl = `${supabaseUrl}/functions/v1/approve-business-upgrade?request_id=${request.id}&token=${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`;
+    // Generate secure approval token (expires in 7 days)
+    const expiresAt = Date.now() + (7 * 24 * 60 * 60 * 1000);
+    const approvalToken = await generateApprovalToken(request.id, expiresAt);
+    
+    // Generate approval URL with secure token (no service role key exposed)
+    const approvalUrl = `${supabaseUrl}/functions/v1/approve-business-upgrade?token=${approvalToken}`;
 
     // Send email to admin using Resend API
     const emailResponse = await fetch('https://api.resend.com/emails', {
@@ -110,6 +140,8 @@ const handler = async (req: Request): Promise<Response> => {
 
             <p style="color: #666; font-size: 12px; margin-top: 30px; border-top: 1px solid #ddd; padding-top: 15px;">
               לחץ על הכפתור לאישור שדרוג החשבון לעסקי. לאחר האישור, המשתמש יוכל להשתמש בכל התכונות העסקיות.
+              <br/><br/>
+              <strong>קישור זה תקף ל-7 ימים.</strong>
             </p>
           </div>
         `,
