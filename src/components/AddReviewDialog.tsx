@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -17,6 +19,7 @@ const AddReviewDialog = ({ businessId, reviewerId, onReviewAdded }: AddReviewDia
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [comment, setComment] = useState("");
+  const [isAnonymous, setIsAnonymous] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
@@ -37,6 +40,7 @@ const AddReviewDialog = ({ businessId, reviewerId, onReviewAdded }: AddReviewDia
         reviewer_id: reviewerId,
         rating,
         comment: comment || null,
+        is_anonymous: isAnonymous,
       });
 
       if (error) throw error;
@@ -48,6 +52,7 @@ const AddReviewDialog = ({ businessId, reviewerId, onReviewAdded }: AddReviewDia
 
       setRating(0);
       setComment("");
+      setIsAnonymous(false);
       setOpen(false);
       onReviewAdded();
     } catch (error: any) {
@@ -113,6 +118,16 @@ const AddReviewDialog = ({ businessId, reviewerId, onReviewAdded }: AddReviewDia
               placeholder="ספר לנו על החוויה שלך..."
               className="min-h-[120px]"
             />
+          </div>
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="anonymous"
+              checked={isAnonymous}
+              onCheckedChange={(checked) => setIsAnonymous(checked === true)}
+            />
+            <Label htmlFor="anonymous" className="text-sm cursor-pointer">
+              הסתר את פרטי המשתמש שלי (ביקורת אנונימית)
+            </Label>
           </div>
         </div>
         <div className="flex gap-2 justify-end">

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Star } from "lucide-react";
+import { Star, UserX } from "lucide-react";
 import { Tables } from "@/integrations/supabase/types";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -13,6 +13,9 @@ const ReviewCard = ({ review }: ReviewCardProps) => {
   const [reviewer, setReviewer] = useState<Tables<"profiles"> | null>(null);
 
   useEffect(() => {
+    // Don't fetch reviewer details for anonymous reviews
+    if (review.is_anonymous) return;
+
     const fetchReviewer = async () => {
       const { data } = await supabase
         .from("profiles")
@@ -24,7 +27,7 @@ const ReviewCard = ({ review }: ReviewCardProps) => {
     };
 
     fetchReviewer();
-  }, [review.reviewer_id]);
+  }, [review.reviewer_id, review.is_anonymous]);
 
   const getInitials = (name: string | null) => {
     if (!name) return "U";
@@ -33,22 +36,28 @@ const ReviewCard = ({ review }: ReviewCardProps) => {
     return words.slice(0, 2).map(word => word.charAt(0).toUpperCase()).join("");
   };
 
+  const isAnonymous = review.is_anonymous;
+
   return (
     <Card>
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
           <Avatar className="h-10 w-10">
-            {reviewer?.profile_picture_url && (
+            {!isAnonymous && reviewer?.profile_picture_url && (
               <AvatarImage src={reviewer.profile_picture_url} />
             )}
             <AvatarFallback className="bg-primary text-primary-foreground">
-              {getInitials(reviewer?.full_name || reviewer?.username || null)}
+              {isAnonymous ? (
+                <UserX className="h-5 w-5" />
+              ) : (
+                getInitials(reviewer?.full_name || reviewer?.username || null)
+              )}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1">
             <div className="flex items-center justify-between mb-1">
               <p className="font-semibold">
-                {reviewer?.full_name || reviewer?.username || "משתמש"}
+                {isAnonymous ? "משתמש אנונימי" : (reviewer?.full_name || reviewer?.username || "משתמש")}
               </p>
               <div className="flex">
                 {Array.from({ length: 5 }).map((_, i) => (
