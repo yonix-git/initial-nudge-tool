@@ -139,7 +139,7 @@ All colors MUST be HSL.
     filter: blur(80px);
     pointer-events: none;
     z-index: 0;
-    animation: float 20s ease-in-out infinite;
+    will-change: transform;
   }
   
   body::after {
@@ -157,25 +157,28 @@ All colors MUST be HSL.
     filter: blur(80px);
     pointer-events: none;
     z-index: 0;
-    animation: float 25s ease-in-out infinite reverse;
+    will-change: transform;
+  }
+  
+  /* Enable animations only on desktop for performance */
+  @media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
+    body::before {
+      animation: float 20s ease-in-out infinite;
+    }
+    
+    body::after {
+      animation: float 25s ease-in-out infinite reverse;
+    }
   }
   
   @keyframes float {
     0%, 100% {
       opacity: 1;
-      transform: translate(0, 0) scale(1) rotate(0deg);
-    }
-    25% {
-      opacity: 0.85;
-      transform: translate(-30px, -30px) scale(1.08) rotate(2deg);
+      transform: translate(0, 0) scale(1);
     }
     50% {
-      opacity: 0.9;
-      transform: translate(20px, 30px) scale(0.95) rotate(-2deg);
-    }
-    75% {
-      opacity: 0.8;
-      transform: translate(30px, -20px) scale(1.05) rotate(1deg);
+      opacity: 0.85;
+      transform: translate(-15px, -15px) scale(1.03);
     }
   }
   
