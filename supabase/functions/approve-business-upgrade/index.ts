@@ -7,6 +7,52 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+// Verify HMAC signature for approval tokens
+async function verifyApprovalToken(token: string): Promise<{ valid: boolean; requestId?: string; error?: string }> {
+  try {
+    const secretKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    
+    // Decode base64url token
+    const paddedToken = token.replace(/-/g, '+').replace(/_/g, '/');
+    const decoded = atob(paddedToken);
+    const tokenData = JSON.parse(decoded);
+    
+    const { requestId, expiresAt, signature } = tokenData;
+    
+    // Check expiration
+    if (Date.now() > expiresAt) {
+      return { valid: false, error: "Token expired" };
+    }
+    
+    // Verify signature
+    const message = `${requestId}:${expiresAt}`;
+    const encoder = new TextEncoder();
+    const keyData = encoder.encode(secretKey);
+    const messageData = encoder.encode(message);
+    
+    const cryptoKey = await crypto.subtle.importKey(
+      "raw",
+      keyData,
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"]
+    );
+    
+    const expectedSignature = await crypto.subtle.sign("HMAC", cryptoKey, messageData);
+    const expectedSignatureArray = Array.from(new Uint8Array(expectedSignature));
+    const expectedSignatureHex = expectedSignatureArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    
+    if (signature !== expectedSignatureHex) {
+      return { valid: false, error: "Invalid signature" };
+    }
+    
+    return { valid: true, requestId };
+  } catch (error) {
+    console.error("Token verification error:", error);
+    return { valid: false, error: "Invalid token format" };
+  }
+}
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -14,18 +60,63 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const url = new URL(req.url);
-    const requestId = url.searchParams.get("request_id");
     const token = url.searchParams.get("token");
 
-    // Verify admin token
-    if (token !== Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")) {
-      throw new Error("Unauthorized");
+    if (!token) {
+      throw new Error("Missing token");
     }
 
-    if (!requestId) {
-      throw new Error("Missing request_id");
+    // Verify the secure token
+    const verification = await verifyApprovalToken(token);
+    
+    if (!verification.valid || !verification.requestId) {
+      console.error("Token verification failed:", verification.error);
+      return new Response(
+        `
+        <!DOCTYPE html>
+        <html dir="rtl">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>קישור לא תקין</title>
+            <style>
+              body {
+                font-family: Arial, sans-serif;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+                margin: 0;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              }
+              .container {
+                background: white;
+                padding: 40px;
+                border-radius: 10px;
+                box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+                text-align: center;
+                max-width: 500px;
+              }
+              h1 { color: #f44336; margin-bottom: 20px; }
+              p { color: #666; line-height: 1.6; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <h1>❌ קישור לא תקין</h1>
+              <p>${verification.error === "Token expired" ? "תוקף הקישור פג. אנא בקש מהמשתמש לשלוח בקשה חדשה." : "הקישור אינו תקין. אנא וודא שהקישור הועתק במלואו."}</p>
+            </div>
+          </body>
+        </html>
+        `,
+        {
+          status: 400,
+          headers: { "Content-Type": "text/html; charset=utf-8", ...corsHeaders },
+        }
+      );
     }
 
+    const requestId = verification.requestId;
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -216,7 +307,7 @@ const handler = async (req: Request): Promise<Response> => {
           <div class="container">
             <h1>❌ שגיאה</h1>
             <p>אירעה שגיאה באישור השדרוג. אנא נסה שוב או פנה לתמיכה.</p>
-            <p style="margin-top: 20px; font-size: 12px; color: #999;">${error.message}</p>
+            <p style="margin-top: 20px; font-size: 12px; color: #999;">שגיאה כללית</p>
           </div>
         </body>
       </html>
