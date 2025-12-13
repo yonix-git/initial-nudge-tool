@@ -150,7 +150,7 @@ const handler = async (req: Request): Promise<Response> => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: "CarHub <team@motorhub.co.il>",
+        from: "CarHub <team@motorclub.co.il>",
         to: [email],
         subject: "קוד האימות שלך - CarHub",
         html: `
