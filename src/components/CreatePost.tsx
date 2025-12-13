@@ -13,6 +13,7 @@ import ImageCropDialog from "./ImageCropDialog";
 const MAX_IMAGES = 10;
 const MAX_VIDEOS = 5;
 const MAX_FILE_SIZE = 30 * 1024 * 1024; // 30MB
+const MAX_CONTENT_LENGTH = 5000;
 
 interface FileItem {
   file: File;
@@ -164,6 +165,11 @@ const CreatePost = ({ onPostCreated }: { onPostCreated?: () => void }) => {
       return;
     }
 
+    if (content.length > MAX_CONTENT_LENGTH) {
+      toast.error(`תוכן ארוך מדי. מקסימום ${MAX_CONTENT_LENGTH} תווים`);
+      return;
+    }
+
     setIsPosting(true);
     try {
       const imageUrls: string[] = [];
@@ -264,12 +270,16 @@ const CreatePost = ({ onPostCreated }: { onPostCreated?: () => void }) => {
             <div className="flex-1 relative z-10">
               <Textarea 
                 placeholder={profile?.account_type === 'business' ? "שתף עדכון על העסק שלך" : "מה חדש אצלך?"}
-                className="min-h-[80px] resize-none mb-3 placeholder:text-muted-foreground text-foreground bg-background"
+                className="min-h-[80px] resize-none mb-1 placeholder:text-muted-foreground text-foreground bg-background"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 disabled={isPosting}
                 dir="rtl"
+                maxLength={MAX_CONTENT_LENGTH}
               />
+              <div className={`text-xs mb-2 text-left ${content.length > MAX_CONTENT_LENGTH * 0.9 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                {content.length} / {MAX_CONTENT_LENGTH}
+              </div>
               
               {hasMedia && (
                 <div className="relative mb-3 rounded-lg overflow-hidden bg-muted">

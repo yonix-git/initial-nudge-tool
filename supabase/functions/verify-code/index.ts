@@ -61,6 +61,17 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('קוד האימות פג תוקפו');
     }
 
+    // Mark the code as verified
+    const { error: updateError } = await supabase
+      .from('verification_codes')
+      .update({ verified: true })
+      .eq('id', verificationData.id);
+
+    if (updateError) {
+      console.error('Error marking code as verified:', updateError);
+      // Non-critical error, continue with success
+    }
+
     console.log(`Successfully verified code for ${trimmedEmail}`);
 
     return new Response(

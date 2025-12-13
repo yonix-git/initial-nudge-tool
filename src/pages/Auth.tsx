@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { createClient } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -399,16 +398,7 @@ const Auth = () => {
 
       console.log("User signed up successfully:", signUpData.user.id);
 
-      // Mark verification code as verified
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-      const adminClient = createClient(supabaseUrl, supabaseKey);
-      
-      await adminClient
-        .from('verification_codes')
-        .update({ verified: true })
-        .eq('email', trimmedEmail)
-        .eq('code', verificationCode.trim());
+      // Verification code is already marked as verified by the verify-code edge function
 
       toast({
         title: "נרשמת בהצלחה!",
