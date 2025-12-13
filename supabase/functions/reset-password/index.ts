@@ -30,12 +30,13 @@ const handler = async (req: Request): Promise<Response> => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Verify the code is valid and not expired
+    // The code should be verified=true (from verify-code step) and not expired
     const { data: verificationData, error: verificationError } = await supabase
       .from("verification_codes")
       .select("*")
       .eq("email", email)
       .eq("code", verificationCode)
-      .eq("verified", false)
+      .eq("verified", true)
       .gt("expires_at", new Date().toISOString())
       .order("created_at", { ascending: false })
       .limit(1)
