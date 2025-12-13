@@ -35,7 +35,7 @@ const Header = () => {
       if (user) {
         const { data } = await supabase
           .from("profiles")
-          .select("*")
+          .select("id, full_name, username, profile_picture_url")
           .eq("id", user.id)
           .single();
         if (data) setProfile(data);
