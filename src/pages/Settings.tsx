@@ -205,47 +205,14 @@ const Settings = () => {
 
     setLoading(true);
     try {
-      // Get user profile to check for files
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("profile_picture_url")
-        .eq("id", user.id)
-        .single();
+      // Call the secure edge function to delete the account
+      const { data, error } = await supabase.functions.invoke('delete-account');
 
-      // Delete profile picture from storage if exists
-      if (profile?.profile_picture_url) {
-        const fileName = profile.profile_picture_url.split("/").pop();
-        if (fileName) {
-          await supabase.storage
-            .from("avatars")
-            .remove([`${user.id}/${fileName}`]);
-        }
-      }
-
-      // Delete all user's video posts from storage
-      const { data: posts } = await supabase
-        .from("posts")
-        .select("video_url")
-        .eq("user_id", user.id)
-        .not("video_url", "is", null);
-
-      if (posts && posts.length > 0) {
-        const videoFiles = posts
-          .map((post) => {
-            const fileName = post.video_url?.split("/").pop();
-            return fileName ? `${user.id}/${fileName}` : null;
-          })
-          .filter(Boolean) as string[];
-
-        if (videoFiles.length > 0) {
-          await supabase.storage.from("videos").remove(videoFiles);
-        }
-      }
-
-      // Delete user from auth (this will cascade delete all related data)
-      const { error: authError } = await supabase.auth.admin.deleteUser(user.id);
+      if (error) throw error;
       
-      if (authError) throw authError;
+      if (!data?.success) {
+        throw new Error(data?.error || 'שגיאה במחיקת החשבון');
+      }
 
       toast({
         title: "החשבון נמחק בהצלחה",
