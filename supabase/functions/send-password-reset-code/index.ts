@@ -91,9 +91,9 @@ const handler = async (req: Request): Promise<Response> => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: "CarHub <team@motorclub.co.il>",
+        from: "MotorClub <team@motorclub.co.il>",
         to: [email],
-        subject: "קוד איפוס סיסמה - CarHub",
+        subject: "קוד איפוס סיסמה - MotorClub",
         html: `
           <!DOCTYPE html>
           <html dir="rtl" lang="he">
@@ -160,7 +160,7 @@ const handler = async (req: Request): Promise<Response> => {
           </head>
           <body>
             <div class="container">
-              <h1>איפוס סיסמה - CarHub 🔐</h1>
+              <h1>איפוס סיסמה - MotorClub 🔐</h1>
               <p class="info">קיבלנו בקשה לאיפוס הסיסמה של החשבון שלך.</p>
               <p class="info">להמשך התהליך, אנא הזן את קוד האימות הבא:</p>
               
@@ -178,7 +178,7 @@ const handler = async (req: Request): Promise<Response> => {
               </div>
               
               <div class="footer">
-                CarHub - קהילת אוהבי הרכב הגדולה בישראל
+                MotorClub - קהילת אוהבי הרכב הגדולה בישראל
               </div>
             </div>
           </body>
