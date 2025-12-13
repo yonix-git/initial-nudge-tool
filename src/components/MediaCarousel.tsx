@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, memo, useMemo, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -10,7 +10,7 @@ interface MediaCarouselProps {
   onClick?: () => void;
 }
 
-const MediaCarousel = ({ 
+const MediaCarousel = memo(({ 
   imageUrls = [], 
   videoUrls = [], 
   className = "",
@@ -19,24 +19,35 @@ const MediaCarousel = ({
 }: MediaCarouselProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const images = imageUrls.filter(Boolean);
-  const videos = videoUrls.filter(Boolean);
-  const hasImages = images.length > 0;
-  const hasVideos = videos.length > 0;
-  const items = hasImages ? images : videos;
-  const totalItems = items.length;
+  const { images, videos, items, totalItems, hasImages } = useMemo(() => {
+    const imgs = imageUrls.filter(Boolean);
+    const vids = videoUrls.filter(Boolean);
+    const hasImgs = imgs.length > 0;
+    return {
+      images: imgs,
+      videos: vids,
+      hasImages: hasImgs,
+      items: hasImgs ? imgs : vids,
+      totalItems: hasImgs ? imgs.length : vids.length
+    };
+  }, [imageUrls, videoUrls]);
 
-  if (totalItems === 0) return null;
-
-  const handlePrev = (e: React.MouseEvent) => {
+  const handlePrev = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     setCurrentIndex(prev => prev === 0 ? totalItems - 1 : prev - 1);
-  };
+  }, [totalItems]);
 
-  const handleNext = (e: React.MouseEvent) => {
+  const handleNext = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     setCurrentIndex(prev => prev === totalItems - 1 ? 0 : prev + 1);
-  };
+  }, [totalItems]);
+
+  const handleDotClick = useCallback((e: React.MouseEvent, index: number) => {
+    e.stopPropagation();
+    setCurrentIndex(index);
+  }, []);
+
+  if (totalItems === 0) return null;
 
   return (
     <div 
@@ -59,6 +70,7 @@ const MediaCarousel = ({
           loop
           muted
           playsInline
+          preload="metadata"
           className="w-full rounded-lg max-h-96"
         />
       )}
@@ -96,10 +108,7 @@ const MediaCarousel = ({
                   ? 'bg-primary' 
                   : 'bg-background/60'
               }`}
-              onClick={(e) => {
-                e.stopPropagation();
-                setCurrentIndex(index);
-              }}
+              onClick={(e) => handleDotClick(e, index)}
             />
           ))}
         </div>
@@ -113,6 +122,8 @@ const MediaCarousel = ({
       )}
     </div>
   );
-};
+});
+
+MediaCarousel.displayName = "MediaCarousel";
 
 export default MediaCarousel;

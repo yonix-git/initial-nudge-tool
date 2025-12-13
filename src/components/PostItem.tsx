@@ -90,7 +90,7 @@ const PostItem = ({
     const fetchProfile = async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("*")
+        .select("id, full_name, username, profile_picture_url, is_verified")
         .eq("id", userId)
         .single();
       if (data) setProfile(data);
