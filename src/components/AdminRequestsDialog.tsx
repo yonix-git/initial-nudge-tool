@@ -203,7 +203,7 @@ export const AdminRequestsDialog = () => {
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
-        <DialogHeader className="pr-8">
+        <DialogHeader className="pl-8">
           <DialogTitle>בקשות לשדרוג חשבון עסקי</DialogTitle>
         </DialogHeader>
 
