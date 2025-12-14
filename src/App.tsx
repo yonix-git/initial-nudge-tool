@@ -18,7 +18,7 @@ const Events = lazy(() => import("./pages/Events"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Auth = lazy(() => import("./pages/Auth"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
-const Install = lazy(() => import("./pages/Install"));
+
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Configure QueryClient with optimized settings
@@ -63,7 +63,7 @@ const App = () => (
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route path="/install" element={<Install />} />
+                
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

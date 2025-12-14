@@ -1,4 +1,4 @@
-import { Car, Search, Bell, Menu, Users, Wrench, Calendar, Download, X } from "lucide-react";
+import { Car, Search, Bell, Menu, Users, Wrench, Calendar, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link, useNavigate, useLocation } from "react-router-dom";
@@ -183,7 +183,7 @@ const Header = () => {
           <div className="relative flex-1" ref={searchRef}>
             <Search className={`absolute ${dir === 'rtl' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground`} />
             <Input 
-              placeholder="חפש משתמשים..."
+              placeholder={t("header.searchUsers")}
               className={`${dir === 'rtl' ? 'pr-10' : 'pl-10'} bg-muted/50`}
               value={searchQuery}
               onChange={(e) => {
@@ -273,14 +273,6 @@ const Header = () => {
                   <Calendar className="h-5 w-5" />
                   <span className="font-medium">{t("header.events")}</span>
                 </Link>
-                <Link 
-                  to="/install" 
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <Download className="h-5 w-5" />
-                  <span className="font-medium">התקן אפליקציה</span>
-                </Link>
               </div>
             </SheetContent>
           </Sheet>
@@ -318,7 +310,7 @@ const Header = () => {
                   <div className="relative flex-1">
                     <Search className={`absolute ${dir === 'rtl' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground`} />
                     <Input 
-                      placeholder="חפש משתמשים..."
+                      placeholder={t("header.searchUsers")}
                       className={`${dir === 'rtl' ? 'pr-10' : 'pl-10'} bg-muted/50 w-48 sm:w-64`}
                       value={searchQuery}
                       onChange={(e) => {
@@ -383,14 +375,6 @@ const Header = () => {
             </>
           )}
           
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={() => navigate("/install")}
-            className="hidden sm:flex"
-          >
-            <Download className="h-5 w-5" />
-          </Button>
           
           {isHomePage && (
             <Button 

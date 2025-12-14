@@ -64,8 +64,8 @@ const Services = () => {
 
   const getTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
-      'garage': 'יש לי מקום',
-      'independent_professional': 'אני נייד'
+      'garage': t("services.hasLocation"),
+      'independent_professional': t("services.mobile")
     };
     return labels[type] || type;
   };
@@ -141,26 +141,26 @@ const Services = () => {
       <main className="container max-w-6xl py-6 px-4">
         <div className="space-y-6">
           <div>
-            <h1 className="text-3xl font-bold mb-2">שירותי רכב</h1>
-            <p className="text-muted-foreground">מצא מוסכים, פנצריות ותחנות דלק באזורך</p>
+            <h1 className="text-3xl font-bold mb-2">{t("services.title")}</h1>
+            <p className="text-muted-foreground">{t("services.subtitle")}</p>
           </div>
 
           {/* Search Bar */}
           <div className="flex gap-3">
             <div className="relative flex-1">
-              <Search className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Search className={`absolute ${dir === 'rtl' ? 'right-3' : 'left-3'} top-3 h-4 w-4 text-muted-foreground`} />
               <Input 
-                placeholder="חפש לפי שם עסק או סוג שירות..." 
-                className="pr-10"
+                placeholder={t("services.searchService")}
+                className={dir === 'rtl' ? 'pr-10' : 'pl-10'}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
             <div className="relative w-64">
-              <MapPin className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
+              <MapPin className={`absolute ${dir === 'rtl' ? 'right-3' : 'left-3'} top-3 h-4 w-4 text-muted-foreground`} />
               <Input 
-                placeholder="מיקום..." 
-                className="pr-10"
+                placeholder={t("services.location")}
+                className={dir === 'rtl' ? 'pr-10' : 'pl-10'}
                 value={locationQuery}
                 onChange={(e) => setLocationQuery(e.target.value)}
               />
@@ -170,9 +170,9 @@ const Services = () => {
           {/* Service Tabs */}
           <Tabs value={filterType} onValueChange={setFilterType} className="w-full">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="all">הכל</TabsTrigger>
-              <TabsTrigger value="garage">מוסכים</TabsTrigger>
-              <TabsTrigger value="independent_professional">בעלי מקצוע</TabsTrigger>
+              <TabsTrigger value="all">{t("services.all")}</TabsTrigger>
+              <TabsTrigger value="garage">{t("services.garages")}</TabsTrigger>
+              <TabsTrigger value="independent_professional">{t("services.professionals")}</TabsTrigger>
             </TabsList>
 
             <TabsContent value={filterType} className="mt-6">
@@ -193,7 +193,7 @@ const Services = () => {
                   ))
                 ) : filteredServices.length === 0 ? (
                   <div className="col-span-2 text-center py-8 text-muted-foreground">
-                    {searchQuery || locationQuery ? "לא נמצאו תוצאות מתאימות לחיפוש" : "לא נמצאו שירותים"}
+                    {searchQuery || locationQuery ? t("services.noResults") : t("services.noServices")}
                   </div>
                 ) : (
                   filteredServices.map((service) => (
@@ -241,7 +241,7 @@ const Services = () => {
                             className="flex-1"
                             onClick={() => navigate(`/profile?id=${service.id}`)}
                           >
-                            פרטים נוספים
+                            {t("services.moreDetails")}
                           </Button>
                         </div>
                       </CardContent>
