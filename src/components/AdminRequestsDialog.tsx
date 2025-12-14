@@ -192,7 +192,7 @@ export const AdminRequestsDialog = () => {
       if (isOpen) fetchRequests();
     }}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2 relative">
+        <Button variant="outline" size="sm" className="gap-2 relative overflow-visible">
           <Shield className="h-4 w-4" />
           בקשות שדרוג
           {pendingCount > 0 && (
