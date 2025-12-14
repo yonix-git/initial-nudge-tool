@@ -1,4 +1,4 @@
-import { useState, memo, useMemo, useCallback } from "react";
+import { useState, memo, useMemo, useCallback, useRef, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -18,6 +18,8 @@ const MediaCarousel = memo(({
   onClick
 }: MediaCarouselProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const { images, videos, items, totalItems, hasImages } = useMemo(() => {
     const imgs = imageUrls.filter(Boolean);
@@ -31,6 +33,36 @@ const MediaCarousel = memo(({
       totalItems: hasImgs ? imgs.length : vids.length
     };
   }, [imageUrls, videoUrls]);
+
+  // Pause video when out of viewport
+  useEffect(() => {
+    if (hasImages || !videoRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (videoRef.current) {
+            if (entry.isIntersecting) {
+              // Optionally auto-play when visible
+              // videoRef.current.play().catch(() => {});
+            } else {
+              // Pause when out of view
+              videoRef.current.pause();
+            }
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [hasImages, currentIndex]);
 
   const handlePrev = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -51,6 +83,7 @@ const MediaCarousel = memo(({
 
   return (
     <div 
+      ref={containerRef}
       className={`relative ${className}`}
       onDoubleClick={onDoubleClick}
       onClick={onClick}
@@ -65,6 +98,7 @@ const MediaCarousel = memo(({
         />
       ) : (
         <video 
+          ref={videoRef}
           src={items[currentIndex]} 
           controls
           loop
