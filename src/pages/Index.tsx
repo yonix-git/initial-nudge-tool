@@ -77,7 +77,7 @@ const Index = () => {
     return (
       <div className="min-h-screen bg-background" dir={dir}>
         <Header />
-        <main className="container max-w-2xl py-6 px-4 relative z-10">
+        <main className="container max-w-2xl py-4 px-3 relative z-10">
           <div className="bg-card rounded-xl p-4 mb-3">
             <div className="flex gap-3 mb-3">
               <Skeleton className="h-10 w-10 rounded-full" />
@@ -101,7 +101,7 @@ const Index = () => {
     <div className="min-h-screen bg-background" dir={dir}>
       <Header />
       
-      <main className="container max-w-2xl py-6 px-4 relative z-10">
+      <main className="container max-w-2xl py-4 px-3 relative z-10">
         <div>
           {loading ? (
             Array.from({ length: 3 }).map((_, i) => (
