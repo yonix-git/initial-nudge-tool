@@ -68,11 +68,8 @@ export const AdminRequestsDialog = () => {
       .order("created_at", { ascending: true });
 
     if (error) {
-      toast({
-        title: "שגיאה",
-        description: "לא ניתן לטעון את הבקשות",
-        variant: "destructive",
-      });
+      console.error("Error fetching requests:", error);
+      setRequests([]);
       setLoading(false);
       return;
     }
@@ -206,7 +203,7 @@ export const AdminRequestsDialog = () => {
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
+        <DialogHeader className="pr-8">
           <DialogTitle>בקשות לשדרוג חשבון עסקי</DialogTitle>
         </DialogHeader>
 
