@@ -19,8 +19,14 @@ const MediaCarousel = memo(({
 }: MediaCarouselProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [manuallyPaused, setManuallyPaused] = useState(false);
+  const manuallyPausedRef = useRef(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    manuallyPausedRef.current = manuallyPaused;
+  }, [manuallyPaused]);
 
   const { images, videos, items, totalItems, hasImages } = useMemo(() => {
     const imgs = imageUrls.filter(Boolean);
@@ -37,29 +43,20 @@ const MediaCarousel = memo(({
 
   // Auto-play video when in viewport, pause when out
   useEffect(() => {
-    console.log('[MediaCarousel] useEffect running, hasImages:', hasImages);
     if (hasImages) return;
 
     const container = containerRef.current;
-    console.log('[MediaCarousel] container:', container);
     if (!container) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           const video = videoRef.current;
-          console.log('[MediaCarousel] Intersection callback, isIntersecting:', entry.isIntersecting, 'video:', video, 'manuallyPaused:', manuallyPaused);
           if (!video) return;
           
-          if (entry.isIntersecting && !manuallyPaused) {
-            console.log('[MediaCarousel] Attempting to play video');
-            video.play().then(() => {
-              console.log('[MediaCarousel] Video play succeeded');
-            }).catch((err) => {
-              console.log('[MediaCarousel] Video play failed:', err);
-            });
+          if (entry.isIntersecting && !manuallyPausedRef.current) {
+            video.play().catch(() => {});
           } else if (!entry.isIntersecting) {
-            console.log('[MediaCarousel] Pausing video');
             video.pause();
           }
         });
@@ -68,12 +65,11 @@ const MediaCarousel = memo(({
     );
 
     observer.observe(container);
-    console.log('[MediaCarousel] Observer attached to container');
 
     return () => {
       observer.disconnect();
     };
-  }, [hasImages, manuallyPaused]);
+  }, [hasImages]);
 
   const handlePrev = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
