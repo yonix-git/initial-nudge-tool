@@ -13,6 +13,7 @@ import AddProductDialog from "@/components/AddProductDialog";
 import ProductCard from "@/components/ProductCard";
 import AddReviewDialog from "@/components/AddReviewDialog";
 import ReviewCard from "@/components/ReviewCard";
+import { AdminRequestsDialog } from "@/components/AdminRequestsDialog";
 import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -261,7 +262,8 @@ const Profile = () => {
                       {profile?.username && <p className="text-sm text-muted-foreground truncate">@{profile.username}</p>}
                     </div>
                     {isOwnProfile && (
-                      <div className="flex gap-2 flex-shrink-0">
+                      <div className="flex gap-2 flex-shrink-0 flex-wrap">
+                        <AdminRequestsDialog />
                         <EditProfileDialog 
                           currentName={profile?.full_name || profile?.username || ""}
                           currentBio={profile?.bio || ""}
