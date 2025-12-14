@@ -57,25 +57,13 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Processing business upgrade request for user:", user.id);
 
     // Check if user already has a pending request
+    let requestId: string = "";
+    
     const { data: existingRequest } = await supabase
       .from("business_upgrade_requests")
       .select("*")
       .eq("user_id", user.id)
-      .eq("status", "pending")
       .single();
-
-    if (existingRequest) {
-      return new Response(
-        JSON.stringify({ 
-          error: "יש כבר בקשה ממתינה לאישור",
-          existingRequest: true
-        }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        }
-      );
-    }
 
     // Get user profile info
     const { data: profile } = await supabase
@@ -84,26 +72,58 @@ const handler = async (req: Request): Promise<Response> => {
       .eq("id", user.id)
       .single();
 
-    // Create upgrade request
-    const { data: request, error: requestError } = await supabase
-      .from("business_upgrade_requests")
-      .insert({
-        user_id: user.id,
-        status: "pending",
-      })
-      .select()
-      .single();
+    if (existingRequest) {
+      if (existingRequest.status === "pending") {
+        return new Response(
+          JSON.stringify({ 
+            error: "יש כבר בקשה ממתינה לאישור",
+            existingRequest: true
+          }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          }
+        );
+      }
+      
+      // If there's a rejected request, update it to pending instead of creating new
+      if (existingRequest.status === "rejected") {
+        const { error: updateError } = await supabase
+          .from("business_upgrade_requests")
+          .update({ status: "pending", updated_at: new Date().toISOString() })
+          .eq("id", existingRequest.id);
 
-    if (requestError) {
-      console.error("Error creating request:", requestError);
-      throw requestError;
+        if (updateError) {
+          console.error("Error updating request:", updateError);
+          throw updateError;
+        }
+        
+        console.log("Updated existing rejected request to pending:", existingRequest.id);
+        requestId = existingRequest.id;
+      }
+    } else {
+      // Create new upgrade request only if no existing one
+      const { data: request, error: requestError } = await supabase
+        .from("business_upgrade_requests")
+        .insert({
+          user_id: user.id,
+          status: "pending",
+        })
+        .select()
+        .single();
+
+      if (requestError) {
+        console.error("Error creating request:", requestError);
+        throw requestError;
+      }
+
+      console.log("Created upgrade request:", request.id);
+      requestId = request.id;
     }
-
-    console.log("Created upgrade request:", request.id);
 
     // Generate secure approval token (expires in 7 days)
     const expiresAt = Date.now() + (7 * 24 * 60 * 60 * 1000);
-    const approvalToken = await generateApprovalToken(request.id, expiresAt);
+    const approvalToken = await generateApprovalToken(requestId, expiresAt);
     
     // Generate approval URL with secure token (no service role key exposed)
     const approvalUrl = `${supabaseUrl}/functions/v1/approve-business-upgrade?token=${approvalToken}`;
@@ -161,7 +181,7 @@ const handler = async (req: Request): Promise<Response> => {
       JSON.stringify({ 
         success: true,
         message: "הבקשה נשלחה בהצלחה, המתן לאישור",
-        requestId: request.id
+        requestId: requestId
       }),
       {
         status: 200,
