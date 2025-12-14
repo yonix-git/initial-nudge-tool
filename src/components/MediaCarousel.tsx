@@ -18,6 +18,7 @@ const MediaCarousel = memo(({
   onClick
 }: MediaCarouselProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [manuallyPaused, setManuallyPaused] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -42,11 +43,9 @@ const MediaCarousel = memo(({
       (entries) => {
         entries.forEach((entry) => {
           if (videoRef.current) {
-            if (entry.isIntersecting) {
-              // Optionally auto-play when visible
-              // videoRef.current.play().catch(() => {});
+            if (entry.isIntersecting && !manuallyPaused) {
+              videoRef.current.play().catch(() => {});
             } else {
-              // Pause when out of view
               videoRef.current.pause();
             }
           }
@@ -62,7 +61,7 @@ const MediaCarousel = memo(({
     return () => {
       observer.disconnect();
     };
-  }, [hasImages, currentIndex]);
+  }, [hasImages, currentIndex, manuallyPaused]);
 
   const handlePrev = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -106,6 +105,12 @@ const MediaCarousel = memo(({
           playsInline
           preload="metadata"
           className="w-full rounded-lg max-h-96"
+          onPause={() => {
+            if (videoRef.current && !videoRef.current.ended) {
+              setManuallyPaused(true);
+            }
+          }}
+          onPlay={() => setManuallyPaused(false)}
         />
       )}
 
