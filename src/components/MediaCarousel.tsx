@@ -37,20 +37,29 @@ const MediaCarousel = memo(({
 
   // Auto-play video when in viewport, pause when out
   useEffect(() => {
+    console.log('[MediaCarousel] useEffect running, hasImages:', hasImages);
     if (hasImages) return;
 
     const container = containerRef.current;
+    console.log('[MediaCarousel] container:', container);
     if (!container) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           const video = videoRef.current;
+          console.log('[MediaCarousel] Intersection callback, isIntersecting:', entry.isIntersecting, 'video:', video, 'manuallyPaused:', manuallyPaused);
           if (!video) return;
           
           if (entry.isIntersecting && !manuallyPaused) {
-            video.play().catch(() => {});
+            console.log('[MediaCarousel] Attempting to play video');
+            video.play().then(() => {
+              console.log('[MediaCarousel] Video play succeeded');
+            }).catch((err) => {
+              console.log('[MediaCarousel] Video play failed:', err);
+            });
           } else if (!entry.isIntersecting) {
+            console.log('[MediaCarousel] Pausing video');
             video.pause();
           }
         });
@@ -59,6 +68,7 @@ const MediaCarousel = memo(({
     );
 
     observer.observe(container);
+    console.log('[MediaCarousel] Observer attached to container');
 
     return () => {
       observer.disconnect();
