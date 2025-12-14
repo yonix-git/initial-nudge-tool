@@ -375,7 +375,7 @@ const PostItem = ({
   }), [createdAt]);
 
   return (
-    <div className="bg-transparent p-4 pb-6 mb-4 border-b border-border/30">
+    <div className="bg-transparent p-3 pb-4 mb-2 border-b border-border/30">
       <div className="flex flex-row items-center justify-between pb-3">
         <div className="flex items-center gap-3">
           <Link to={`/profile?id=${userId}`}>
