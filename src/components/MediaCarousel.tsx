@@ -18,15 +18,10 @@ const MediaCarousel = memo(({
   onClick
 }: MediaCarouselProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [manuallyPaused, setManuallyPaused] = useState(false);
   const manuallyPausedRef = useRef(false);
+  const isProgrammaticPauseRef = useRef(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-
-  // Keep ref in sync with state
-  useEffect(() => {
-    manuallyPausedRef.current = manuallyPaused;
-  }, [manuallyPaused]);
 
   const { images, videos, items, totalItems, hasImages } = useMemo(() => {
     const imgs = imageUrls.filter(Boolean);
@@ -57,6 +52,7 @@ const MediaCarousel = memo(({
           if (entry.isIntersecting && !manuallyPausedRef.current) {
             video.play().catch(() => {});
           } else if (!entry.isIntersecting) {
+            isProgrammaticPauseRef.current = true;
             video.pause();
           }
         });
@@ -114,11 +110,14 @@ const MediaCarousel = memo(({
           preload="metadata"
           className="w-full rounded-lg max-h-96"
           onPause={() => {
-            if (videoRef.current && !videoRef.current.ended) {
-              setManuallyPaused(true);
+            if (videoRef.current && !videoRef.current.ended && !isProgrammaticPauseRef.current) {
+              manuallyPausedRef.current = true;
             }
+            isProgrammaticPauseRef.current = false;
           }}
-          onPlay={() => setManuallyPaused(false)}
+          onPlay={() => {
+            manuallyPausedRef.current = false;
+          }}
         />
       )}
 
