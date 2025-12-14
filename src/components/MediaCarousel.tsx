@@ -35,33 +35,35 @@ const MediaCarousel = memo(({
     };
   }, [imageUrls, videoUrls]);
 
-  // Pause video when out of viewport
+  // Auto-play video when in viewport, pause when out
   useEffect(() => {
-    if (hasImages || !videoRef.current) return;
+    if (hasImages) return;
+
+    const container = containerRef.current;
+    if (!container) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (videoRef.current) {
-            if (entry.isIntersecting && !manuallyPaused) {
-              videoRef.current.play().catch(() => {});
-            } else {
-              videoRef.current.pause();
-            }
+          const video = videoRef.current;
+          if (!video) return;
+          
+          if (entry.isIntersecting && !manuallyPaused) {
+            video.play().catch(() => {});
+          } else if (!entry.isIntersecting) {
+            video.pause();
           }
         });
       },
-      { threshold: 0.1 }
+      { threshold: 0.3 }
     );
 
-    if (containerRef.current) {
-      observer.observe(containerRef.current);
-    }
+    observer.observe(container);
 
     return () => {
       observer.disconnect();
     };
-  }, [hasImages, currentIndex, manuallyPaused]);
+  }, [hasImages, manuallyPaused]);
 
   const handlePrev = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
