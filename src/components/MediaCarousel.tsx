@@ -101,6 +101,7 @@ const MediaCarousel = memo(({
           src={items[currentIndex]} 
           controls
           loop
+          muted
           playsInline
           preload="metadata"
           className="w-full rounded-lg max-h-96"
