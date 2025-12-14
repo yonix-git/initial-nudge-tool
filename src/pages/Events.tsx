@@ -185,24 +185,24 @@ const Events = () => {
       <main className="container max-w-6xl py-6 px-4">
         <div className="space-y-6">
           <div>
-            <h1 className="text-3xl font-bold mb-2">אירועים מוטוריים</h1>
-            <p className="text-muted-foreground">גלה אירועים מעניינים, מרוצים, מפגשים וסדנאות בתחום הרכב והאופנועים</p>
+            <h1 className="text-3xl font-bold mb-2">{t("events.title")}</h1>
+            <p className="text-muted-foreground">{t("events.subtitle")}</p>
           </div>
 
           {/* Search Bar */}
           <div className="flex gap-3">
             <div className="relative flex-1">
-              <Search className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Search className={`absolute ${dir === 'rtl' ? 'right-3' : 'left-3'} top-3 h-4 w-4 text-muted-foreground`} />
               <Input 
-                placeholder="חפש אירועים..." 
-                className="pr-10"
+                placeholder={t("events.search")}
+                className={dir === 'rtl' ? 'pr-10' : 'pl-10'}
               />
             </div>
             <div className="relative w-64">
-              <MapPin className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
+              <MapPin className={`absolute ${dir === 'rtl' ? 'right-3' : 'left-3'} top-3 h-4 w-4 text-muted-foreground`} />
               <Input 
-                placeholder="מיקום..." 
-                className="pr-10"
+                placeholder={t("services.location")}
+                className={dir === 'rtl' ? 'pr-10' : 'pl-10'}
               />
             </div>
           </div>
@@ -225,7 +225,7 @@ const Events = () => {
               ))
             ) : events.length === 0 ? (
               <div className="col-span-2 text-center py-8 text-muted-foreground">
-                לא נמצאו אירועים
+                {t("events.noEvents")}
               </div>
             ) : (
               events.map((event) => (
@@ -253,15 +253,15 @@ const Events = () => {
                      <div className="flex items-center gap-2 text-sm">
                       <Users className="h-4 w-4 text-muted-foreground" />
                       <span>
-                        {event.participants} משתתפים
-                        {event.max_participants && ` / ${event.max_participants} מקסימום`}
+                        {event.participants} {t("events.participants")}
+                        {event.max_participants && ` / ${event.max_participants} ${t("events.maximum")}`}
                       </span>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2 mb-4 text-sm text-muted-foreground">
                     <Heart className="h-4 w-4" />
-                    <span>{event.interested} מעוניינים</span>
+                    <span>{event.interested} {t("events.interested")}</span>
                   </div>
 
                   <div className="flex gap-2">
@@ -270,7 +270,7 @@ const Events = () => {
                       onClick={() => handleJoinEvent(event.id)}
                       disabled={event.participants >= event.max_participants}
                     >
-                      {event.participants >= event.max_participants ? "מלא" : "הצטרף לאירוע"}
+                      {event.participants >= event.max_participants ? t("events.full") : t("events.joinEvent")}
                     </Button>
                     <Button 
                       variant={interestedEvents.has(event.id) ? "default" : "outline"}
