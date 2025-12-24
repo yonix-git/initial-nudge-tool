@@ -1,10 +1,10 @@
 import Header from "@/components/Header";
 import PostItem from "@/components/PostItem";
 import { PullToRefresh } from "@/components/PullToRefresh";
+import { PostSkeletonList } from "@/components/PostSkeleton";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
@@ -88,16 +88,7 @@ const Index = () => {
       <div className="min-h-screen bg-background" dir={dir}>
         <Header />
         <main className="container max-w-2xl py-4 px-3 relative z-10">
-          <div className="bg-card rounded-xl p-4 mb-3">
-            <div className="flex gap-3 mb-3">
-              <Skeleton className="h-10 w-10 rounded-full" />
-              <div className="flex-1 space-y-2">
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-3 w-24" />
-              </div>
-            </div>
-            <Skeleton className="h-20 w-full mb-3" />
-          </div>
+          <PostSkeletonList count={3} />
         </main>
       </div>
     );
@@ -115,22 +106,7 @@ const Index = () => {
         <main className="container max-w-2xl py-4 px-3 relative z-10">
           <div>
             {loading ? (
-              Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="bg-card rounded-xl p-4 mb-3">
-                  <div className="flex gap-3 mb-3">
-                    <Skeleton className="h-10 w-10 rounded-full" />
-                    <div className="flex-1 space-y-2">
-                      <Skeleton className="h-4 w-32" />
-                      <Skeleton className="h-3 w-24" />
-                    </div>
-                  </div>
-                  <Skeleton className="h-20 w-full mb-3" />
-                  <div className="flex gap-4">
-                    <Skeleton className="h-8 w-16" />
-                    <Skeleton className="h-8 w-16" />
-                  </div>
-                </div>
-              ))
+              <PostSkeletonList count={4} />
             ) : posts.length === 0 ? (
               <div className="text-center text-muted-foreground py-12">
                 אין פוסטים עדיין. היה הראשון לפרסם!
