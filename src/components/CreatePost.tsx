@@ -256,7 +256,7 @@ const CreatePost = ({ onPostCreated }: { onPostCreated?: () => void }) => {
 
   return (
     <>
-      <Card className="glass-effect border-border/40 shadow-lg hover:shadow-xl transition-all duration-300">
+      <Card className="glass-effect border-border/40 shadow-lg transition-all duration-300">
         <CardContent className="pt-6">
           <div className="flex gap-3">
             <Avatar>

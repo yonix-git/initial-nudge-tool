@@ -521,9 +521,9 @@ const PostItem = ({
             onClick={handleLike}
           >
             <Heart 
-              className={`h-5 w-5 transition-all duration-300 group-hover:scale-110 ${
-                isLiked ? "fill-primary text-primary animate-like-pop" : "group-hover:text-primary"
-              }`} 
+              className={`h-5 w-5 transition-all duration-300 ${
+                isLiked ? "fill-primary text-primary animate-like-pop" : ""
+              }`}
             />
             <span className="text-sm font-medium">{likeCount}</span>
           </Button>
@@ -533,7 +533,7 @@ const PostItem = ({
             className={`gap-2 group interactive-scale ${commentsCount > 0 || showComments ? 'text-primary hover:text-primary' : ''}`}
             onClick={() => setShowComments(!showComments)}
           >
-            <MessageCircle className={`h-5 w-5 transition-all duration-300 group-hover:scale-110 ${showComments ? 'fill-primary text-primary' : 'group-hover:text-primary'}`} />
+            <MessageCircle className={`h-5 w-5 transition-all duration-300 ${showComments ? 'fill-primary text-primary' : ''}`} />
             <span className="text-sm font-medium">
               {commentsCount > 0 ? commentsCount : ''}
             </span>
@@ -545,7 +545,7 @@ const PostItem = ({
           onClick={handleShare}
           className="group interactive-scale"
         >
-          <Share2 className="h-5 w-5 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
+          <Share2 className="h-5 w-5 transition-all duration-300" />
         </Button>
       </div>
       

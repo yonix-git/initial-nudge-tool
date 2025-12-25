@@ -491,7 +491,7 @@ const Profile = () => {
                             <p className="text-xs text-center line-clamp-4">{post.content}</p>
                           </div>
                         )}
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                        <div className="absolute inset-0 bg-black/0 transition-colors flex items-center justify-center opacity-0">
                           <div className="flex gap-4 text-white">
                             <div className="flex items-center gap-1">
                               <Heart className="h-5 w-5 fill-white" />
@@ -550,7 +550,7 @@ const Profile = () => {
                             <p className="text-xs text-center line-clamp-4">{post.content}</p>
                           </div>
                         )}
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                        <div className="absolute inset-0 bg-black/0 transition-colors flex items-center justify-center opacity-0">
                           <div className="flex gap-4 text-white">
                             <div className="flex items-center gap-1">
                               <Heart className="h-5 w-5 fill-white" />
