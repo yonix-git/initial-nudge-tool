@@ -33,13 +33,13 @@ const ProductCard = ({ product, onDelete, showDelete }: ProductCardProps) => {
   const hasMultipleImages = images.length > 1;
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow relative">
+    <Card className="overflow-hidden transition-shadow relative">
       {hasImages && (
         <div className="aspect-square overflow-hidden relative">
           <img
             src={images[currentImageIndex]}
             alt={product.name}
-            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-cover transition-transform duration-300"
           />
           
           {/* Navigation arrows */}

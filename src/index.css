@@ -221,7 +221,7 @@ All colors MUST be HSL.
   }
   
   .card-hover {
-    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 hover:border-primary/20;
+    @apply transition-all duration-300;
   }
   
   .interactive-scale {

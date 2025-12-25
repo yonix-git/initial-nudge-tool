@@ -9,12 +9,12 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-gradient-to-r from-primary to-primary/90 text-primary-foreground hover:from-primary/95 hover:to-primary/85 shadow-lg hover:shadow-xl hover:scale-105 before:absolute before:inset-0 before:bg-gradient-to-r before:from-white/20 before:to-transparent before:opacity-0 hover:before:opacity-100 before:transition-opacity",
-        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-lg hover:shadow-xl",
-        outline: "border-2 border-primary/30 bg-background/50 backdrop-blur-sm hover:bg-primary/10 hover:border-primary/50 hover:text-primary shadow-md hover:shadow-lg",
-        secondary: "bg-secondary/80 text-secondary-foreground hover:bg-secondary shadow-md hover:shadow-lg backdrop-blur-sm",
-        ghost: "hover:bg-primary/10 hover:text-primary transition-colors",
-        link: "text-primary underline-offset-4 hover:underline",
+        default: "bg-gradient-to-r from-primary to-primary/90 text-primary-foreground shadow-lg before:absolute before:inset-0 before:bg-gradient-to-r before:from-white/20 before:to-transparent before:opacity-0 before:transition-opacity",
+        destructive: "bg-destructive text-destructive-foreground shadow-lg",
+        outline: "border-2 border-primary/30 bg-background/50 backdrop-blur-sm shadow-md",
+        secondary: "bg-secondary/80 text-secondary-foreground shadow-md backdrop-blur-sm",
+        ghost: "transition-colors",
+        link: "text-primary underline-offset-4",
       },
       size: {
         default: "h-11 px-6 py-2.5",

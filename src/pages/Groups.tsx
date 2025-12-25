@@ -477,7 +477,7 @@ const Groups = () => {
               filteredGroups.map((group, index) => (
               <Card 
                 key={group.id} 
-                className="hover:shadow-md transition-shadow animate-fade-in-up cursor-pointer"
+                className="transition-shadow animate-fade-in-up cursor-pointer"
                 style={{ animationDelay: `${index * 0.1}s`, animationFillMode: 'backwards' }}
                 onClick={() => {
                   // Check if user is owner or member
