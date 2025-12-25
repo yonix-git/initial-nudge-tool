@@ -517,12 +517,12 @@ const PostItem = ({
           <Button 
             variant="ghost" 
             size="sm" 
-            className={`gap-2 group interactive-scale ${isLiked ? 'text-primary hover:text-primary' : ''}`}
+            className={`gap-2 group interactive-scale rounded-full px-3 transition-all duration-300 hover:bg-primary/10 ${isLiked ? 'text-primary hover:text-primary' : 'hover:text-primary'}`}
             onClick={handleLike}
           >
             <Heart 
-              className={`h-5 w-5 transition-all duration-300 ${
-                isLiked ? "fill-primary text-primary animate-like-pop" : ""
+              className={`h-5 w-5 transition-all duration-300 group-hover:scale-110 ${
+                isLiked ? "fill-primary text-primary animate-like-pop" : "group-hover:text-primary"
               }`}
             />
             <span className="text-sm font-medium">{likeCount}</span>
@@ -530,10 +530,10 @@ const PostItem = ({
           <Button 
             variant="ghost" 
             size="sm" 
-            className={`gap-2 group interactive-scale ${commentsCount > 0 || showComments ? 'text-primary hover:text-primary' : ''}`}
+            className={`gap-2 group interactive-scale rounded-full px-3 transition-all duration-300 hover:bg-blue-500/10 ${commentsCount > 0 || showComments ? 'text-blue-500 hover:text-blue-500' : 'hover:text-blue-500'}`}
             onClick={() => setShowComments(!showComments)}
           >
-            <MessageCircle className={`h-5 w-5 transition-all duration-300 ${showComments ? 'fill-primary text-primary' : ''}`} />
+            <MessageCircle className={`h-5 w-5 transition-all duration-300 group-hover:scale-110 ${showComments ? 'fill-blue-500 text-blue-500' : 'group-hover:text-blue-500'}`} />
             <span className="text-sm font-medium">
               {commentsCount > 0 ? commentsCount : ''}
             </span>
@@ -543,9 +543,9 @@ const PostItem = ({
           variant="ghost" 
           size="sm" 
           onClick={handleShare}
-          className="group interactive-scale"
+          className="group interactive-scale rounded-full px-3 transition-all duration-300 hover:bg-green-500/10 hover:text-green-500"
         >
-          <Share2 className="h-5 w-5 transition-all duration-300" />
+          <Share2 className="h-5 w-5 transition-all duration-300 group-hover:scale-110 group-hover:text-green-500" />
         </Button>
       </div>
       
