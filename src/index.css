@@ -118,10 +118,14 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-heebo;
     position: relative;
     overflow-x: hidden;
     padding-top: env(safe-area-inset-top);
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-rubik font-semibold;
   }
   
   body::before {
@@ -189,37 +193,49 @@ All colors MUST be HSL.
   
   /* Custom scrollbar */
   ::-webkit-scrollbar {
-    width: 12px;
+    width: 8px;
   }
   
   ::-webkit-scrollbar-track {
-    background: hsl(var(--background));
-    border-radius: 10px;
+    background: transparent;
   }
   
   ::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, hsl(var(--primary) / 0.4), hsl(var(--primary) / 0.6));
+    background: hsl(var(--primary) / 0.3);
     border-radius: 10px;
-    border: 2px solid hsl(var(--background));
   }
   
   ::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(180deg, hsl(var(--primary) / 0.6), hsl(var(--primary) / 0.8));
+    background: hsl(var(--primary) / 0.5);
+  }
+}
+
+/* Custom utility classes */
+@layer utilities {
+  .glass-effect {
+    @apply bg-background/60 backdrop-blur-xl border border-border/50;
   }
   
-  /* Fade in animation for page load */
-  @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(30px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent;
   }
   
-  .animate-fade-in-up {
-    animation: fadeInUp 0.6s ease-out forwards;
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 hover:border-primary/20;
+  }
+  
+  .interactive-scale {
+    @apply transition-transform duration-200 active:scale-95;
+  }
+  
+  .shimmer-bg {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 0%,
+      hsl(var(--muted-foreground) / 0.1) 50%,
+      hsl(var(--muted)) 100%
+    );
+    background-size: 200% 100%;
+    @apply animate-shimmer;
   }
 }

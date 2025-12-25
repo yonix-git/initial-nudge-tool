@@ -256,7 +256,7 @@ const CreatePost = ({ onPostCreated }: { onPostCreated?: () => void }) => {
 
   return (
     <>
-      <Card>
+      <Card className="glass-effect border-border/40 shadow-lg hover:shadow-xl transition-all duration-300">
         <CardContent className="pt-6">
           <div className="flex gap-3">
             <Avatar>
@@ -269,8 +269,8 @@ const CreatePost = ({ onPostCreated }: { onPostCreated?: () => void }) => {
             </Avatar>
             <div className="flex-1 relative z-10">
               <Textarea 
-                placeholder={profile?.account_type === 'business' ? "שתף עדכון על העסק שלך" : "מה חדש אצלך?"}
-                className="min-h-[80px] resize-none mb-1 placeholder:text-muted-foreground text-foreground bg-background"
+                placeholder={profile?.account_type === 'business' ? "שתף עדכון על העסק שלך..." : "מה חדש אצלך? שתף את הקהילה..."}
+                className="min-h-[100px] resize-none mb-1 placeholder:text-muted-foreground text-foreground bg-background/50 backdrop-blur-sm border-border/50 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all duration-300 rounded-xl"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 disabled={isPosting}
