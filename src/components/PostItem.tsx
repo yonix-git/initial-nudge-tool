@@ -375,7 +375,7 @@ const PostItem = ({
   }), [createdAt]);
 
   return (
-    <div className="bg-transparent p-3 pb-2 mb-1 border-b border-border/30">
+    <div className="bg-card/50 backdrop-blur-sm p-4 pb-3 mb-2 border border-border/40 rounded-xl card-hover animate-fade-in-up">
       <div className="flex flex-row items-center justify-between pb-3">
         <div className="flex items-center gap-3">
           <Link to={`/profile?id=${userId}`}>
@@ -517,30 +517,35 @@ const PostItem = ({
           <Button 
             variant="ghost" 
             size="sm" 
-            className="gap-2"
+            className={`gap-2 group interactive-scale ${isLiked ? 'text-primary hover:text-primary' : ''}`}
             onClick={handleLike}
           >
             <Heart 
-              className={`h-4 w-4 transition-colors ${
-                isLiked ? "fill-primary text-primary" : ""
+              className={`h-5 w-5 transition-all duration-300 group-hover:scale-110 ${
+                isLiked ? "fill-primary text-primary animate-like-pop" : "group-hover:text-primary"
               }`} 
             />
-            <span className="text-xs">{likeCount}</span>
+            <span className="text-sm font-medium">{likeCount}</span>
           </Button>
           <Button 
             variant="ghost" 
             size="sm" 
-            className={`gap-2 ${commentsCount > 0 ? 'text-primary hover:text-primary' : ''}`}
+            className={`gap-2 group interactive-scale ${commentsCount > 0 || showComments ? 'text-primary hover:text-primary' : ''}`}
             onClick={() => setShowComments(!showComments)}
           >
-            <MessageCircle className={`h-4 w-4 ${showComments ? 'fill-primary' : ''}`} />
-            <span className="text-xs font-medium">
-              {commentsCount > 0 ? `${commentsCount} תגובות` : 'הגב'}
+            <MessageCircle className={`h-5 w-5 transition-all duration-300 group-hover:scale-110 ${showComments ? 'fill-primary text-primary' : 'group-hover:text-primary'}`} />
+            <span className="text-sm font-medium">
+              {commentsCount > 0 ? commentsCount : ''}
             </span>
           </Button>
         </div>
-        <Button variant="ghost" size="sm" onClick={handleShare}>
-          <Share2 className="h-4 w-4" />
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={handleShare}
+          className="group interactive-scale"
+        >
+          <Share2 className="h-5 w-5 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
         </Button>
       </div>
       

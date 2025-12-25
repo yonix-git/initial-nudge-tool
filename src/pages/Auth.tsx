@@ -419,23 +419,32 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="flex justify-center mb-4">
-            <Car className="h-12 w-12 text-primary" />
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Decorative elements */}
+      <div className="absolute top-20 left-10 w-72 h-72 bg-primary/20 rounded-full blur-3xl animate-pulse-soft" />
+      <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent/15 rounded-full blur-3xl animate-pulse-soft" style={{ animationDelay: '1s' }} />
+      
+      <Card className="w-full max-w-md glass-effect border-border/40 shadow-2xl animate-scale-in relative z-10">
+        <CardHeader className="text-center pb-2">
+          <div className="flex justify-center mb-6">
+            <div className="relative">
+              <div className="absolute inset-0 bg-primary/30 rounded-full blur-xl animate-pulse-soft" />
+              <div className="relative bg-gradient-to-br from-primary to-accent p-4 rounded-2xl shadow-lg">
+                <Car className="h-10 w-10 text-primary-foreground" />
+              </div>
+            </div>
           </div>
-          <CardTitle className="text-2xl">ברוכים הבאים</CardTitle>
-          <CardDescription>הצטרפו לקהילת אוהבי הרכב הגדולה בישראל</CardDescription>
+          <CardTitle className="text-3xl font-rubik font-bold gradient-text">ברוכים הבאים</CardTitle>
+          <CardDescription className="text-base mt-2">הצטרפו לקהילת אוהבי הרכב הגדולה בישראל</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            <div className="grid w-full grid-cols-2 gap-2 p-1 bg-muted rounded-md">
+          <div className="space-y-6">
+            <div className="grid w-full grid-cols-2 gap-1 p-1 bg-muted/50 rounded-xl backdrop-blur-sm">
               <Button
                 type="button"
                 variant={activeTab === "signin" ? "default" : "ghost"}
                 onClick={() => setActiveTab("signin")}
-                className="w-full"
+                className={`w-full rounded-lg font-semibold transition-all duration-300 ${activeTab === "signin" ? "shadow-md" : ""}`}
               >
                 התחברות
               </Button>
@@ -443,7 +452,7 @@ const Auth = () => {
                 type="button"
                 variant={activeTab === "signup" ? "default" : "ghost"}
                 onClick={() => setActiveTab("signup")}
-                className="w-full"
+                className={`w-full rounded-lg font-semibold transition-all duration-300 ${activeTab === "signup" ? "shadow-md" : ""}`}
               >
                 הרשמה
               </Button>
@@ -491,7 +500,7 @@ const Auth = () => {
                     </Button>
                   </div>
                 </div>
-                <Button type="submit" className="w-full" disabled={loading}>
+                <Button type="submit" className="w-full h-12 text-base font-semibold shadow-lg hover:shadow-xl" disabled={loading}>
                   {loading ? "מתחבר..." : "התחבר"}
                 </Button>
                 <div className="text-center">
@@ -608,7 +617,7 @@ const Auth = () => {
                   </div>
                   <Button 
                     type="button" 
-                    className="w-full" 
+                    className="w-full h-12 text-base font-semibold shadow-lg hover:shadow-xl" 
                     disabled={loading || !isSignupFormValid()}
                     onClick={() => handleSendVerificationCode()}
                   >
@@ -637,7 +646,7 @@ const Auth = () => {
                       className="text-center text-2xl tracking-widest"
                     />
                   </div>
-                  <Button type="submit" className="w-full" disabled={loading}>
+                  <Button type="submit" className="w-full h-12 text-base font-semibold shadow-lg hover:shadow-xl" disabled={loading}>
                     {loading ? "מאמת..." : "אמת והירשם"}
                   </Button>
                   <Button 
