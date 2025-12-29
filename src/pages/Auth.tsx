@@ -618,19 +618,24 @@ const Auth = () => {
                       <p className="text-xs text-destructive">{fieldErrors.password}</p>
                     )}
                   </div>
-                  <div className="flex items-start gap-2">
+                  <div className="flex items-start gap-3">
                     <Checkbox
                       id="privacy-policy"
                       checked={acceptedPrivacy}
                       onCheckedChange={(checked) => setAcceptedPrivacy(checked === true)}
-                      className="mt-1"
+                      className="mt-0.5"
                     />
-                    <Label htmlFor="privacy-policy" className="text-sm font-normal leading-relaxed cursor-pointer">
+                    <span className="text-sm leading-relaxed">
                       קראתי ואני מסכים/ה ל
-                      <Link to="/privacy-policy" className="text-primary hover:underline mx-1" target="_blank">
+                      <Link 
+                        to="/privacy-policy" 
+                        className="text-primary hover:underline mx-1 font-medium"
+                        target="_blank"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         מדיניות הפרטיות
                       </Link>
-                    </Label>
+                    </span>
                   </div>
                   <Button 
                     type="button" 
