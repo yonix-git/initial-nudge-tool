@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Bell, Lock, Eye, Globe, Trash2, LogOut, Building2, Moon } from "lucide-react";
+import { Bell, Lock, Eye, Globe, Trash2, LogOut, Building2, Moon, FileText } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -533,6 +533,28 @@ const Settings = () => {
                 <Button variant="outline" size="sm" onClick={handleLogout}>
                   <LogOut className={`h-4 w-4 ${dir === 'rtl' ? 'ml-2' : 'mr-2'}`} />
                   {t("settings.logout")}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Legal */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                משפטי
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>מדיניות פרטיות</Label>
+                  <p className="text-sm text-muted-foreground">קרא את מדיניות הפרטיות שלנו</p>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => navigate("/privacy-policy")}>
+                  <FileText className={`h-4 w-4 ${dir === 'rtl' ? 'ml-2' : 'mr-2'}`} />
+                  צפה
                 </Button>
               </div>
             </CardContent>

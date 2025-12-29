@@ -18,6 +18,7 @@ const Events = lazy(() => import("./pages/Events"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Auth = lazy(() => import("./pages/Auth"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 
 const NotFound = lazy(() => import("./pages/NotFound"));
 
@@ -63,6 +64,7 @@ const App = () => (
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
