@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Car, Eye, EyeOff } from "lucide-react";
@@ -26,6 +27,7 @@ const Auth = () => {
   const [verificationCode, setVerificationCode] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [activeTab, setActiveTab] = useState<"signin" | "signup">("signin");
+  const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
 
   // Field-level validation errors
   const [fieldErrors, setFieldErrors] = useState<{
@@ -152,7 +154,8 @@ const Auth = () => {
       /^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{}|;:'",.<>?/`~\\]+$/.test(username.trim()) &&
       /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) &&
       passwordValid &&
-      Object.keys(fieldErrors).length === 0
+      Object.keys(fieldErrors).length === 0 &&
+      acceptedPrivacy
     );
   };
 
@@ -614,6 +617,20 @@ const Auth = () => {
                     {fieldErrors.password && (
                       <p className="text-xs text-destructive">{fieldErrors.password}</p>
                     )}
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Checkbox
+                      id="privacy-policy"
+                      checked={acceptedPrivacy}
+                      onCheckedChange={(checked) => setAcceptedPrivacy(checked === true)}
+                      className="mt-1"
+                    />
+                    <Label htmlFor="privacy-policy" className="text-sm font-normal leading-relaxed cursor-pointer">
+                      קראתי ואני מסכים/ה ל
+                      <Link to="/privacy-policy" className="text-primary hover:underline mx-1" target="_blank">
+                        מדיניות הפרטיות
+                      </Link>
+                    </Label>
                   </div>
                   <Button 
                     type="button" 
