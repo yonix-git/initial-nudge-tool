@@ -115,6 +115,7 @@ export type Database = {
           id: string
           image_url: string | null
           is_read: boolean
+          reply_to_id: string | null
           sender_id: string
           updated_at: string
           video_url: string | null
@@ -126,6 +127,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_read?: boolean
+          reply_to_id?: string | null
           sender_id: string
           updated_at?: string
           video_url?: string | null
@@ -137,6 +139,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_read?: boolean
+          reply_to_id?: string | null
           sender_id?: string
           updated_at?: string
           video_url?: string | null
@@ -147,6 +150,13 @@ export type Database = {
             columns: ["conversation_id"]
             isOneToOne: false
             referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "direct_messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "direct_messages"
             referencedColumns: ["id"]
           },
         ]

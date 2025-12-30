@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { ArrowLeft, ArrowRight, Send, Image as ImageIcon, Video as VideoIcon, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Send, Image as ImageIcon, Video as VideoIcon, X, Reply, CornerDownLeft } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface DirectMessage {
@@ -20,6 +20,7 @@ interface DirectMessage {
   created_at: string;
   sender_id: string;
   is_read: boolean;
+  reply_to_id: string | null;
 }
 
 interface OtherUser {
@@ -47,6 +48,7 @@ const DirectMessage = () => {
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
+  const [replyingTo, setReplyingTo] = useState<DirectMessage | null>(null);
 
   useEffect(() => {
     if (!user || authLoading || !conversationId) return;
@@ -210,6 +212,7 @@ const DirectMessage = () => {
         content: messageText.trim() || null,
         image_url: imageUrl,
         video_url: videoUrl,
+        reply_to_id: replyingTo?.id || null,
       });
 
       if (error) throw error;
@@ -219,6 +222,7 @@ const DirectMessage = () => {
       setVideoFile(null);
       setImagePreview(null);
       setVideoPreview(null);
+      setReplyingTo(null);
     } catch (error) {
       console.error("Error sending message:", error);
       toast.error("שגיאה בשליחת ההודעה");
@@ -359,11 +363,27 @@ const DirectMessage = () => {
               </div>
               {group.messages.map((msg) => {
                 const isOwn = msg.sender_id === user.id;
+                const repliedMessage = msg.reply_to_id 
+                  ? messages.find(m => m.id === msg.reply_to_id) 
+                  : null;
+                
                 return (
                   <div
                     key={msg.id}
-                    className={`flex mb-3 ${isOwn ? "justify-end" : "justify-start"}`}
+                    className={`flex mb-3 group ${isOwn ? "justify-end" : "justify-start"}`}
                   >
+                    {/* Reply button for other's messages */}
+                    {!isOwn && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity self-center ml-1"
+                        onClick={() => setReplyingTo(msg)}
+                      >
+                        <Reply className="h-4 w-4" />
+                      </Button>
+                    )}
+                    
                     <div
                       className={`max-w-[80%] rounded-2xl px-4 py-2 ${
                         isOwn
@@ -371,6 +391,27 @@ const DirectMessage = () => {
                           : "bg-muted rounded-bl-sm"
                       }`}
                     >
+                      {/* Replied message preview */}
+                      {repliedMessage && (
+                        <div 
+                          className={`mb-2 p-2 rounded-lg text-xs border-r-2 ${
+                            isOwn 
+                              ? "bg-primary-foreground/10 border-primary-foreground/50" 
+                              : "bg-background/50 border-primary/50"
+                          }`}
+                        >
+                          <div className="flex items-center gap-1 mb-1">
+                            <CornerDownLeft className="h-3 w-3" />
+                            <span className="font-medium">
+                              {repliedMessage.sender_id === user.id ? "אתה" : otherUser?.full_name || "משתמש"}
+                            </span>
+                          </div>
+                          <p className="truncate opacity-80">
+                            {repliedMessage.content || (repliedMessage.image_url ? "🖼️ תמונה" : "🎥 וידאו")}
+                          </p>
+                        </div>
+                      )}
+                      
                       {msg.image_url && (
                         <img
                           src={msg.image_url}
@@ -392,6 +433,18 @@ const DirectMessage = () => {
                         {formatTime(msg.created_at)}
                       </p>
                     </div>
+                    
+                    {/* Reply button for own messages */}
+                    {isOwn && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity self-center mr-1"
+                        onClick={() => setReplyingTo(msg)}
+                      >
+                        <Reply className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 );
               })}
@@ -403,6 +456,31 @@ const DirectMessage = () => {
 
       {/* Message Input */}
       <div className="sticky bottom-0 bg-background border-t">
+        {/* Reply preview */}
+        {replyingTo && (
+          <div className="px-4 pt-2">
+            <div className="flex items-center gap-2 bg-muted/50 rounded-lg p-2">
+              <CornerDownLeft className="h-4 w-4 text-primary" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-primary">
+                  מגיב ל{replyingTo.sender_id === user.id ? "עצמך" : otherUser?.full_name || "משתמש"}
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {replyingTo.content || (replyingTo.image_url ? "🖼️ תמונה" : "🎥 וידאו")}
+                </p>
+              </div>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-6 w-6"
+                onClick={() => setReplyingTo(null)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+        
         {(imagePreview || videoPreview) && (
           <div className="px-4 pt-2">
             <div className="relative inline-block">
