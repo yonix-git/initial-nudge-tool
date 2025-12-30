@@ -312,25 +312,25 @@ const Auth = () => {
 
       // Check both email and username, then send verification code
       // This is done in one call to the edge function which uses service role
-      const { data, error } = await supabase.functions.invoke('send-verification-code', {
+      const response = await supabase.functions.invoke('send-verification-code', {
         body: { 
           email: trimmedEmail,
           username: trimmedUsername
         }
       });
 
+      console.log("Edge function response:", response);
+
       // Handle edge function errors - extract error message from response data
-      if (error) {
-        console.error("Verification error:", error);
-        // Check if error message is in data (edge function returns error in body)
-        if (data?.error) {
-          throw new Error(data.error);
-        }
-        throw new Error(error.message || "שגיאה בשליחת קוד אימות");
+      if (response.error) {
+        console.error("Verification error:", response.error);
+        // Try to get the error message from the response data
+        const errorMessage = response.data?.error || response.error.message || "שגיאה בשליחת קוד אימות";
+        throw new Error(errorMessage);
       }
 
-      if (data?.error) {
-        throw new Error(data.error);
+      if (response.data?.error) {
+        throw new Error(response.data.error);
       }
 
       setShowVerification(true);
