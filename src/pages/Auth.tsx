@@ -319,8 +319,13 @@ const Auth = () => {
         }
       });
 
+      // Handle edge function errors - extract error message from response data
       if (error) {
         console.error("Verification error:", error);
+        // Check if error message is in data (edge function returns error in body)
+        if (data?.error) {
+          throw new Error(data.error);
+        }
         throw new Error(error.message || "שגיאה בשליחת קוד אימות");
       }
 
