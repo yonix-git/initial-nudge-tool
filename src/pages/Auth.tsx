@@ -310,27 +310,40 @@ const Auth = () => {
         throw new Error("הסיסמה מכילה יותר מדי תווים זהים ברצף. אנא בחר סיסמה מורכבת יותר");
       }
 
-      // Check both email and username, then send verification code
-      // This is done in one call to the edge function which uses service role
-      const response = await supabase.functions.invoke('send-verification-code', {
-        body: { 
+      // First: check if email already exists without triggering a non-2xx response
+      const checkResponse = await supabase.functions.invoke('send-verification-code', {
+        body: {
           email: trimmedEmail,
-          username: trimmedUsername
-        }
+          username: trimmedUsername,
+          checkOnly: true,
+        },
       });
 
-      console.log("Edge function response:", response);
-
-      // Handle edge function errors - extract error message from response data
-      if (response.error) {
-        console.error("Verification error:", response.error);
-        // Try to get the error message from the response data
-        const errorMessage = response.data?.error || response.error.message || "שגיאה בשליחת קוד אימות";
-        throw new Error(errorMessage);
+      if (checkResponse.error) {
+        console.error("Verification check error:", checkResponse.error);
+        throw new Error(checkResponse.error.message || "שגיאה בבדיקת המייל");
       }
 
-      if (response.data?.error) {
-        throw new Error(response.data.error);
+      if (checkResponse.data?.emailExists) {
+        throw new Error(checkResponse.data.error || "מייל זה כבר רשום במערכת");
+      }
+
+      // Second: send the actual verification code
+      const sendResponse = await supabase.functions.invoke('send-verification-code', {
+        body: {
+          email: trimmedEmail,
+          username: trimmedUsername,
+        },
+      });
+
+      if (sendResponse.error) {
+        console.error("Verification send error:", sendResponse.error);
+        // sendResponse may not include body for non-2xx; show a friendly fallback
+        throw new Error("שגיאה בשליחת קוד אימות. אנא נסה שוב מאוחר יותר");
+      }
+
+      if (sendResponse.data?.error) {
+        throw new Error(sendResponse.data.error);
       }
 
       setShowVerification(true);
