@@ -259,12 +259,23 @@ const handler = async (req: Request): Promise<Response> => {
     );
   } catch (error: any) {
     console.error("Error in send-verification-code function:", error);
+    
+    // Determine appropriate status code - use 400 for validation errors so the response body is accessible
+    const isValidationError = [
+      'כתובת אימייל לא תקינה',
+      'מייל זה כבר רשום במערכת',
+      'שם המשתמש כבר תפוס',
+      'שם משתמש חייב להכיל',
+      'שם משתמש ארוך מדי',
+      'שם משתמש יכול להכיל'
+    ].some(msg => error.message?.includes(msg));
+    
     return new Response(
       JSON.stringify({ 
         error: error.message || 'שגיאה בשליחת קוד האימות'
       }),
       {
-        status: 500,
+        status: isValidationError ? 400 : 500,
         headers: { 
           "Content-Type": "application/json", 
           ...corsHeaders 
