@@ -28,6 +28,7 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [activeTab, setActiveTab] = useState<"signin" | "signup">("signin");
   const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   // Field-level validation errors
   const [fieldErrors, setFieldErrors] = useState<{
@@ -155,7 +156,8 @@ const Auth = () => {
       /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) &&
       passwordValid &&
       Object.keys(fieldErrors).length === 0 &&
-      acceptedPrivacy
+      acceptedPrivacy &&
+      acceptedTerms
     );
   };
 
@@ -634,6 +636,25 @@ const Auth = () => {
                         onClick={(e) => e.stopPropagation()}
                       >
                         מדיניות הפרטיות
+                      </Link>
+                    </span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <Checkbox
+                      id="terms-of-service"
+                      checked={acceptedTerms}
+                      onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
+                      className="mt-0.5"
+                    />
+                    <span className="text-sm leading-relaxed">
+                      קראתי ואני מסכים/ה ל
+                      <Link 
+                        to="/terms-of-service" 
+                        className="text-primary hover:underline mx-1 font-medium"
+                        target="_blank"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        תנאי השימוש
                       </Link>
                     </span>
                   </div>
