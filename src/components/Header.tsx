@@ -1,4 +1,4 @@
-import { Car, Search, Bell, Menu, Users, Wrench, Calendar, X } from "lucide-react";
+import { Car, Search, Bell, Menu, Users, Wrench, Calendar, X, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link, useNavigate, useLocation } from "react-router-dom";
@@ -20,6 +20,7 @@ const Header = () => {
   const location = useLocation();
   const [profile, setProfile] = useState<any>(null);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [unreadMessages, setUnreadMessages] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -84,6 +85,57 @@ const Header = () => {
         },
         () => {
           fetchUnreadNotifications();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
+  // Fetch unread direct messages
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchUnreadMessages = async () => {
+      // Get all conversations where user is a participant
+      const { data: conversations } = await supabase
+        .from("conversations")
+        .select("id")
+        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`);
+
+      if (!conversations || conversations.length === 0) {
+        setUnreadMessages(0);
+        return;
+      }
+
+      const conversationIds = conversations.map(c => c.id);
+      
+      const { count } = await supabase
+        .from("direct_messages")
+        .select("*", { count: "exact", head: true })
+        .in("conversation_id", conversationIds)
+        .neq("sender_id", user.id)
+        .eq("is_read", false);
+
+      setUnreadMessages(count || 0);
+    };
+
+    fetchUnreadMessages();
+
+    // Subscribe to realtime direct messages
+    const channel = supabase
+      .channel("direct_messages_count")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "direct_messages",
+        },
+        () => {
+          fetchUnreadMessages();
         }
       )
       .subscribe();
@@ -375,6 +427,24 @@ const Header = () => {
             </>
           )}
           
+          {user && (
+            <Link to="/messages">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="relative overflow-visible"
+              >
+                <MessageSquare className="h-5 w-5" />
+                {unreadMessages > 0 && (
+                  <Badge 
+                    className="absolute -top-1 -left-1 min-w-[20px] h-5 px-1.5 flex items-center justify-center text-[10px] font-semibold bg-primary"
+                  >
+                    {unreadMessages > 99 ? '99+' : unreadMessages}
+                  </Badge>
+                )}
+              </Button>
+            </Link>
+          )}
           
           {isHomePage && (
             <Button 

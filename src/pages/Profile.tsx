@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Settings as SettingsIcon, Phone, MapPin, Star, Package, MessageSquare, Heart, Play } from "lucide-react";
+import { Settings as SettingsIcon, Phone, MapPin, Star, Package, MessageSquare, Heart, Play, Send } from "lucide-react";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import EditProfileDialog from "@/components/EditProfileDialog";
 import AddProductDialog from "@/components/AddProductDialog";
@@ -14,19 +14,23 @@ import ProductCard from "@/components/ProductCard";
 import AddReviewDialog from "@/components/AddReviewDialog";
 import ReviewCard from "@/components/ReviewCard";
 import { AdminRequestsDialog } from "@/components/AdminRequestsDialog";
-import { Link, Navigate, useSearchParams } from "react-router-dom";
+import { Link, Navigate, useSearchParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tables } from "@/integrations/supabase/types";
+import { useConversation } from "@/hooks/useConversation";
+import { toast } from "sonner";
 
 const Profile = () => {
   const { user, loading: authLoading } = useAuth();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const profileUserId = searchParams.get('id') || user?.id;
   const isOwnProfile = user?.id === profileUserId;
+  const { getOrCreateConversation } = useConversation();
   
   const [profile, setProfile] = useState<any>(null);
   const [posts, setPosts] = useState<any[]>([]);
@@ -34,7 +38,27 @@ const Profile = () => {
   const [reviews, setReviews] = useState<Tables<"reviews">[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPost, setSelectedPost] = useState<any>(null);
+  const [startingChat, setStartingChat] = useState(false);
   const { t, dir } = useLanguage();
+
+  const handleStartChat = async () => {
+    if (!user || !profileUserId || isOwnProfile) return;
+    
+    setStartingChat(true);
+    try {
+      const conversationId = await getOrCreateConversation(user.id, profileUserId);
+      if (conversationId) {
+        navigate(`/messages/${conversationId}`);
+      } else {
+        toast.error("שגיאה בפתיחת השיחה");
+      }
+    } catch (error) {
+      console.error("Error starting chat:", error);
+      toast.error("שגיאה בפתיחת השיחה");
+    } finally {
+      setStartingChat(false);
+    }
+  };
 
   const fetchPosts = async () => {
     if (!profileUserId) return;
@@ -261,7 +285,7 @@ const Profile = () => {
                       </div>
                       {profile?.username && <p className="text-sm text-muted-foreground truncate">@{profile.username}</p>}
                     </div>
-                    {isOwnProfile && (
+                    {isOwnProfile ? (
                       <div className="flex gap-2 flex-shrink-0 flex-wrap">
                         <AdminRequestsDialog />
                         <EditProfileDialog 
@@ -278,6 +302,16 @@ const Profile = () => {
                           </Button>
                         </Link>
                       </div>
+                    ) : user && (
+                      <Button 
+                        size="sm" 
+                        onClick={handleStartChat}
+                        disabled={startingChat}
+                        className="gap-2"
+                      >
+                        <Send className="h-4 w-4" />
+                        שלח הודעה
+                      </Button>
                     )}
                   </div>
                   <p className="text-muted-foreground text-sm sm:text-base mt-1 whitespace-pre-wrap break-words">{profile?.bio || "אין תיאור"}</p>
