@@ -23,6 +23,9 @@ const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const Messages = lazy(() => import("./pages/Messages"));
 const DirectMessage = lazy(() => import("./pages/DirectMessage"));
 const Marketplace = lazy(() => import("./pages/Marketplace"));
+const Forums = lazy(() => import("./pages/Forums"));
+const ForumCategory = lazy(() => import("./pages/ForumCategory"));
+const ForumTopic = lazy(() => import("./pages/ForumTopic"));
 
 const NotFound = lazy(() => import("./pages/NotFound"));
 
@@ -73,6 +76,9 @@ const App = () => (
                 <Route path="/messages" element={<Messages />} />
                 <Route path="/messages/:conversationId" element={<DirectMessage />} />
                 <Route path="/marketplace" element={<Marketplace />} />
+                <Route path="/forums" element={<Forums />} />
+                <Route path="/forums/:forumId" element={<ForumCategory />} />
+                <Route path="/forums/topic/:topicId" element={<ForumTopic />} />
                 
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
