@@ -90,7 +90,7 @@ const MediaCarousel = memo(({
   return (
     <div 
       ref={containerRef}
-      className={`relative ${fixedAspectRatio ? 'aspect-[4/5] overflow-hidden' : ''} ${className}`}
+      className={`relative ${fixedAspectRatio ? 'aspect-[4/3] overflow-hidden' : ''} ${className}`}
       onDoubleClick={onDoubleClick}
       onClick={onClick}
     >
