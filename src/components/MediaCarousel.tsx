@@ -8,6 +8,8 @@ interface MediaCarouselProps {
   className?: string;
   onDoubleClick?: () => void;
   onClick?: () => void;
+  /** Fixed aspect ratio mode for feed - crops content to 4:5 ratio */
+  fixedAspectRatio?: boolean;
 }
 
 const MediaCarousel = memo(({ 
@@ -15,7 +17,8 @@ const MediaCarousel = memo(({
   videoUrls = [], 
   className = "",
   onDoubleClick,
-  onClick
+  onClick,
+  fixedAspectRatio = false
 }: MediaCarouselProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const manuallyPausedRef = useRef(false);
@@ -87,7 +90,7 @@ const MediaCarousel = memo(({
   return (
     <div 
       ref={containerRef}
-      className={`relative ${className}`}
+      className={`relative ${fixedAspectRatio ? 'aspect-[4/5] overflow-hidden' : ''} ${className}`}
       onDoubleClick={onDoubleClick}
       onClick={onClick}
     >
@@ -97,7 +100,7 @@ const MediaCarousel = memo(({
           alt="Content" 
           loading="lazy"
           decoding="async"
-          className="w-full object-cover"
+          className={`w-full ${fixedAspectRatio ? 'h-full object-cover' : 'object-cover'}`}
         />
       ) : (
         <video 
@@ -108,7 +111,7 @@ const MediaCarousel = memo(({
           muted
           playsInline
           preload="metadata"
-          className="w-full"
+          className={`w-full ${fixedAspectRatio ? 'h-full object-cover' : ''}`}
           onPause={() => {
             if (videoRef.current && !videoRef.current.ended && !isProgrammaticPauseRef.current) {
               manuallyPausedRef.current = true;
@@ -120,6 +123,7 @@ const MediaCarousel = memo(({
           }}
         />
       )}
+
 
       {/* Navigation arrows */}
       {totalItems > 1 && (

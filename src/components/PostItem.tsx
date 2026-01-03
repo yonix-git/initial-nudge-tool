@@ -486,6 +486,7 @@ const PostItem = ({
               <MediaCarousel 
                 imageUrls={effectiveImageUrls}
                 videoUrls={effectiveVideoUrls}
+                fixedAspectRatio={true}
                 onClick={() => {
                   if (clickTimer) {
                     clearTimeout(clickTimer);
