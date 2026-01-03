@@ -22,6 +22,7 @@ const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const Messages = lazy(() => import("./pages/Messages"));
 const DirectMessage = lazy(() => import("./pages/DirectMessage"));
+const Marketplace = lazy(() => import("./pages/Marketplace"));
 
 const NotFound = lazy(() => import("./pages/NotFound"));
 
@@ -71,6 +72,7 @@ const App = () => (
                 <Route path="/terms-of-service" element={<TermsOfService />} />
                 <Route path="/messages" element={<Messages />} />
                 <Route path="/messages/:conversationId" element={<DirectMessage />} />
+                <Route path="/marketplace" element={<Marketplace />} />
                 
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
