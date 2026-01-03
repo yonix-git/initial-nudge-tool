@@ -11,6 +11,7 @@ import { he } from "date-fns/locale";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { Link } from "react-router-dom";
 import MediaCarousel from "./MediaCarousel";
+import ZoomableMedia from "./ZoomableMedia";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -654,14 +655,11 @@ const PostItem = ({
 
       <Dialog open={showFullscreen} onOpenChange={setShowFullscreen}>
         <DialogContent className="max-w-7xl w-full h-[95vh] p-0 border-0 bg-black/95">
-          <div className="relative w-full h-full flex items-center justify-center">
-            <MediaCarousel 
-              imageUrls={effectiveImageUrls}
-              videoUrls={effectiveVideoUrls}
-              className="max-w-full max-h-full"
-              onDoubleClick={handleLike}
-            />
-          </div>
+          <ZoomableMedia
+            src={effectiveImageUrls[0] || effectiveVideoUrls[0] || ""}
+            type={effectiveImageUrls.length > 0 ? "image" : "video"}
+            onDoubleClick={handleLike}
+          />
         </DialogContent>
       </Dialog>
     </div>
