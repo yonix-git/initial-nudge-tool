@@ -191,29 +191,41 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Update request status
+    // Update user profile to business account FIRST (most important step)
+    console.log("Updating profile to business for user:", request.user_id);
+    
+    const { data: updatedProfile, error: updateProfileError } = await supabase
+      .from("profiles")
+      .update({ account_type: "business" })
+      .eq("id", request.user_id)
+      .select("id, account_type")
+      .single();
+
+    if (updateProfileError) {
+      console.error("CRITICAL: Error updating profile:", updateProfileError);
+      throw new Error(`Failed to update profile: ${updateProfileError.message}`);
+    }
+
+    // Verify the profile was actually updated
+    if (!updatedProfile || updatedProfile.account_type !== "business") {
+      console.error("CRITICAL: Profile update verification failed. Expected 'business', got:", updatedProfile?.account_type);
+      throw new Error("Profile update verification failed - account_type was not changed to 'business'");
+    }
+
+    console.log("Profile successfully updated to business:", updatedProfile);
+
+    // Update request status AFTER profile is confirmed updated
     const { error: updateRequestError } = await supabase
       .from("business_upgrade_requests")
-      .update({ status: "approved" })
+      .update({ status: "approved", updated_at: new Date().toISOString() })
       .eq("id", requestId);
 
     if (updateRequestError) {
-      console.error("Error updating request:", updateRequestError);
-      throw updateRequestError;
+      console.error("Error updating request status (profile already upgraded):", updateRequestError);
+      // Don't throw here - profile is already upgraded, this is just bookkeeping
     }
 
-    // Update user profile to business account
-    const { error: updateProfileError } = await supabase
-      .from("profiles")
-      .update({ account_type: "business" })
-      .eq("id", request.user_id);
-
-    if (updateProfileError) {
-      console.error("Error updating profile:", updateProfileError);
-      throw updateProfileError;
-    }
-
-    console.log("Successfully upgraded user to business account:", request.user_id);
+    console.log("Successfully upgraded user to business account:", request.user_id, "Profile verified:", updatedProfile.account_type);
 
     // Return success HTML page
     return new Response(
