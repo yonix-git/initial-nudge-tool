@@ -107,7 +107,10 @@ const Messages = () => {
           })
         );
 
-        setConversations(enrichedConversations);
+        // Filter out conversations with no messages
+        const conversationsWithMessages = enrichedConversations.filter(conv => conv.lastMessage !== null);
+        
+        setConversations(conversationsWithMessages);
       } catch (error) {
         console.error("Error fetching conversations:", error);
       } finally {
