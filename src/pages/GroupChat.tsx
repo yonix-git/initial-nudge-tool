@@ -2,7 +2,6 @@ import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -506,14 +505,11 @@ const GroupChat = () => {
   };
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-background" dir={dir}>
-        <Header />
-        <main className="container max-w-4xl py-6 px-4">
-          <Skeleton className="h-8 w-64 mb-4" />
-          <div className="h-[600px] bg-card/80 backdrop-blur-sm rounded-xl p-4">
-            <Skeleton className="h-full w-full" />
-          </div>
-        </main>
+      <div className="h-screen bg-background flex items-center justify-center" dir={dir}>
+        <div className="space-y-4 w-full max-w-md px-4">
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-[60vh] w-full rounded-xl" />
+        </div>
       </div>
     );
   }
@@ -527,207 +523,199 @@ const GroupChat = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background" dir={dir}>
-      <Header />
-
-      <main className="container max-w-4xl py-2 px-4">
-        <div className="mb-2 flex items-center justify-between">
+    <div className="h-screen bg-background flex flex-col" dir={dir}>
+      {/* Chat Header */}
+      <div className="flex-shrink-0 border-b bg-card/95 backdrop-blur-md px-4 py-3 flex items-center justify-between" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 12px)' }}>
+        <div className="flex items-center gap-3">
           <Button
             variant="ghost"
+            size="icon"
             onClick={() => navigate("/groups")}
-            className="gap-2"
           >
-            <ArrowLeft className="h-4 w-4" />
-            חזרה לקבוצות
+            <ArrowLeft className="h-5 w-5" />
           </Button>
+          <div>
+            <h2 className="font-semibold">{group.name}</h2>
+            <p className="text-xs text-muted-foreground">{group.members} חברים</p>
+          </div>
+        </div>
 
-          <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleMute}
-              title={isMuted ? "הפעל התראות" : "השתק התראות"}
-            >
-              {isMuted ? (
-                <BellOff className="h-5 w-5" />
-              ) : (
-                <Bell className="h-5 w-5" />
+        <div className="flex gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleMute}
+            title={isMuted ? "הפעל התראות" : "השתק התראות"}
+          >
+            {isMuted ? (
+              <BellOff className="h-5 w-5" />
+            ) : (
+              <Bell className="h-5 w-5" />
+            )}
+          </Button>
+          
+          {isAdmin ? (
+            <Button variant="ghost" size="icon" onClick={() => setShowMembers(true)}>
+              <Users className="h-5 w-5" />
+              {pendingRequests.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground rounded-full w-4 h-4 text-xs flex items-center justify-center">
+                  {pendingRequests.length}
+                </span>
               )}
             </Button>
-            
-            {isAdmin ? (
-              <Button variant="outline" onClick={() => setShowMembers(true)}>
-                <Users className="h-4 w-4 ml-2" />
-                חברי הקבוצה ({members.length})
-                {pendingRequests.length > 0 && (
-                  <span className="mr-2 bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-xs">
-                    {pendingRequests.length}
-                  </span>
-                )}
-              </Button>
-            ) : (
-              <Button 
-                variant="outline" 
-                onClick={() => setShowLeaveDialog(true)}
-                className="text-destructive hover:text-destructive"
-              >
-                <LogOut className="h-4 w-4 ml-2" />
-                עזוב קבוצה
-              </Button>
-            )}
-          </div>
+          ) : (
+            <Button 
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowLeaveDialog(true)}
+              className="text-destructive hover:text-destructive"
+            >
+              <LogOut className="h-5 w-5" />
+            </Button>
+          )}
         </div>
+      </div>
 
-        <div className="flex flex-col h-[calc(100vh-180px)]">
-          <div className="border-b flex-shrink-0 py-3 px-4 bg-card/80 backdrop-blur-sm rounded-t-xl">
-            <h2 className="text-lg font-semibold">{group.name}</h2>
-            <p className="text-xs text-muted-foreground">{group.description}</p>
-          </div>
+      {/* Messages Area */}
+      <ScrollArea className="flex-1">
+        <div className="p-4 space-y-4 pb-32" ref={scrollRef}>
+          {messages.map((message) => (
+            <div
+              key={message.id}
+              className={`flex gap-3 ${
+                message.user_id === user.id ? "flex-row-reverse" : ""
+              }`}
+            >
+              <Avatar className="h-8 w-8 flex-shrink-0">
+                <AvatarImage
+                  src={message.profiles.profile_picture_url || undefined}
+                />
+                <AvatarFallback>
+                  {(message.profiles.username || message.profiles.full_name || "?")[0].toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
 
-          <div className="flex-1 flex flex-col overflow-hidden">
-            {/* Messages */}
-            <ScrollArea className="flex-1 pb-24">
-              <div className="p-4 space-y-4" ref={scrollRef}>
-                {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex gap-3 ${
-                      message.user_id === user.id ? "flex-row-reverse" : ""
-                    }`}
-                  >
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage
-                        src={message.profiles.profile_picture_url || undefined}
-                      />
-                      <AvatarFallback>
-                        {(message.profiles.username || message.profiles.full_name || "?")[0].toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-
-                    <div
-                      className={`flex-1 max-w-[70%] ${
-                        message.user_id === user.id ? "items-end" : ""
-                      }`}
-                    >
-                      <div className="text-xs text-muted-foreground mb-1">
-                        {message.profiles.full_name || message.profiles.username || "משתמש"}
-                      </div>
-                      <div
-                        className={`rounded-lg p-3 ${
-                          message.user_id === user.id
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-muted"
-                        }`}
-                      >
-                        {message.content && <p className="text-sm">{message.content}</p>}
-                        {message.image_url && (
-                          <img
-                            src={message.image_url}
-                            alt="Shared image"
-                            className="mt-2 rounded max-w-full"
-                          />
-                        )}
-                        {message.video_url && (
-                          <video
-                            src={message.video_url}
-                            controls
-                            className="mt-2 rounded max-w-full"
-                          />
-                        )}
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-1">
-                        {new Date(message.created_at).toLocaleTimeString("he-IL", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-          </div>
-
-          {/* Message Input - Fixed to bottom */}
-          <div className="fixed bottom-0 left-0 right-0 border-t bg-card/95 backdrop-blur-md p-4 space-y-2 z-40">
-            <div className="container max-w-4xl mx-auto px-4">
-              {(imagePreview || videoPreview) && (
-                <div className="relative inline-block mb-2">
-                  {imagePreview && (
-                    <img
-                      src={imagePreview}
-                      alt="Preview"
-                      className="h-20 rounded-lg"
-                    />
-                  )}
-                  {videoPreview && (
-                    <video
-                      src={videoPreview}
-                      className="h-20 rounded-lg"
-                    />
-                  )}
-                  <Button
-                    size="icon"
-                    variant="destructive"
-                    className="absolute -top-2 -right-2 h-6 w-6"
-                    onClick={clearAttachments}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
+              <div
+                className={`flex-1 max-w-[75%] ${
+                  message.user_id === user.id ? "items-end" : ""
+                }`}
+              >
+                <div className={`text-xs text-muted-foreground mb-1 ${message.user_id === user.id ? "text-end" : ""}`}>
+                  {message.profiles.full_name || message.profiles.username || "משתמש"}
                 </div>
-              )}
-
-              <div className="flex gap-2">
-                <input
-                  ref={imageInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleImageSelect}
-                />
-                <input
-                  ref={videoInputRef}
-                  type="file"
-                  accept="video/*"
-                  className="hidden"
-                  onChange={handleVideoSelect}
-                />
-
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => imageInputRef.current?.click()}
-                  disabled={sending}
+                <div
+                  className={`rounded-2xl p-3 ${
+                    message.user_id === user.id
+                      ? "bg-primary text-primary-foreground rounded-tr-sm"
+                      : "bg-muted rounded-tl-sm"
+                  }`}
                 >
-                  <ImageIcon className="h-4 w-4" />
-                </Button>
-
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => videoInputRef.current?.click()}
-                  disabled={sending}
-                >
-                  <VideoIcon className="h-4 w-4" />
-                </Button>
-
-                <Input
-                  value={messageText}
-                  onChange={(e) => setMessageText(e.target.value)}
-                  placeholder="הקלד הודעה..."
-                  onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                  disabled={sending}
-                  className="flex-1"
-                />
-
-                <Button onClick={handleSendMessage} disabled={sending}>
-                  <Send className="h-4 w-4" />
-                </Button>
+                  {message.content && <p className="text-sm">{message.content}</p>}
+                  {message.image_url && (
+                    <img
+                      src={message.image_url}
+                      alt="Shared image"
+                      className="mt-2 rounded-lg max-w-full"
+                    />
+                  )}
+                  {message.video_url && (
+                    <video
+                      src={message.video_url}
+                      controls
+                      className="mt-2 rounded-lg max-w-full"
+                    />
+                  )}
+                </div>
+                <div className={`text-xs text-muted-foreground mt-1 ${message.user_id === user.id ? "text-end" : ""}`}>
+                  {new Date(message.created_at).toLocaleTimeString("he-IL", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </div>
               </div>
             </div>
-          </div>
+          ))}
         </div>
-      </main>
+      </ScrollArea>
+
+      {/* Message Input - Fixed to bottom */}
+      <div className="flex-shrink-0 border-t bg-card/95 backdrop-blur-md p-3 space-y-2" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)' }}>
+        {(imagePreview || videoPreview) && (
+          <div className="relative inline-block mb-2">
+            {imagePreview && (
+              <img
+                src={imagePreview}
+                alt="Preview"
+                className="h-20 rounded-lg"
+              />
+            )}
+            {videoPreview && (
+              <video
+                src={videoPreview}
+                className="h-20 rounded-lg"
+              />
+            )}
+            <Button
+              size="icon"
+              variant="destructive"
+              className="absolute -top-2 -right-2 h-6 w-6"
+              onClick={clearAttachments}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
+
+        <div className="flex gap-2">
+          <input
+            ref={imageInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleImageSelect}
+          />
+          <input
+            ref={videoInputRef}
+            type="file"
+            accept="video/*"
+            className="hidden"
+            onChange={handleVideoSelect}
+          />
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => imageInputRef.current?.click()}
+            disabled={sending}
+            className="flex-shrink-0"
+          >
+            <ImageIcon className="h-5 w-5" />
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => videoInputRef.current?.click()}
+            disabled={sending}
+            className="flex-shrink-0"
+          >
+            <VideoIcon className="h-5 w-5" />
+          </Button>
+
+          <Input
+            value={messageText}
+            onChange={(e) => setMessageText(e.target.value)}
+            placeholder="הקלד הודעה..."
+            onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+            disabled={sending}
+            className="flex-1"
+          />
+
+          <Button onClick={handleSendMessage} disabled={sending} size="icon" className="flex-shrink-0">
+            <Send className="h-5 w-5" />
+          </Button>
+        </div>
+      </div>
 
       {/* Members Dialog */}
       <Dialog open={showMembers} onOpenChange={setShowMembers}>
