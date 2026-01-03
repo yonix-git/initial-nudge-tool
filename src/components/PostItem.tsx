@@ -375,8 +375,8 @@ const PostItem = ({
   }), [createdAt]);
 
   return (
-    <div className="bg-card/50 backdrop-blur-sm p-4 pb-3 mb-2 border border-border/40 rounded-xl card-hover animate-fade-in-up">
-      <div className="flex flex-row items-center justify-between pb-3">
+    <div className="bg-card/50 backdrop-blur-sm mb-2 border border-border/40 rounded-xl card-hover animate-fade-in-up overflow-hidden">
+      <div className="flex flex-row items-center justify-between p-4 pb-3">
         <div className="flex items-center gap-3">
           <Link to={`/profile?id=${userId}`}>
             <Avatar className="cursor-pointer">
@@ -454,7 +454,7 @@ const PostItem = ({
         }}
       >
         {isEditing ? (
-          <div className="space-y-2">
+          <div className="space-y-2 px-4">
             <Textarea
               value={editContent}
               onChange={(e) => setEditContent(e.target.value)}
@@ -483,36 +483,34 @@ const PostItem = ({
         ) : (
           <>
             {hasMedia && (
-              <div className="mb-3">
-                <MediaCarousel 
-                  imageUrls={effectiveImageUrls}
-                  videoUrls={effectiveVideoUrls}
-                  onClick={() => {
-                    if (clickTimer) {
-                      clearTimeout(clickTimer);
-                    }
-                    const timer = setTimeout(() => {
-                      setShowFullscreen(true);
-                      setClickTimer(null);
-                    }, 250);
-                    setClickTimer(timer);
-                  }}
-                  onDoubleClick={() => {
-                    if (clickTimer) {
-                      clearTimeout(clickTimer);
-                      setClickTimer(null);
-                    }
-                    handleLike();
-                  }}
-                />
-              </div>
+              <MediaCarousel 
+                imageUrls={effectiveImageUrls}
+                videoUrls={effectiveVideoUrls}
+                onClick={() => {
+                  if (clickTimer) {
+                    clearTimeout(clickTimer);
+                  }
+                  const timer = setTimeout(() => {
+                    setShowFullscreen(true);
+                    setClickTimer(null);
+                  }, 250);
+                  setClickTimer(timer);
+                }}
+                onDoubleClick={() => {
+                  if (clickTimer) {
+                    clearTimeout(clickTimer);
+                    setClickTimer(null);
+                  }
+                  handleLike();
+                }}
+              />
             )}
-            {content && <p className="text-sm whitespace-pre-wrap">{content}</p>}
+            {content && <p className="text-sm whitespace-pre-wrap px-4 pt-3">{content}</p>}
           </>
         )}
       </div>
       
-      <div className="flex items-center justify-between border-t border-border/20 pt-3">
+      <div className="flex items-center justify-between border-t border-border/20 pt-3 px-4 pb-3">
         <div className="flex items-center gap-1">
           <Button 
             variant="ghost" 
@@ -550,7 +548,7 @@ const PostItem = ({
       </div>
       
       {showComments && (
-        <div className="pb-2 space-y-3 border-t border-border/20 pt-3 mt-3">
+        <div className="pb-2 space-y-3 border-t border-border/20 pt-3 px-4">
           {comments.length > 0 && (
             <div className="space-y-3 mb-3">
               <p className="text-xs font-semibold text-muted-foreground">תגובות ({comments.length})</p>
