@@ -25,6 +25,8 @@ interface Conversation {
     content: string | null;
     sender_id: string;
     is_read: boolean;
+    image_url: string | null;
+    video_url: string | null;
   } | null;
   unreadCount: number;
 }
@@ -77,7 +79,7 @@ const Messages = () => {
             // Get last message
             const { data: lastMessageData } = await supabase
               .from("direct_messages")
-              .select("content, sender_id, is_read")
+              .select("content, sender_id, is_read, image_url, video_url")
               .eq("conversation_id", conv.id)
               .order("created_at", { ascending: false })
               .limit(1)
@@ -243,11 +245,13 @@ const Messages = () => {
                           </span>
                         </div>
                         <p className={`text-sm truncate mt-0.5 ${conv.unreadCount > 0 ? "text-foreground font-medium" : "text-muted-foreground"}`}>
-                          {conv.lastMessage?.content 
-                            ? (conv.lastMessage.sender_id === user.id ? `את/ה: ${conv.lastMessage.content}` : conv.lastMessage.content)
-                            : conv.lastMessage?.sender_id === user.id 
-                              ? "שלחת מדיה"
-                              : "קיבלת מדיה"
+                          {!conv.lastMessage 
+                            ? "אין הודעות עדיין"
+                            : conv.lastMessage.content 
+                              ? (conv.lastMessage.sender_id === user.id ? `את/ה: ${conv.lastMessage.content}` : conv.lastMessage.content)
+                              : (conv.lastMessage.image_url || conv.lastMessage.video_url)
+                                ? (conv.lastMessage.sender_id === user.id ? "שלחת מדיה" : "קיבלת מדיה")
+                                : "אין הודעות עדיין"
                           }
                         </p>
                       </div>
