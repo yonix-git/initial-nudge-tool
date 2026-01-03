@@ -311,11 +311,11 @@ const DirectMessage = () => {
   });
 
   return (
-    <div className="min-h-screen bg-background flex flex-col" dir={dir}>
+    <div className="h-screen bg-background flex flex-col overflow-hidden" dir={dir}>
       <Header />
       
-      {/* Chat Header */}
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b">
+      {/* Chat Header - Fixed below main header */}
+      <div className="flex-shrink-0 z-10 bg-background/95 backdrop-blur-sm border-b">
         <div className="container max-w-2xl px-4 py-3 flex items-center gap-3">
           <Button 
             variant="ghost" 
