@@ -352,8 +352,8 @@ const DirectMessage = () => {
       </div>
 
       {/* Messages */}
-      <ScrollArea className="flex-1 px-4">
-        <div className="container max-w-2xl py-4 space-y-4">
+      <ScrollArea className="flex-1 px-0">
+        <div className="py-4 space-y-4 px-3">
           {groupedMessages.map((group, groupIndex) => (
             <div key={groupIndex}>
               <div className="flex justify-center my-4">
@@ -370,7 +370,7 @@ const DirectMessage = () => {
                 return (
                   <div
                     key={msg.id}
-                    className={`flex mb-3 group ${isOwn ? "justify-end" : "justify-start"}`}
+                    className={`flex mb-3 group ${isOwn ? "justify-end mr-0 ml-auto" : "justify-start ml-0 mr-auto"}`}
                   >
                     {/* Reply button for other's messages */}
                     {!isOwn && (
