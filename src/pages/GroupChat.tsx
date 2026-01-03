@@ -578,12 +578,12 @@ const GroupChat = () => {
 
       {/* Messages Area */}
       <ScrollArea className="flex-1">
-        <div className="p-4 space-y-4 pb-32" ref={scrollRef}>
+        <div className="px-3 py-4 space-y-4 pb-32" ref={scrollRef}>
           {messages.map((message) => (
             <div
               key={message.id}
-              className={`flex gap-3 ${
-                message.user_id === user.id ? "flex-row-reverse" : ""
+              className={`flex gap-2 ${
+                message.user_id === user.id ? "flex-row-reverse mr-0 ml-auto" : "ml-0 mr-auto"
               }`}
             >
               <Avatar className="h-8 w-8 flex-shrink-0">
@@ -596,7 +596,7 @@ const GroupChat = () => {
               </Avatar>
 
               <div
-                className={`flex-1 max-w-[75%] ${
+                className={`max-w-[75%] ${
                   message.user_id === user.id ? "items-end" : ""
                 }`}
               >
