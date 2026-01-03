@@ -1,4 +1,4 @@
-import { Car, Search, Bell, Menu, Users, Wrench, Calendar, X, MessageSquare, Store } from "lucide-react";
+import { Car, Search, Bell, Menu, Users, Wrench, Calendar, X, MessageSquare, Store, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link, useNavigate, useLocation } from "react-router-dom";
@@ -333,6 +333,14 @@ const Header = () => {
                   <Store className="h-5 w-5" />
                   <span className="font-medium">{t("header.marketplace")}</span>
                 </Link>
+                <Link 
+                  to="/forums" 
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <BookOpen className="h-5 w-5" />
+                  <span className="font-medium">{t("header.forums")}</span>
+                </Link>
               </div>
             </SheetContent>
           </Sheet>
@@ -360,6 +368,9 @@ const Header = () => {
             </Link>
             <Link to="/marketplace" className="relative text-sm font-semibold text-muted-foreground hover:text-primary transition-colors duration-300 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 hover:after:w-full after:bg-gradient-to-r after:from-primary after:to-primary/50 after:transition-all after:duration-300">
               {t("header.marketplace")}
+            </Link>
+            <Link to="/forums" className="relative text-sm font-semibold text-muted-foreground hover:text-primary transition-colors duration-300 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 hover:after:w-full after:bg-gradient-to-r after:from-primary after:to-primary/50 after:transition-all after:duration-300">
+              {t("header.forums")}
             </Link>
           </nav>
         </div>
