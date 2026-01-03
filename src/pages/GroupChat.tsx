@@ -503,6 +503,36 @@ const GroupChat = () => {
       toast.error("שגיאה בעדכון הגדרות התראות");
     }
   };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    if (date.toDateString() === today.toDateString()) {
+      return "היום";
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return "אתמול";
+    } else {
+      return date.toLocaleDateString("he-IL", { day: "numeric", month: "numeric" });
+    }
+  };
+
+  // Group messages by date
+  const groupedMessages: { date: string; messages: Message[] }[] = [];
+  let currentDate = "";
+
+  messages.forEach((msg) => {
+    const msgDate = formatDate(msg.created_at);
+    if (msgDate !== currentDate) {
+      currentDate = msgDate;
+      groupedMessages.push({ date: msgDate, messages: [msg] });
+    } else {
+      groupedMessages[groupedMessages.length - 1].messages.push(msg);
+    }
+  });
+
   if (authLoading || loading) {
     return (
       <div className="h-screen bg-background flex items-center justify-center" dir={dir}>
@@ -577,64 +607,64 @@ const GroupChat = () => {
       </div>
 
       {/* Messages Area */}
-      <ScrollArea className="flex-1">
-        <div className="px-3 py-4 space-y-4 pb-32" ref={scrollRef}>
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex gap-2 ${
-                message.user_id === user.id ? "flex-row-reverse mr-0 ml-auto" : "ml-0 mr-auto"
-              }`}
-            >
-              <Avatar className="h-8 w-8 flex-shrink-0">
-                <AvatarImage
-                  src={message.profiles.profile_picture_url || undefined}
-                />
-                <AvatarFallback>
-                  {(message.profiles.username || message.profiles.full_name || "?")[0].toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-
-              <div
-                className={`max-w-[75%] ${
-                  message.user_id === user.id ? "items-end" : ""
-                }`}
-              >
-                <div className={`text-xs text-muted-foreground mb-1 ${message.user_id === user.id ? "text-end" : ""}`}>
-                  {message.profiles.full_name || message.profiles.username || "משתמש"}
-                </div>
-                <div
-                  className={`rounded-2xl p-3 ${
-                    message.user_id === user.id
-                      ? "bg-primary text-primary-foreground rounded-tr-sm"
-                      : "bg-muted rounded-tl-sm"
-                  }`}
-                >
-                  {message.content && <p className="text-sm">{message.content}</p>}
-                  {message.image_url && (
-                    <img
-                      src={message.image_url}
-                      alt="Shared image"
-                      className="mt-2 rounded-lg max-w-full"
-                    />
-                  )}
-                  {message.video_url && (
-                    <video
-                      src={message.video_url}
-                      controls
-                      className="mt-2 rounded-lg max-w-full"
-                    />
-                  )}
-                </div>
-                <div className={`text-xs text-muted-foreground mt-1 ${message.user_id === user.id ? "text-end" : ""}`}>
-                  {new Date(message.created_at).toLocaleTimeString("he-IL", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </div>
+      <ScrollArea className="flex-1 px-0">
+        <div className="py-4 space-y-4 px-3">
+          {groupedMessages.map((group, groupIndex) => (
+            <div key={groupIndex}>
+              <div className="flex justify-center my-4">
+                <span className="text-xs bg-muted px-3 py-1 rounded-full text-muted-foreground">
+                  {group.date}
+                </span>
               </div>
+              {group.messages.map((msg) => {
+                const isOwn = msg.user_id === user.id;
+                
+                return (
+                  <div
+                    key={msg.id}
+                    className={`flex mb-3 ${isOwn ? "justify-end mr-0 ml-auto" : "justify-start ml-0 mr-auto"}`}
+                  >
+                    <div
+                      className={`max-w-[80%] rounded-2xl px-4 py-2 ${
+                        isOwn
+                          ? "bg-primary text-primary-foreground rounded-br-sm"
+                          : "bg-muted rounded-bl-sm"
+                      }`}
+                    >
+                      {/* Show sender name for other users' messages */}
+                      {!isOwn && (
+                        <p className={`text-xs font-medium mb-1 ${isOwn ? "text-primary-foreground/80" : "text-primary"}`}>
+                          {msg.profiles.full_name || msg.profiles.username || "משתמש"}
+                        </p>
+                      )}
+                      
+                      {msg.image_url && (
+                        <img
+                          src={msg.image_url}
+                          alt="תמונה"
+                          className="rounded-lg max-h-60 w-auto mb-2"
+                        />
+                      )}
+                      {msg.video_url && (
+                        <video
+                          src={msg.video_url}
+                          controls
+                          className="rounded-lg max-h-60 w-auto mb-2"
+                        />
+                      )}
+                      {msg.content && (
+                        <p className="break-words whitespace-pre-wrap">{msg.content}</p>
+                      )}
+                      <p className={`text-[10px] mt-1 ${isOwn ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+                        {new Date(msg.created_at).toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" })}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           ))}
+          <div ref={scrollRef} />
         </div>
       </ScrollArea>
 
