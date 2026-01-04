@@ -282,8 +282,8 @@ const Header = () => {
         </div>
       )}
 
-      <div className="container flex h-16 items-center justify-between px-4" dir={dir}>
-        <div className="flex items-center gap-3 sm:gap-6">
+      <div className="container flex h-16 items-center justify-between px-4 md:px-4 pr-6" dir={dir}>
+        <div className="flex items-center gap-2 sm:gap-6">
           {/* Mobile Menu */}
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild className="md:hidden">
