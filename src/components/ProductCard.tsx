@@ -19,9 +19,10 @@ interface ProductCardProps {
   product: Tables<"products"> & { image_urls?: string[] };
   onDelete?: (productId: string) => void;
   showDelete?: boolean;
+  onClick?: () => void;
 }
 
-const ProductCard = ({ product, onDelete, showDelete }: ProductCardProps) => {
+const ProductCard = ({ product, onDelete, showDelete, onClick }: ProductCardProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
   // Use image_urls array if available, otherwise fall back to single image_url
@@ -33,7 +34,7 @@ const ProductCard = ({ product, onDelete, showDelete }: ProductCardProps) => {
   const hasMultipleImages = images.length > 1;
 
   return (
-    <Card className="overflow-hidden transition-shadow relative">
+    <Card className={`overflow-hidden transition-shadow relative ${onClick ? 'cursor-pointer hover:shadow-lg' : ''}`} onClick={onClick}>
       {hasImages && (
         <div className="aspect-square overflow-hidden relative">
           <img

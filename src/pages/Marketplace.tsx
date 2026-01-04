@@ -688,13 +688,9 @@ const Marketplace = () => {
 
         {/* Product Details Dialog */}
         <Dialog open={!!selectedProduct} onOpenChange={(open) => !open && setSelectedProduct(null)}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0">
             {selectedProduct && (
               <>
-                <DialogHeader>
-                  <DialogTitle className="text-xl">{selectedProduct.name}</DialogTitle>
-                </DialogHeader>
-                
                 {/* Images */}
                 {(() => {
                   const images = getImages(selectedProduct);
@@ -702,11 +698,11 @@ const Marketplace = () => {
                   const hasMultipleImages = images.length > 1;
                   
                   return hasImages ? (
-                    <div className="relative aspect-square rounded-lg overflow-hidden mb-4">
+                    <div className="relative aspect-square overflow-hidden">
                       <img
                         src={images[dialogImageIndex]}
                         alt={selectedProduct.name}
-                        className="w-full h-full object-contain bg-muted"
+                        className="w-full h-full object-cover"
                       />
                       
                       {hasMultipleImages && (
@@ -747,36 +743,41 @@ const Marketplace = () => {
                       )}
                     </div>
                   ) : (
-                    <div className="aspect-square bg-muted flex items-center justify-center rounded-lg mb-4">
+                    <div className="aspect-square bg-muted flex items-center justify-center">
                       <Store className="h-16 w-16 text-muted-foreground" />
                     </div>
                   );
                 })()}
                 
-                {/* Thumbnails */}
-                {(() => {
-                  const images = getImages(selectedProduct);
-                  return images.length > 1 && (
-                    <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
-                      {images.map((img, index) => (
-                        <button
-                          key={index}
-                          className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-colors ${
-                            index === dialogImageIndex ? "border-primary" : "border-transparent"
-                          }`}
-                          onClick={() => setDialogImageIndex(index)}
-                        >
-                          <img src={img} alt="" className="w-full h-full object-cover" />
-                        </button>
-                      ))}
-                    </div>
-                  );
-                })()}
-                
-                {/* Price */}
-                <p className="text-2xl font-bold text-primary mb-4">
-                  ₪{selectedProduct.price.toFixed(2)}
-                </p>
+                <div className="p-6">
+                  <DialogHeader className="mb-4">
+                    <DialogTitle className="text-xl">{selectedProduct.name}</DialogTitle>
+                  </DialogHeader>
+                  
+                  {/* Thumbnails */}
+                  {(() => {
+                    const images = getImages(selectedProduct);
+                    return images.length > 1 && (
+                      <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+                        {images.map((img, index) => (
+                          <button
+                            key={index}
+                            className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-colors ${
+                              index === dialogImageIndex ? "border-primary" : "border-transparent"
+                            }`}
+                            onClick={() => setDialogImageIndex(index)}
+                          >
+                            <img src={img} alt="" className="w-full h-full object-cover" />
+                          </button>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                  
+                  {/* Price */}
+                  <p className="text-2xl font-bold text-primary mb-4">
+                    ₪{selectedProduct.price.toFixed(2)}
+                  </p>
                 
                 {/* Description */}
                 {selectedProduct.description && (
@@ -845,6 +846,7 @@ const Marketplace = () => {
                     {t("marketplace.contactSeller")}
                   </Button>
                 )}
+                </div>
               </>
             )}
           </DialogContent>
