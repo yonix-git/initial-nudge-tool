@@ -5,8 +5,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Settings as SettingsIcon, Phone, MapPin, Star, Package, MessageSquare, Heart, Play, Send, UserPlus, UserCheck } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Settings as SettingsIcon, Phone, MapPin, Star, Package, MessageSquare, Heart, Play, Send, UserPlus, UserCheck, ChevronLeft, ChevronRight, Store } from "lucide-react";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import EditProfileDialog from "@/components/EditProfileDialog";
 import AddProductDialog from "@/components/AddProductDialog";
@@ -41,6 +41,8 @@ const Profile = () => {
   const [startingChat, setStartingChat] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Tables<"products"> | null>(null);
+  const [productImageIndex, setProductImageIndex] = useState(0);
   const { t, dir } = useLanguage();
 
   const handleStartChat = async () => {
@@ -532,6 +534,10 @@ const Profile = () => {
                         product={product} 
                         onDelete={handleDeleteProduct}
                         showDelete={isOwnProfile}
+                        onClick={() => {
+                          setSelectedProduct(product);
+                          setProductImageIndex(0);
+                        }}
                       />
                     ))}
                   </div>
@@ -705,6 +711,131 @@ const Profile = () => {
                 commentsCount={selectedPost.comments_count}
                 createdAt={selectedPost.created_at}
               />
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Product Details Dialog */}
+        <Dialog open={!!selectedProduct} onOpenChange={(open) => !open && setSelectedProduct(null)}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0">
+            {selectedProduct && (
+              <>
+                {/* Images */}
+                {(() => {
+                  const images = (selectedProduct.image_urls && selectedProduct.image_urls.length > 0) 
+                    ? selectedProduct.image_urls 
+                    : (selectedProduct.image_url ? [selectedProduct.image_url] : []);
+                  const hasImages = images.length > 0;
+                  const hasMultipleImages = images.length > 1;
+                  
+                  return hasImages ? (
+                    <div className="relative aspect-square overflow-hidden">
+                      <img
+                        src={images[productImageIndex]}
+                        alt={selectedProduct.name}
+                        className="w-full h-full object-cover"
+                      />
+                      
+                      {hasMultipleImages && (
+                        <>
+                          <Button
+                            variant="secondary"
+                            size="icon"
+                            className="absolute left-3 top-1/2 -translate-y-1/2 h-10 w-10 bg-background/80 hover:bg-background"
+                            onClick={() => setProductImageIndex(prev => prev === 0 ? images.length - 1 : prev - 1)}
+                          >
+                            <ChevronLeft className="h-5 w-5" />
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="icon"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 h-10 w-10 bg-background/80 hover:bg-background"
+                            onClick={() => setProductImageIndex(prev => prev === images.length - 1 ? 0 : prev + 1)}
+                          >
+                            <ChevronRight className="h-5 w-5" />
+                          </Button>
+                          
+                          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
+                            {images.map((_, index) => (
+                              <button
+                                key={index}
+                                className={`w-2.5 h-2.5 rounded-full transition-colors ${
+                                  index === productImageIndex ? "bg-primary" : "bg-background/60"
+                                }`}
+                                onClick={() => setProductImageIndex(index)}
+                              />
+                            ))}
+                          </div>
+                          
+                          <div className="absolute top-3 left-3 bg-background/80 px-3 py-1 rounded-full text-sm font-medium">
+                            {productImageIndex + 1} / {images.length}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="aspect-square bg-muted flex items-center justify-center">
+                      <Store className="h-16 w-16 text-muted-foreground" />
+                    </div>
+                  );
+                })()}
+                
+                <div className="p-6">
+                  <DialogHeader className="mb-4">
+                    <DialogTitle className="text-xl">{selectedProduct.name}</DialogTitle>
+                  </DialogHeader>
+                  
+                  {/* Thumbnails */}
+                  {(() => {
+                    const images = (selectedProduct.image_urls && selectedProduct.image_urls.length > 0) 
+                      ? selectedProduct.image_urls 
+                      : (selectedProduct.image_url ? [selectedProduct.image_url] : []);
+                    return images.length > 1 && (
+                      <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+                        {images.map((img, index) => (
+                          <button
+                            key={index}
+                            className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-colors ${
+                              index === productImageIndex ? "border-primary" : "border-transparent"
+                            }`}
+                            onClick={() => setProductImageIndex(index)}
+                          >
+                            <img src={img} alt="" className="w-full h-full object-cover" />
+                          </button>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                  
+                  {/* Price */}
+                  <p className="text-2xl font-bold text-primary mb-4">
+                    ₪{selectedProduct.price.toFixed(2)}
+                  </p>
+                  
+                  {/* Description */}
+                  {selectedProduct.description && (
+                    <div className="mb-4">
+                      <h4 className="font-semibold mb-2">{t("marketplace.description")}</h4>
+                      <p className="text-muted-foreground whitespace-pre-wrap">
+                        {selectedProduct.description}
+                      </p>
+                    </div>
+                  )}
+                  
+                  {/* Contact Button - only for other users */}
+                  {!isOwnProfile && (
+                    <Button
+                      className="w-full gap-2"
+                      size="lg"
+                      onClick={handleStartChat}
+                      disabled={startingChat}
+                    >
+                      <MessageSquare className="h-5 w-5" />
+                      {t("marketplace.contactSeller")}
+                    </Button>
+                  )}
+                </div>
+              </>
             )}
           </DialogContent>
         </Dialog>
