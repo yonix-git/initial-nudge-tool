@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, MessageSquare, ChevronLeft, ChevronRight, Store, Filter, X } from "lucide-react";
+import { Search, MessageSquare, ChevronLeft, ChevronRight, Store, Filter, X, Pencil, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -31,7 +31,20 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 interface Product {
   id: string;
@@ -67,6 +80,13 @@ const Marketplace = () => {
   const [filterOpen, setFilterOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [dialogImageIndex, setDialogImageIndex] = useState(0);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editPrice, setEditPrice] = useState("");
+  const [updating, setUpdating] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const categories = [
     { value: "all", label: t("marketplace.allCategories") },
@@ -260,6 +280,82 @@ const Marketplace = () => {
   };
 
   const hasActiveFilters = searchQuery || selectedCategory !== "all" || priceRange !== "all" || sortBy !== "newest";
+
+  const handleEditProduct = () => {
+    if (!selectedProduct) return;
+    setEditName(selectedProduct.name);
+    setEditDescription(selectedProduct.description || "");
+    setEditPrice(selectedProduct.price.toString());
+    setEditDialogOpen(true);
+  };
+
+  const handleUpdateProduct = async () => {
+    if (!selectedProduct || !user) return;
+    
+    setUpdating(true);
+    try {
+      const { error } = await supabase
+        .from("products")
+        .update({
+          name: editName.trim(),
+          description: editDescription.trim() || null,
+          price: parseFloat(editPrice),
+        })
+        .eq("id", selectedProduct.id);
+
+      if (error) throw error;
+
+      // Update local state
+      setProducts(prev => prev.map(p => 
+        p.id === selectedProduct.id 
+          ? { ...p, name: editName.trim(), description: editDescription.trim() || null, price: parseFloat(editPrice) }
+          : p
+      ));
+      setSelectedProduct(prev => prev ? { ...prev, name: editName.trim(), description: editDescription.trim() || null, price: parseFloat(editPrice) } : null);
+      
+      setEditDialogOpen(false);
+      toast({
+        title: t("marketplace.productUpdated"),
+      });
+    } catch (error) {
+      console.error("Error updating product:", error);
+      toast({
+        title: t("marketplace.errorUpdating"),
+        variant: "destructive",
+      });
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleDeleteProduct = async () => {
+    if (!selectedProduct || !user) return;
+    
+    setDeleting(true);
+    try {
+      const { error } = await supabase
+        .from("products")
+        .delete()
+        .eq("id", selectedProduct.id);
+
+      if (error) throw error;
+
+      setProducts(prev => prev.filter(p => p.id !== selectedProduct.id));
+      setSelectedProduct(null);
+      setDeleteDialogOpen(false);
+      toast({
+        title: t("marketplace.productDeleted"),
+      });
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      toast({
+        title: t("marketplace.errorDeleting"),
+        variant: "destructive",
+      });
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background" dir={dir}>
@@ -720,19 +816,109 @@ const Marketplace = () => {
                   </div>
                 )}
                 
-                {/* Contact Button */}
-                <Button
-                  className="w-full gap-2"
-                  size="lg"
-                  onClick={() => handleContactSeller(selectedProduct)}
-                >
-                  <MessageSquare className="h-5 w-5" />
-                  {t("marketplace.contactSeller")}
-                </Button>
+                {/* Action Buttons */}
+                {user && selectedProduct.business_id === user.id ? (
+                  <div className="flex gap-2">
+                    <Button
+                      className="flex-1 gap-2"
+                      size="lg"
+                      onClick={handleEditProduct}
+                    >
+                      <Pencil className="h-5 w-5" />
+                      {t("marketplace.editProduct")}
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="lg"
+                      onClick={() => setDeleteDialogOpen(true)}
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    className="w-full gap-2"
+                    size="lg"
+                    onClick={() => handleContactSeller(selectedProduct)}
+                  >
+                    <MessageSquare className="h-5 w-5" />
+                    {t("marketplace.contactSeller")}
+                  </Button>
+                )}
               </>
             )}
           </DialogContent>
         </Dialog>
+
+        {/* Edit Product Dialog */}
+        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{t("marketplace.editProduct")}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label>{t("marketplace.productName")}</Label>
+                <Input
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  placeholder={t("marketplace.productNamePlaceholder")}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>{t("marketplace.productPrice")}</Label>
+                <Input
+                  type="number"
+                  value={editPrice}
+                  onChange={(e) => setEditPrice(e.target.value)}
+                  placeholder="0.00"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>{t("marketplace.description")}</Label>
+                <Textarea
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  placeholder={t("marketplace.productDescPlaceholder")}
+                  rows={4}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
+                {t("marketplace.cancel")}
+              </Button>
+              <Button 
+                onClick={handleUpdateProduct} 
+                disabled={updating || !editName.trim() || !editPrice}
+              >
+                {updating ? t("marketplace.saving") : t("marketplace.save")}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t("marketplace.deleteProduct")}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {t("marketplace.deleteConfirm")}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{t("marketplace.cancel")}</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteProduct}
+                disabled={deleting}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {deleting ? t("marketplace.deleting") : t("marketplace.delete")}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </main>
     </div>
   );
