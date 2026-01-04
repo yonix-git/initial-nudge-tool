@@ -688,7 +688,7 @@ const Marketplace = () => {
 
         {/* Product Details Dialog */}
         <Dialog open={!!selectedProduct} onOpenChange={(open) => !open && setSelectedProduct(null)}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-6">
             {selectedProduct && (
               <>
                 {/* Images */}
@@ -698,7 +698,7 @@ const Marketplace = () => {
                   const hasMultipleImages = images.length > 1;
                   
                   return hasImages ? (
-                    <div className="relative aspect-square overflow-hidden">
+                    <div className="relative aspect-[4/3] overflow-hidden rounded-lg">
                       <img
                         src={images[dialogImageIndex]}
                         alt={selectedProduct.name}
@@ -743,13 +743,13 @@ const Marketplace = () => {
                       )}
                     </div>
                   ) : (
-                    <div className="aspect-square bg-muted flex items-center justify-center">
+                    <div className="aspect-[4/3] bg-muted flex items-center justify-center rounded-lg">
                       <Store className="h-16 w-16 text-muted-foreground" />
                     </div>
                   );
                 })()}
                 
-                <div className="p-6">
+                <div className="pt-5">
                   <DialogHeader className="mb-4">
                     <DialogTitle className="text-xl">{selectedProduct.name}</DialogTitle>
                   </DialogHeader>
