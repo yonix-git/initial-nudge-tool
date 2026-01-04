@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Settings as SettingsIcon, Phone, MapPin, Star, Package, MessageSquare, Heart, Play, Send } from "lucide-react";
+import { Settings as SettingsIcon, Phone, MapPin, Star, Package, MessageSquare, Heart, Play, Send, UserPlus, UserCheck } from "lucide-react";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import EditProfileDialog from "@/components/EditProfileDialog";
 import AddProductDialog from "@/components/AddProductDialog";
@@ -39,6 +39,8 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const [startingChat, setStartingChat] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
   const { t, dir } = useLanguage();
 
   const handleStartChat = async () => {
@@ -57,6 +59,65 @@ const Profile = () => {
       toast.error("שגיאה בפתיחת השיחה");
     } finally {
       setStartingChat(false);
+    }
+  };
+
+  // Check if current user is following this profile
+  const checkFollowStatus = async () => {
+    if (!user || !profileUserId || isOwnProfile) return;
+    
+    const { data } = await supabase
+      .from("followers")
+      .select("id")
+      .eq("follower_id", user.id)
+      .eq("following_id", profileUserId)
+      .maybeSingle();
+    
+    setIsFollowing(!!data);
+  };
+
+  const handleFollow = async () => {
+    if (!user || !profileUserId || isOwnProfile) return;
+    
+    setFollowLoading(true);
+    try {
+      if (isFollowing) {
+        // Unfollow
+        const { error } = await supabase
+          .from("followers")
+          .delete()
+          .eq("follower_id", user.id)
+          .eq("following_id", profileUserId);
+        
+        if (!error) {
+          setIsFollowing(false);
+          setProfile((prev: any) => ({
+            ...prev,
+            followers_count: Math.max(0, (prev?.followers_count || 1) - 1)
+          }));
+        }
+      } else {
+        // Follow
+        const { error } = await supabase
+          .from("followers")
+          .insert({
+            follower_id: user.id,
+            following_id: profileUserId
+          });
+        
+        if (!error) {
+          setIsFollowing(true);
+          setProfile((prev: any) => ({
+            ...prev,
+            followers_count: (prev?.followers_count || 0) + 1
+          }));
+        }
+      }
+    } catch (error) {
+      console.error("Error toggling follow:", error);
+      toast.error("שגיאה בעדכון המעקב");
+    } finally {
+      setFollowLoading(false);
     }
   };
 
@@ -143,6 +204,7 @@ const Profile = () => {
 
     if (!authLoading) {
       fetchProfile();
+      checkFollowStatus();
     }
   }, [user, authLoading, profileUserId]);
 
@@ -303,15 +365,37 @@ const Profile = () => {
                         </Link>
                       </div>
                     ) : user && (
-                      <Button 
-                        size="sm" 
-                        onClick={handleStartChat}
-                        disabled={startingChat}
-                        className="gap-2"
-                      >
-                        <Send className="h-4 w-4" />
-                        שלח הודעה
-                      </Button>
+                      <div className="flex gap-2 flex-shrink-0">
+                        <Button 
+                          size="sm" 
+                          variant={isFollowing ? "outline" : "default"}
+                          onClick={handleFollow}
+                          disabled={followLoading}
+                          className="gap-2"
+                        >
+                          {isFollowing ? (
+                            <>
+                              <UserCheck className="h-4 w-4" />
+                              עוקב
+                            </>
+                          ) : (
+                            <>
+                              <UserPlus className="h-4 w-4" />
+                              עקוב
+                            </>
+                          )}
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={handleStartChat}
+                          disabled={startingChat}
+                          className="gap-2"
+                        >
+                          <Send className="h-4 w-4" />
+                          הודעה
+                        </Button>
+                      </div>
                     )}
                   </div>
                   <p className="text-muted-foreground text-sm sm:text-base mt-1 whitespace-pre-wrap break-words">{profile?.bio || "אין תיאור"}</p>
