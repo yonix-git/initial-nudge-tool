@@ -26,6 +26,12 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface Product {
   id: string;
@@ -59,6 +65,8 @@ const Marketplace = () => {
   const [sortBy, setSortBy] = useState<string>("newest");
   const [imageIndices, setImageIndices] = useState<Record<string, number>>({});
   const [filterOpen, setFilterOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [dialogImageIndex, setDialogImageIndex] = useState(0);
 
   const categories = [
     { value: "all", label: t("marketplace.allCategories") },
@@ -458,7 +466,14 @@ const Marketplace = () => {
               const currentIndex = imageIndices[product.id] || 0;
 
               return (
-                <Card key={product.id} className="overflow-hidden group hover:shadow-lg transition-shadow">
+                <Card 
+                  key={product.id} 
+                  className="overflow-hidden group hover:shadow-lg transition-shadow cursor-pointer"
+                  onClick={() => {
+                    setSelectedProduct(product);
+                    setDialogImageIndex(0);
+                  }}
+                >
                   {hasImages && (
                     <div className="aspect-square overflow-hidden relative">
                       <img
@@ -560,7 +575,10 @@ const Marketplace = () => {
                     {/* Contact Button */}
                     <Button
                       className="w-full gap-2"
-                      onClick={() => handleContactSeller(product)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleContactSeller(product);
+                      }}
                     >
                       <MessageSquare className="h-4 w-4" />
                       {t("marketplace.contactSeller")}
@@ -571,6 +589,150 @@ const Marketplace = () => {
             })}
           </div>
         )}
+
+        {/* Product Details Dialog */}
+        <Dialog open={!!selectedProduct} onOpenChange={(open) => !open && setSelectedProduct(null)}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            {selectedProduct && (
+              <>
+                <DialogHeader>
+                  <DialogTitle className="text-xl">{selectedProduct.name}</DialogTitle>
+                </DialogHeader>
+                
+                {/* Images */}
+                {(() => {
+                  const images = getImages(selectedProduct);
+                  const hasImages = images.length > 0;
+                  const hasMultipleImages = images.length > 1;
+                  
+                  return hasImages ? (
+                    <div className="relative aspect-square rounded-lg overflow-hidden mb-4">
+                      <img
+                        src={images[dialogImageIndex]}
+                        alt={selectedProduct.name}
+                        className="w-full h-full object-contain bg-muted"
+                      />
+                      
+                      {hasMultipleImages && (
+                        <>
+                          <Button
+                            variant="secondary"
+                            size="icon"
+                            className="absolute left-2 top-1/2 -translate-y-1/2 h-10 w-10 bg-background/80 hover:bg-background"
+                            onClick={() => setDialogImageIndex(prev => prev === 0 ? images.length - 1 : prev - 1)}
+                          >
+                            <ChevronLeft className="h-5 w-5" />
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="icon"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 h-10 w-10 bg-background/80 hover:bg-background"
+                            onClick={() => setDialogImageIndex(prev => prev === images.length - 1 ? 0 : prev + 1)}
+                          >
+                            <ChevronRight className="h-5 w-5" />
+                          </Button>
+                          
+                          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
+                            {images.map((_, index) => (
+                              <button
+                                key={index}
+                                className={`w-2.5 h-2.5 rounded-full transition-colors ${
+                                  index === dialogImageIndex ? "bg-primary" : "bg-background/60"
+                                }`}
+                                onClick={() => setDialogImageIndex(index)}
+                              />
+                            ))}
+                          </div>
+                          
+                          <div className="absolute top-3 left-3 bg-background/80 px-3 py-1 rounded-full text-sm font-medium">
+                            {dialogImageIndex + 1} / {images.length}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="aspect-square bg-muted flex items-center justify-center rounded-lg mb-4">
+                      <Store className="h-16 w-16 text-muted-foreground" />
+                    </div>
+                  );
+                })()}
+                
+                {/* Thumbnails */}
+                {(() => {
+                  const images = getImages(selectedProduct);
+                  return images.length > 1 && (
+                    <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+                      {images.map((img, index) => (
+                        <button
+                          key={index}
+                          className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-colors ${
+                            index === dialogImageIndex ? "border-primary" : "border-transparent"
+                          }`}
+                          onClick={() => setDialogImageIndex(index)}
+                        >
+                          <img src={img} alt="" className="w-full h-full object-cover" />
+                        </button>
+                      ))}
+                    </div>
+                  );
+                })()}
+                
+                {/* Price */}
+                <p className="text-2xl font-bold text-primary mb-4">
+                  ₪{selectedProduct.price.toFixed(2)}
+                </p>
+                
+                {/* Description */}
+                {selectedProduct.description && (
+                  <div className="mb-4">
+                    <h4 className="font-semibold mb-2">{t("marketplace.description")}</h4>
+                    <p className="text-muted-foreground whitespace-pre-wrap">
+                      {selectedProduct.description}
+                    </p>
+                  </div>
+                )}
+                
+                {/* Seller Info */}
+                {selectedProduct.business && (
+                  <div 
+                    className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg mb-4 cursor-pointer hover:bg-muted transition-colors"
+                    onClick={() => {
+                      setSelectedProduct(null);
+                      navigate(`/profile?id=${selectedProduct.business_id}`);
+                    }}
+                  >
+                    <Avatar className="h-12 w-12">
+                      <AvatarImage src={selectedProduct.business.profile_picture_url || undefined} />
+                      <AvatarFallback>
+                        {getInitials(selectedProduct.business.full_name || selectedProduct.business.username || "")}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <p className="font-medium">
+                        {selectedProduct.business.full_name || selectedProduct.business.username}
+                      </p>
+                      {selectedProduct.business.business_type && (
+                        <p className="text-sm text-muted-foreground">
+                          {selectedProduct.business.business_type}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Contact Button */}
+                <Button
+                  className="w-full gap-2"
+                  size="lg"
+                  onClick={() => handleContactSeller(selectedProduct)}
+                >
+                  <MessageSquare className="h-5 w-5" />
+                  {t("marketplace.contactSeller")}
+                </Button>
+              </>
+            )}
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   );

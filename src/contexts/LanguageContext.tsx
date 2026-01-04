@@ -188,6 +188,7 @@ const translations = {
     "marketplace.ownProduct": "זה המוצר שלך",
     "marketplace.errorLoading": "שגיאה בטעינת המוצרים",
     "marketplace.errorContact": "שגיאה ביצירת קשר עם המוכר",
+    "marketplace.description": "תיאור",
     
     // Forums
     "header.forums": "פורומים",
@@ -401,6 +402,7 @@ const translations = {
     "marketplace.ownProduct": "This is your product",
     "marketplace.errorLoading": "Error loading products",
     "marketplace.errorContact": "Error contacting seller",
+    "marketplace.description": "Description",
     
     // Forums
     "header.forums": "Forums",
@@ -614,6 +616,7 @@ const translations = {
     "marketplace.ownProduct": "هذا منتجك",
     "marketplace.errorLoading": "خطأ في تحميل المنتجات",
     "marketplace.errorContact": "خطأ في التواصل مع البائع",
+    "marketplace.description": "الوصف",
     
     // Forums
     "header.forums": "المنتديات",
