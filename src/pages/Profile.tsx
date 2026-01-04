@@ -717,7 +717,7 @@ const Profile = () => {
 
         {/* Product Details Dialog */}
         <Dialog open={!!selectedProduct} onOpenChange={(open) => !open && setSelectedProduct(null)}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-6">
             {selectedProduct && (
               <>
                 {/* Images */}
@@ -729,7 +729,7 @@ const Profile = () => {
                   const hasMultipleImages = images.length > 1;
                   
                   return hasImages ? (
-                    <div className="relative aspect-square overflow-hidden">
+                    <div className="relative aspect-[4/3] overflow-hidden rounded-lg">
                       <img
                         src={images[productImageIndex]}
                         alt={selectedProduct.name}
@@ -741,7 +741,7 @@ const Profile = () => {
                           <Button
                             variant="secondary"
                             size="icon"
-                            className="absolute left-3 top-1/2 -translate-y-1/2 h-10 w-10 bg-background/80 hover:bg-background"
+                            className="absolute left-2 top-1/2 -translate-y-1/2 h-10 w-10 bg-background/80 hover:bg-background"
                             onClick={() => setProductImageIndex(prev => prev === 0 ? images.length - 1 : prev - 1)}
                           >
                             <ChevronLeft className="h-5 w-5" />
@@ -749,7 +749,7 @@ const Profile = () => {
                           <Button
                             variant="secondary"
                             size="icon"
-                            className="absolute right-3 top-1/2 -translate-y-1/2 h-10 w-10 bg-background/80 hover:bg-background"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 h-10 w-10 bg-background/80 hover:bg-background"
                             onClick={() => setProductImageIndex(prev => prev === images.length - 1 ? 0 : prev + 1)}
                           >
                             <ChevronRight className="h-5 w-5" />
@@ -774,13 +774,13 @@ const Profile = () => {
                       )}
                     </div>
                   ) : (
-                    <div className="aspect-square bg-muted flex items-center justify-center">
+                    <div className="aspect-[4/3] bg-muted flex items-center justify-center rounded-lg">
                       <Store className="h-16 w-16 text-muted-foreground" />
                     </div>
                   );
                 })()}
                 
-                <div className="p-6">
+                <div className="pt-5">
                   <DialogHeader className="mb-4">
                     <DialogTitle className="text-xl">{selectedProduct.name}</DialogTitle>
                   </DialogHeader>
