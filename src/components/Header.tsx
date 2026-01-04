@@ -350,7 +350,7 @@ const Header = () => {
               <Car className="h-5 w-5 sm:h-6 sm:w-6 text-primary-foreground relative z-10" />
               <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             </div>
-            <span className="text-xl sm:text-2xl font-bebas tracking-wider bg-gradient-to-r from-foreground via-foreground/90 to-foreground/80 bg-clip-text text-transparent">MotorClub IL</span>
+            <span className="text-lg sm:text-2xl font-bebas tracking-wider bg-gradient-to-r from-foreground via-foreground/90 to-foreground/80 bg-clip-text text-transparent">MotorClub IL</span>
           </Link>
           
           <nav className="hidden md:flex items-center gap-6">
