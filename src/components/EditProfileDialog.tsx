@@ -73,6 +73,24 @@ const EditProfileDialog = ({ currentName, currentBio, currentVehicle, currentPro
   
   const isBusinessAccount = currentProfile?.account_type === 'business';
 
+  // Reset form values when dialog opens
+  const handleOpenChange = (isOpen: boolean) => {
+    if (isOpen) {
+      // Reset all fields to current values when opening
+      setName(currentName);
+      setBio(currentBio);
+      setVehicle(currentVehicle);
+      setPreviewUrl(currentProfilePicture);
+      setProfilePicture(null);
+      setBusinessPhone(currentProfile?.business_phone || "");
+      setBusinessAddress(currentProfile?.business_address || "");
+      setBusinessDescription(currentProfile?.business_description || "");
+      setBusinessCategories(currentProfile?.business_categories || []);
+      setBusinessType(currentProfile?.business_type || "garage");
+    }
+    setOpen(isOpen);
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -134,7 +152,7 @@ const EditProfileDialog = ({ currentName, currentBio, currentVehicle, currentPro
 
   return (
     <>
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogTrigger asChild>
           <Button variant="outline" size="sm" className="gap-2">
             <Pencil className="h-4 w-4" />
