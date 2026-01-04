@@ -74,10 +74,12 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Successfully verified code for ${trimmedEmail}`);
 
+    // Return the normalized email so the client uses the same format
     return new Response(
       JSON.stringify({ 
         success: true,
-        message: 'הקוד אומת בהצלחה'
+        message: 'הקוד אומת בהצלחה',
+        email: trimmedEmail
       }),
       {
         status: 200,

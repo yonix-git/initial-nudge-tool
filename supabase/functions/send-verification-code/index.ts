@@ -20,11 +20,14 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email, username, checkOnly }: VerificationRequest = await req.json();
+    const { email: rawEmail, username, checkOnly }: VerificationRequest = await req.json();
 
-    if (!email || !email.includes('@')) {
+    if (!rawEmail || !rawEmail.includes('@')) {
       throw new Error('כתובת אימייל לא תקינה');
     }
+
+    // Normalize email to lowercase to avoid case sensitivity issues
+    const email = rawEmail.trim().toLowerCase();
 
     // Initialize Supabase client with service role to check auth.users
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -121,11 +124,11 @@ const handler = async (req: Request): Promise<Response> => {
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + 5);
 
-    // Delete old verification codes for this email
+    // Delete old verification codes for this email (using normalized email)
     await supabase
       .from('verification_codes')
       .delete()
-      .eq('email', email);
+      .ilike('email', email);
 
     // Store verification code in database
     const { error: dbError } = await supabase
