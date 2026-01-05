@@ -93,8 +93,10 @@ const ForumTopic = () => {
 
         setTopic({ ...topicData, profiles: topicProfile || undefined });
 
-        // Increment views using database function
-        await supabase.rpc('increment_topic_views', { topic_id: topicId });
+        // Increment views using database function (only if user is logged in)
+        if (user?.id) {
+          await supabase.rpc('increment_topic_views', { topic_id: topicId, viewer_id: user.id });
+        }
 
         // Fetch replies
         const { data: repliesData, error: repliesError } = await supabase
