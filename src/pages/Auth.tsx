@@ -412,7 +412,17 @@ const Auth = () => {
 
       if (signUpError) {
         console.error("Signup error details:", signUpError);
-        throw new Error(signUpError.message || "שגיאה בהרשמה למערכת");
+        // Provide more specific error messages
+        const errorMsg = signUpError.message?.toLowerCase() || '';
+        if (errorMsg.includes('already registered') || errorMsg.includes('already exists')) {
+          throw new Error("מייל זה כבר רשום במערכת. אנא נסה להתחבר");
+        } else if (errorMsg.includes('password')) {
+          throw new Error("הסיסמה לא עומדת בדרישות האבטחה");
+        } else if (errorMsg.includes('email')) {
+          throw new Error("כתובת האימייל אינה תקינה");
+        } else {
+          throw new Error(signUpError.message || "שגיאה בהרשמה למערכת. אנא נסה שוב");
+        }
       }
 
       if (!signUpData.user) {
