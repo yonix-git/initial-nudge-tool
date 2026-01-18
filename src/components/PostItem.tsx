@@ -34,6 +34,9 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 
+// Profile cache to prevent multiple fetches for the same user
+const profileCache = new Map<string, any>();
+
 interface PostItemProps {
   id: string;
   userId: string;
@@ -46,7 +49,7 @@ interface PostItemProps {
   commentsCount: number;
   createdAt: string;
   onDelete?: () => void;
-  onUpdate?: () => void;
+  onUpdate?: (updatedContent?: string) => void;
 }
 
 const PostItem = ({ 
@@ -68,7 +71,7 @@ const PostItem = ({
   const effectiveVideoUrls = videoUrls.length > 0 ? videoUrls : (videoUrl ? [videoUrl] : []);
   const hasMedia = effectiveImageUrls.length > 0 || effectiveVideoUrls.length > 0;
   const { user } = useAuth();
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(() => profileCache.get(userId) || null);
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(likesCount);
   const [showComments, setShowComments] = useState(false);
@@ -84,19 +87,35 @@ const PostItem = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const fullscreenVideoRef = useRef<HTMLVideoElement>(null);
   const { dir } = useLanguage();
+  const isMountedRef = useRef(true);
 
   const isOwnPost = user?.id === userId;
 
   useEffect(() => {
+    isMountedRef.current = true;
+    
+    // If we already have the profile in cache, don't fetch again
+    if (profileCache.has(userId)) {
+      setProfile(profileCache.get(userId));
+      return;
+    }
+
     const fetchProfile = async () => {
       const { data } = await supabase
         .from("profiles")
         .select("id, full_name, username, profile_picture_url, is_verified")
         .eq("id", userId)
         .single();
-      if (data) setProfile(data);
+      if (data && isMountedRef.current) {
+        profileCache.set(userId, data);
+        setProfile(data);
+      }
     };
     fetchProfile();
+    
+    return () => {
+      isMountedRef.current = false;
+    };
   }, [userId]);
 
   useEffect(() => {
@@ -339,7 +358,7 @@ const PostItem = ({
 
       setIsEditing(false);
       toast.success("הפוסט עודכן בהצלחה!");
-      onUpdate?.();
+      onUpdate?.(editContent.trim());
     } catch (error) {
       console.error("Error updating post:", error);
       toast.error("שגיאה בעדכון הפוסט");
