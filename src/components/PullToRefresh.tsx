@@ -43,11 +43,12 @@ export function PullToRefresh({ onRefresh, children, className = "" }: PullToRef
         </div>
       </div>
 
-      {/* Content with pull transform */}
+      {/* Content with pull transform - use will-change for better performance */}
       <div 
         style={{ 
           transform: pullDistance > 0 ? `translateY(${pullDistance}px)` : undefined,
           transition: pullDistance === 0 ? 'transform 0.2s ease-out' : undefined,
+          willChange: pullDistance > 0 ? 'transform' : undefined,
         }}
       >
         {children}
