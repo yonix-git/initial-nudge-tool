@@ -164,8 +164,18 @@ const Index = () => {
                     likesCount={post.likes_count}
                     commentsCount={post.comments_count}
                     createdAt={post.created_at}
-                    onDelete={() => fetchPosts(false, true)}
-                    onUpdate={() => fetchPosts(false, true)}
+                    onDelete={() => {
+                      // Remove post locally instead of refetching entire feed
+                      setPosts(prev => prev.filter(p => p.id !== post.id));
+                    }}
+                    onUpdate={(updatedContent?: string) => {
+                      // Update post locally instead of refetching entire feed
+                      if (updatedContent !== undefined) {
+                        setPosts(prev => prev.map(p => 
+                          p.id === post.id ? { ...p, content: updatedContent } : p
+                        ));
+                      }
+                    }}
                   />
                 ))}
                 
