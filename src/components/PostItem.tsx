@@ -79,6 +79,11 @@ const PostItem = ({
   const [newComment, setNewComment] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(content);
+  
+  // Sync likeCount with prop when it changes from external source (realtime updates)
+  useEffect(() => {
+    setLikeCount(likesCount);
+  }, [likesCount]);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showDeleteCommentDialog, setShowDeleteCommentDialog] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState<string | null>(null);

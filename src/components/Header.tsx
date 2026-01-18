@@ -8,9 +8,12 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, memo, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
+
+// Header profile cache
+const headerProfileCache = new Map<string, any>();
 
 const Header = () => {
   const { t, dir } = useLanguage();
@@ -32,14 +35,23 @@ const Header = () => {
   const isHomePage = location.pathname === "/";
 
   useEffect(() => {
+    if (!user) return;
+    
+    // Check cache first
+    if (headerProfileCache.has(user.id)) {
+      setProfile(headerProfileCache.get(user.id));
+      return;
+    }
+    
     const fetchProfile = async () => {
-      if (user) {
-        const { data } = await supabase
-          .from("profiles")
-          .select("id, full_name, username, profile_picture_url")
-          .eq("id", user.id)
-          .single();
-        if (data) setProfile(data);
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, full_name, username, profile_picture_url")
+        .eq("id", user.id)
+        .single();
+      if (data) {
+        headerProfileCache.set(user.id, data);
+        setProfile(data);
       }
     };
     fetchProfile();
@@ -512,4 +524,4 @@ const Header = () => {
   );
 };
 
-export default Header;
+export default memo(Header);
