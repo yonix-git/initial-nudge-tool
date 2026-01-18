@@ -176,7 +176,7 @@ const Services = () => {
             </TabsList>
 
             <TabsContent value={filterType} className="mt-6">
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                 {loading ? (
                   [...Array(6)].map((_, index) => (
                     <Card key={index}>
@@ -192,7 +192,7 @@ const Services = () => {
                     </Card>
                   ))
                 ) : filteredServices.length === 0 ? (
-                  <div className="col-span-2 text-center py-8 text-muted-foreground">
+                  <div className="col-span-full text-center py-8 text-muted-foreground">
                     {searchQuery || locationQuery ? t("services.noResults") : t("services.noServices")}
                   </div>
                 ) : (
