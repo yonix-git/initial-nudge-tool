@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Settings as SettingsIcon, Phone, MapPin, Star, Package, MessageSquare, Heart, Play, Send, UserPlus, UserCheck, ChevronLeft, ChevronRight, Store } from "lucide-react";
+import { Settings as SettingsIcon, Phone, MapPin, Star, Package, MessageSquare, Heart, Play, Send, UserPlus, UserCheck, ChevronLeft, ChevronRight, Store, X } from "lucide-react";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import EditProfileDialog from "@/components/EditProfileDialog";
 import AddProductDialog from "@/components/AddProductDialog";
@@ -23,6 +23,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tables } from "@/integrations/supabase/types";
 import { useConversation } from "@/hooks/useConversation";
 import { toast } from "sonner";
+import ZoomableMedia from "@/components/ZoomableMedia";
 
 const Profile = () => {
   const { user, loading: authLoading } = useAuth();
@@ -43,6 +44,7 @@ const Profile = () => {
   const [followLoading, setFollowLoading] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Tables<"products"> | null>(null);
   const [productImageIndex, setProductImageIndex] = useState(0);
+  const [showProfilePicture, setShowProfilePicture] = useState(false);
   const { t, dir } = useLanguage();
 
   const handleStartChat = async () => {
@@ -332,7 +334,10 @@ const Profile = () => {
           <Card>
             <CardContent className="pt-4 sm:pt-6 pb-4">
               <div className="flex flex-col sm:flex-row items-start gap-4">
-                <Avatar className="h-16 w-16 sm:h-20 sm:w-20 flex-shrink-0">
+                <Avatar 
+                  className="h-16 w-16 sm:h-20 sm:w-20 flex-shrink-0 cursor-pointer hover:opacity-90 transition-opacity"
+                  onClick={() => profile?.profile_picture_url && setShowProfilePicture(true)}
+                >
                   {profile?.profile_picture_url && (
                     <AvatarImage src={profile.profile_picture_url} alt="Profile" />
                   )}
@@ -836,6 +841,26 @@ const Profile = () => {
                   )}
                 </div>
               </>
+            )}
+          </DialogContent>
+        </Dialog>
+        {/* Profile Picture Fullscreen Dialog */}
+        <Dialog open={showProfilePicture} onOpenChange={setShowProfilePicture}>
+          <DialogContent className="max-w-4xl w-full h-[90vh] p-0 bg-background/95 backdrop-blur-sm border-none">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-4 right-4 z-50 rounded-full bg-background/80 hover:bg-background"
+              onClick={() => setShowProfilePicture(false)}
+            >
+              <X className="h-5 w-5" />
+            </Button>
+            {profile?.profile_picture_url && (
+              <ZoomableMedia 
+                src={profile.profile_picture_url} 
+                type="image" 
+                alt={profile?.full_name || "תמונת פרופיל"} 
+              />
             )}
           </DialogContent>
         </Dialog>
