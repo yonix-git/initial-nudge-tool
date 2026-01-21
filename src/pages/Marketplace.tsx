@@ -530,14 +530,14 @@ const Marketplace = () => {
 
         {/* Products Grid */}
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
             {Array.from({ length: 8 }).map((_, i) => (
               <Card key={i} className="overflow-hidden">
                 <Skeleton className="aspect-square" />
-                <CardContent className="p-4 space-y-2">
-                  <Skeleton className="h-5 w-3/4" />
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-6 w-1/3" />
+                <CardContent className="p-3 sm:p-4 space-y-2">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-3 w-full" />
+                  <Skeleton className="h-5 w-1/3" />
                 </CardContent>
               </Card>
             ))}
@@ -554,7 +554,7 @@ const Marketplace = () => {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
             {filteredProducts.map((product) => {
               const images = getImages(product);
               const hasImages = images.length > 0;
@@ -583,31 +583,31 @@ const Marketplace = () => {
                           <Button
                             variant="secondary"
                             size="icon"
-                            className="absolute left-2 top-1/2 -translate-y-1/2 h-8 w-8 bg-background/80 hover:bg-background opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 h-6 w-6 sm:h-8 sm:w-8 bg-background/80 hover:bg-background opacity-0 group-hover:opacity-100 transition-opacity"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleImageNav(product.id, "prev", images.length);
                             }}
                           >
-                            <ChevronLeft className="h-4 w-4" />
+                            <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" />
                           </Button>
                           <Button
                             variant="secondary"
                             size="icon"
-                            className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 bg-background/80 hover:bg-background opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 h-6 w-6 sm:h-8 sm:w-8 bg-background/80 hover:bg-background opacity-0 group-hover:opacity-100 transition-opacity"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleImageNav(product.id, "next", images.length);
                             }}
                           >
-                            <ChevronRight className="h-4 w-4" />
+                            <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
                           </Button>
 
-                          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+                          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
                             {images.map((_, index) => (
                               <button
                                 key={index}
-                                className={`w-2 h-2 rounded-full transition-colors ${
+                                className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-colors ${
                                   index === currentIndex ? "bg-primary" : "bg-background/60"
                                 }`}
                                 onClick={(e) => {
@@ -618,8 +618,8 @@ const Marketplace = () => {
                             ))}
                           </div>
 
-                          <div className="absolute top-2 left-2 bg-background/80 px-2 py-1 rounded-full text-xs font-medium">
-                            {currentIndex + 1} / {images.length}
+                          <div className="absolute top-2 left-2 bg-background/80 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium">
+                            {currentIndex + 1}/{images.length}
                           </div>
                         </>
                       )}
@@ -628,57 +628,41 @@ const Marketplace = () => {
 
                   {!hasImages && (
                     <div className="aspect-square bg-muted flex items-center justify-center">
-                      <Store className="h-12 w-12 text-muted-foreground" />
+                      <Store className="h-8 w-8 sm:h-12 sm:w-12 text-muted-foreground" />
                     </div>
                   )}
 
-                  <CardContent className="p-4">
-                    <h3 className="font-semibold text-lg mb-1 line-clamp-1">{product.name}</h3>
+                  <CardContent className="p-3 sm:p-4">
+                    <h3 className="font-semibold text-sm sm:text-base mb-1 line-clamp-1">{product.name}</h3>
                     {product.description && (
-                      <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
+                      <p className="text-xs sm:text-sm text-muted-foreground mb-2 line-clamp-2">
                         {product.description}
                       </p>
                     )}
-                    <p className="text-xl font-bold text-primary mb-3">
-                      ₪{product.price.toFixed(2)}
+                    <p className="text-base sm:text-xl font-bold text-primary">
+                      ₪{product.price.toLocaleString()}
                     </p>
 
-                    {/* Seller Info */}
+                    {/* Seller Info - Compact */}
                     {product.business && (
                       <div 
-                        className="flex items-center gap-2 mb-3 cursor-pointer hover:bg-muted/50 -mx-2 px-2 py-1 rounded-lg transition-colors"
-                        onClick={() => navigate(`/profile?id=${product.business_id}`)}
+                        className="flex items-center gap-2 mt-2 pt-2 border-t border-border/50"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/profile?id=${product.business_id}`);
+                        }}
                       >
-                        <Avatar className="h-8 w-8">
+                        <Avatar className="h-5 w-5 sm:h-6 sm:w-6">
                           <AvatarImage src={product.business.profile_picture_url || undefined} />
-                          <AvatarFallback className="text-xs">
+                          <AvatarFallback className="text-[10px] sm:text-xs">
                             {getInitials(product.business.full_name || product.business.username || "")}
                           </AvatarFallback>
                         </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">
-                            {product.business.full_name || product.business.username}
-                          </p>
-                          {product.business.business_type && (
-                            <p className="text-xs text-muted-foreground truncate">
-                              {product.business.business_type}
-                            </p>
-                          )}
-                        </div>
+                        <p className="text-xs sm:text-sm text-muted-foreground truncate flex-1">
+                          {product.business.full_name || product.business.username}
+                        </p>
                       </div>
                     )}
-
-                    {/* Contact Button */}
-                    <Button
-                      className="w-full gap-2"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleContactSeller(product);
-                      }}
-                    >
-                      <MessageSquare className="h-4 w-4" />
-                      {t("marketplace.contactSeller")}
-                    </Button>
                   </CardContent>
                 </Card>
               );
