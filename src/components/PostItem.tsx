@@ -400,7 +400,7 @@ const PostItem = ({
   }), [createdAt]);
 
   return (
-    <div className="bg-card/50 backdrop-blur-sm mb-2 border border-border/40 rounded-xl card-hover animate-fade-in-up overflow-hidden">
+    <div className="bg-transparent border-b border-border/30 animate-fade-in-up overflow-hidden">
       <div className="flex flex-row items-center justify-between p-4 pb-3">
         <div className="flex items-center gap-3">
           <Link to={`/profile?id=${userId}`}>
