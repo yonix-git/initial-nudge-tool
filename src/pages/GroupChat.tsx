@@ -608,7 +608,7 @@ const GroupChat = () => {
 
       {/* Messages Area */}
       <ScrollArea className="flex-1 px-0">
-        <div className="py-4 space-y-4 px-3">
+        <div className="py-4 space-y-4 px-2 sm:px-3">
           {groupedMessages.map((group, groupIndex) => (
             <div key={groupIndex}>
               <div className="flex justify-center my-4">
@@ -622,7 +622,7 @@ const GroupChat = () => {
                 return (
                   <div
                     key={msg.id}
-                    className={`flex mb-3 ${isOwn ? "justify-end mr-0 ml-auto" : "justify-start ml-0 mr-auto"}`}
+                    className={`flex mb-3 ${isOwn ? "justify-end" : "justify-start"}`}
                   >
                     <div
                       className={`max-w-[80%] rounded-2xl px-4 py-2 ${
