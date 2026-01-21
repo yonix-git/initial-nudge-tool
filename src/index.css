@@ -164,16 +164,7 @@ All colors MUST be HSL.
     will-change: transform;
   }
   
-  /* Enable animations only on desktop for performance */
-  @media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
-    body::before {
-      animation: float 20s ease-in-out infinite;
-    }
-    
-    body::after {
-      animation: float 25s ease-in-out infinite reverse;
-    }
-  }
+  /* Background animations disabled for performance */
   
   @keyframes float {
     0%, 100% {
