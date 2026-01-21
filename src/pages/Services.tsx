@@ -176,71 +176,88 @@ const Services = () => {
             </TabsList>
 
             <TabsContent value={filterType} className="mt-6">
-              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {loading ? (
                   [...Array(6)].map((_, index) => (
-                    <Card key={index}>
-                      <CardHeader>
-                        <Skeleton className="h-6 w-3/4 mb-2" />
-                        <Skeleton className="h-4 w-1/2" />
-                      </CardHeader>
-                      <CardContent>
-                        <Skeleton className="h-4 w-full mb-2" />
-                        <Skeleton className="h-4 w-2/3 mb-4" />
-                        <Skeleton className="h-10 w-full" />
+                    <Card key={index} className="overflow-hidden">
+                      <CardContent className="p-0">
+                        <div className="p-4 space-y-3">
+                          <Skeleton className="h-6 w-3/4" />
+                          <Skeleton className="h-4 w-1/2" />
+                          <Skeleton className="h-4 w-full" />
+                          <Skeleton className="h-10 w-full" />
+                        </div>
                       </CardContent>
                     </Card>
                   ))
                 ) : filteredServices.length === 0 ? (
-                  <div className="col-span-full text-center py-8 text-muted-foreground">
+                  <div className="col-span-full text-center py-12 text-muted-foreground">
                     {searchQuery || locationQuery ? t("services.noResults") : t("services.noServices")}
                   </div>
                 ) : (
                   filteredServices.map((service) => (
-                    <Card key={service.id} className="hover:shadow-md transition-shadow">
-                      <CardHeader>
-                        <div className="flex items-start justify-between mb-2">
-                          <div>
-                            <CardTitle className="text-lg mb-1">{service.full_name}</CardTitle>
-                            <Badge variant="secondary">{getTypeLabel(service.business_type)}</Badge>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {renderStars(service.average_rating || 0)}
-                            <span className="text-sm font-medium">{service.average_rating?.toFixed(1) || '0.0'}</span>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        <div className="space-y-2 text-sm">
-                          {service.business_address && service.business_type === 'garage' && (
-                            <div className="flex items-center gap-2">
-                              <MapPin className="h-4 w-4 text-muted-foreground" />
-                              <span>{service.business_address}</span>
-                            </div>
-                          )}
-                          {service.business_phone && (
-                            <div className="flex items-center gap-2">
-                              <Phone className="h-4 w-4 text-muted-foreground" />
-                              <span dir="ltr">{service.business_phone}</span>
-                            </div>
-                          )}
-                        </div>
-                        
-                        {service.business_categories && service.business_categories.length > 0 && (
-                          <div className="flex flex-wrap gap-1">
-                            {service.business_categories.map((category, idx) => (
-                              <Badge key={idx} variant="outline" className="text-xs">
-                                {category}
+                    <Card 
+                      key={service.id} 
+                      className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group"
+                      onClick={() => navigate(`/profile?id=${service.id}`)}
+                    >
+                      <CardContent className="p-0">
+                        {/* Header with gradient */}
+                        <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-4 border-b border-border/50">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-semibold text-lg truncate group-hover:text-primary transition-colors">
+                                {service.full_name}
+                              </h3>
+                              <Badge variant="secondary" className="mt-1.5">
+                                {getTypeLabel(service.business_type)}
                               </Badge>
-                            ))}
+                            </div>
+                            <div className="flex flex-col items-end shrink-0">
+                              <div className="flex items-center gap-1">
+                                <Star className="h-4 w-4 fill-primary text-primary" />
+                                <span className="font-semibold">{service.average_rating?.toFixed(1) || '0.0'}</span>
+                              </div>
+                            </div>
                           </div>
-                        )}
+                        </div>
                         
-                        <div className="flex gap-2">
-                          <Button 
-                            className="flex-1"
-                            onClick={() => navigate(`/profile?id=${service.id}`)}
-                          >
+                        {/* Content */}
+                        <div className="p-4 space-y-3">
+                          {/* Location & Phone */}
+                          <div className="space-y-2 text-sm text-muted-foreground">
+                            {service.business_address && service.business_type === 'garage' && (
+                              <div className="flex items-center gap-2">
+                                <MapPin className="h-4 w-4 shrink-0" />
+                                <span className="truncate">{service.business_address}</span>
+                              </div>
+                            )}
+                            {service.business_phone && (
+                              <div className="flex items-center gap-2">
+                                <Phone className="h-4 w-4 shrink-0" />
+                                <span dir="ltr">{service.business_phone}</span>
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Categories */}
+                          {service.business_categories && service.business_categories.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5">
+                              {service.business_categories.slice(0, 3).map((category, idx) => (
+                                <Badge key={idx} variant="outline" className="text-xs">
+                                  {category}
+                                </Badge>
+                              ))}
+                              {service.business_categories.length > 3 && (
+                                <Badge variant="outline" className="text-xs">
+                                  +{service.business_categories.length - 3}
+                                </Badge>
+                              )}
+                            </div>
+                          )}
+                          
+                          {/* CTA Button */}
+                          <Button className="w-full mt-2 group-hover:bg-primary/90">
                             {t("services.moreDetails")}
                           </Button>
                         </div>
