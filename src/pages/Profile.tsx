@@ -846,7 +846,7 @@ const Profile = () => {
         </Dialog>
         {/* Profile Picture Fullscreen Dialog */}
         <Dialog open={showProfilePicture} onOpenChange={setShowProfilePicture}>
-          <DialogContent className="max-w-4xl w-full h-[90vh] p-0 bg-background/95 backdrop-blur-sm border-none">
+          <DialogContent className="max-w-4xl w-full h-[90vh] p-0 bg-background/95 backdrop-blur-sm border-none flex items-center justify-center">
             <Button
               variant="ghost"
               size="icon"
@@ -856,10 +856,10 @@ const Profile = () => {
               <X className="h-5 w-5" />
             </Button>
             {profile?.profile_picture_url && (
-              <ZoomableMedia 
+              <img 
                 src={profile.profile_picture_url} 
-                type="image" 
-                alt={profile?.full_name || "תמונת פרופיל"} 
+                alt={profile?.full_name || "תמונת פרופיל"}
+                className="max-w-full max-h-full object-contain"
               />
             )}
           </DialogContent>
